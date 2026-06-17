@@ -41,6 +41,41 @@
             </a>
         </li>
         @endcan
+        <li class="nav-item mt-3">
+            <h6 class="text-uppercase text-light mt-4 mb-3">
+                Socios
+            </h6>
+        </li>
+
+        @can('socios.ver')
+        <li class="nav-item">
+            <a href="{{ route('socios.index') }}"
+            class="nav-link text-white {{ request()->routeIs('socios.*') ? 'active-menu' : '' }}">
+                <i class="bi bi-people me-2"></i>
+                Gestión de Socios
+            </a>
+        </li>
+        @endcan
+
+        @can('socios.informacion')
+        <li class="nav-item">
+            <a href="{{ route('socios.informacion') }}"
+            class="nav-link text-white {{ request()->routeIs('socios.informacion') ? 'active-menu' : '' }}">
+                <i class="bi bi-person-vcard me-2"></i>
+                Información Socio
+            </a>
+        </li>
+        @endcan
+
+        @can('socios.reportes')
+        <li class="nav-item">
+            <a href="{{ route('socios.reportes') }}"
+            class="nav-link text-white {{ request()->routeIs('socios.reportes') ? 'active-menu' : '' }}">
+                <i class="bi bi-file-earmark-bar-graph me-2"></i>
+                Reporte Socios
+            </a>
+        </li>
+        @endcan
 
     </ul>
 

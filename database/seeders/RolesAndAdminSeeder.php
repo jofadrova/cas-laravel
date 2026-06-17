@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 use App\Models\User;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Permission;
 
 class RolesAndAdminSeeder extends Seeder
 {
@@ -18,7 +19,6 @@ class RolesAndAdminSeeder extends Seeder
         $adminRole = Role::firstOrCreate([
             'name' => 'Administrador'
         ]);
-
         // Crear usuario administrador
         $admin = User::firstOrCreate(
             [
@@ -34,5 +34,6 @@ class RolesAndAdminSeeder extends Seeder
 
         // Asignar rol
         $admin->assignRole($adminRole);
+        $adminRole->syncPermissions(Permission::all());
     }
 }

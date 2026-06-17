@@ -6,6 +6,10 @@ use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\PermissionController;
 
+use App\Http\Controllers\SocioController;
+use App\Http\Controllers\SocioInformacionController;
+use App\Http\Controllers\SocioReporteController;
+
 
 Route::get('/', function () {
 
@@ -36,6 +40,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/roles/{role}/permisos',[RoleController::class, 'permisos'])->name('roles.permisos');
     Route::post('/roles/{role}/permisos',[RoleController::class, 'guardarPermisos'])->name('roles.guardarPermisos');
     Route::resource('permisos',PermissionController::class)->middleware('permission:permisos.ver');
+    /*
+    |--------------------------------------------------------------------------
+    | SOCIOS
+    |--------------------------------------------------------------------------
+    */
+    Route::resource('socios', SocioController::class)->middleware('permission:socios.ver');
+    Route::get('/socios-informacion',[SocioInformacionController::class, 'index'])->name('socios.informacion')->middleware('permission:socios.informacion');
+    Route::get('/socios-reportes',[SocioReporteController::class, 'index'])->name('socios.reportes')->middleware('permission:socios.reportes');
 });
 
 require __DIR__.'/auth.php';

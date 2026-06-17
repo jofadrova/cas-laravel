@@ -31,6 +31,16 @@ class PermissionSeeder extends Seeder
             'permisos.ver',
             'permisos.asignar',
 
+            // Socios
+            'socios.ver',
+            'socios.crear',
+            'socios.editar',
+            'socios.eliminar',
+            'socios.revincular',
+
+            'socios.informacion',
+            'socios.reportes',
+
         ];
 
         foreach ($permisos as $permiso) {
