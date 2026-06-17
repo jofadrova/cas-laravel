@@ -20,7 +20,8 @@
             </a>
         </li>
         <li class="nav-item">
-            <a href="#" class="nav-link text-white">
+            <a href="{{ route('roles.index') }}"
+            class="nav-link text-white">
                 <i class="bi bi-person-badge-fill me-2"></i>
                 Roles
             </a>
