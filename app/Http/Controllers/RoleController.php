@@ -7,6 +7,7 @@ use Spatie\Permission\Models\Role;
 use App\Http\Requests\StoreRoleRequest;
 use App\Http\Requests\UpdateRoleRequest;
 use App\Models\User;
+use Spatie\Permission\Models\Permission;
 
 class RoleController extends Controller
 {
@@ -64,29 +65,40 @@ class RoleController extends Controller
         $usuarios = User::all();
 
         foreach ($usuarios as $usuario) {
-
             $usuario->removeRole($role);
-
         }
 
         if ($request->filled('usuarios')) {
 
-            User::whereIn(
-                'id',
-                $request->usuarios
-            )->get()->each(function ($user) use ($role) {
-
+            User::whereIn('id',$request->usuarios)->get()->each(function ($user) use ($role) {
                 $user->assignRole($role);
-
             });
 
         }
 
         return redirect()
             ->route('roles.index')
-            ->with(
-                'success',
-                'Usuarios asignados correctamente.'
-            );
+            ->with('success','Usuarios asignados correctamente.');
+    }
+
+    public function permisos(Role $role)
+    {
+        $permisos = Permission::orderBy('name')->get();
+
+        $asignados = $role->permissions->pluck('id')->toArray();
+
+        return response()->json([
+            'role' => $role,
+            'permisos' => $permisos,
+            'asignados' => $asignados
+        ]);
+    }
+
+    public function guardarPermisos(Request $request,Role $role)
+    {
+        $role->syncPermissions($request->permisos ?? []);
+        return redirect()
+            ->route('roles.index')
+            ->with('success','Permisos asignados correctamente.');
     }
 }

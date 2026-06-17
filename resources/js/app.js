@@ -10,6 +10,7 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 
 import "./usuarios";
 import "./roles";
+import "./permisos";
 
 window.Alpine = Alpine;
 

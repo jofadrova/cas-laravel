@@ -1,7 +1,5 @@
 <x-app-layout>
-    <x-slot name="header">
-        Usuarios
-    </x-slot>
+    <x-slot name="header">Gestión de Usuarios</x-slot>
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show">
             <i class="fa-solid fa-circle-check me-2"></i>
@@ -9,15 +7,15 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
-    <div class="card">
+    <div class="card shadow-sm">
         <div class="card-header d-flex justify-content-between">
             <h5 class="mb-0">Gestión de Usuarios</h5>
             <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalUsuario"><i class="bi bi-plus-circle me-1"></i> Nuevo Usuario </button>
         </div>
 
         <div class="card-body">
-            <table class="table table-striped">
-                <thead>
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
                     <tr>
                         <th>Usuario</th>
                         <th>Nombre</th>
@@ -91,8 +89,11 @@
         <div class="modal-content">
             <form method="POST" action="{{ route('usuarios.store') }}">
                 @csrf
-                <div class="modal-header">
-                    <h5 class="modal-title">Nuevo Usuario</h5>
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="fa-solid fa-plus me-2"></i>
+                        Nuevo Usuario
+                    </h5>
                 </div>
                 <div class="modal-body">
                     <div class="row">
@@ -171,7 +172,7 @@
                 @method('PUT')
                 <div class="modal-header bg-warning">
                     <h5 class="modal-title">
-                        <i class="fa-solid fa-pen-to-square"></i>
+                        <i class="fa-solid fa-pen-to-square me-2"></i>
                         Editar Usuario
                     </h5>
                 </div>
@@ -258,7 +259,7 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">
-                            Usuario
+                            Gestión de Usuarios
                         </label>
                        <input type="text" id="password_username" class="form-control" readonly value="{{ session('reset_password_user.username') }}">
                     </div>

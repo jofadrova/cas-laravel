@@ -4,7 +4,8 @@
     <hr>
     <ul class="nav flex-column">
         <li class="nav-item">
-            <a href="{{ route('dashboard') }}" class="nav-link text-white">
+            <a href="{{ route('dashboard') }}"
+            class="nav-link text-white {{ request()->routeIs('dashboard') ? 'active-menu' : '' }}">
                 <i class="bi bi-speedometer2 me-2"></i>
                 Dashboard
             </a>
@@ -13,25 +14,33 @@
            <h6 class="text-uppercase text-light mt-4 mb-3">Seguridad</h6>
 
         </li>
+        @can('usuarios.ver')
         <li class="nav-item">
-            <a href="{{ route('usuarios.index') }}"class="nav-link text-white">
+            <a href="{{ route('usuarios.index') }}"
+            class="nav-link text-white {{ request()->routeIs('usuarios.*') ? 'active-menu' : '' }}">
                 <i class="bi bi-people-fill me-2"></i>
                 Usuarios
             </a>
         </li>
+        @endcan
+        @can('roles.ver')
         <li class="nav-item">
             <a href="{{ route('roles.index') }}"
-            class="nav-link text-white">
+            class="nav-link text-white {{ request()->routeIs('roles.*') ? 'active-menu' : '' }}">
                 <i class="bi bi-person-badge-fill me-2"></i>
                 Roles
             </a>
         </li>
+        @endcan
+        @can('permisos.ver')
         <li class="nav-item">
-            <a href="#" class="nav-link text-white">
+            <a href="{{ route('permisos.index') }}"
+            class="nav-link text-white {{ request()->routeIs('permisos.*') ? 'active-menu' : '' }}">
                 <i class="bi bi-shield-lock-fill me-2"></i>
-                Permisos
+                <span>Permisos</span>
             </a>
         </li>
+        @endcan
 
     </ul>
 

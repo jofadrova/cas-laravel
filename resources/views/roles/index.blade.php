@@ -2,17 +2,9 @@
     <x-slot name="header">Gestión de Roles</x-slot>
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show">
-
             <i class="fa-solid fa-circle-check me-2"></i>
-
             {{ session('success') }}
-
-            <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="alert">
-            </button>
-
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
     <div class="card shadow-sm">
@@ -57,6 +49,10 @@
                                         data-id="{{ $rol->id }}"
                                         data-name="{{ $rol->name }}"><i class="fa-solid fa-users"></i>
                                     </button>
+                                    <button class="btn btn-sm btn-secondary btnPermisosRol" title="Asignar Permisos" data-id="{{ $rol->id }}"
+                                        data-name="{{ $rol->name }}">
+                                        <i class="fa-solid fa-key"></i>
+                                    </button>
                                 </td>
                             </tr>
                         @empty
@@ -97,137 +93,83 @@
     </div>
 </div>
 <!-- Modal Editar Rol -->
-<div class="modal fade" id="modalEditarRol" tabindex="-1" data-bs-backdrop="static"> 
+<div class="modal fade" id="modalEditarRol" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog">
         <div class="modal-content">
             <form method="POST" id="formEditarRol">
                 @csrf
                 @method('PUT')
                 <div class="modal-header bg-warning">
-
                     <h5 class="modal-title">
                         <i class="fa-solid fa-pen-to-square me-2"></i>
                         Editar Rol
                     </h5>
-
                 </div>
-
                 <div class="modal-body">
-
                     <div class="mb-3">
-
-                        <label class="form-label">
-
-                            Nombre del Rol
-
-                        </label>
-
-                        <input
-                            type="text"
-                            id="edit_name"
-                            name="name"
-                            class="form-control"
-                            required>
-
+                        <label class="form-label">Nombre del Rol</label>
+                        <input type="text" id="edit_name" name="name" class="form-control" required>
                     </div>
-
                 </div>
-
                 <div class="modal-footer">
-
-                    <button
-                        type="button"
-                        class="btn btn-secondary"
-                        data-bs-dismiss="modal">
-
-                        Cancelar
-
-                    </button>
-
-                    <button
-                        type="submit"
-                        class="btn btn-warning">
-
-                        Actualizar
-
-                    </button>
-
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning">Actualizar</button>
                 </div>
-
             </form>
-
         </div>
-
     </div>
-
 </div>
-<div class="modal fade"
-     id="modalUsuariosRol"
-     tabindex="-1"
-     data-bs-backdrop="static">
-
+<div class="modal fade" id="modalUsuariosRol" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog modal-lg">
-
         <div class="modal-content">
-
-            <form method="POST"
-                  id="formUsuariosRol">
-
+            <form method="POST" id="formUsuariosRol">
                 @csrf
-
                 <div class="modal-header bg-info text-white">
-
                     <h5 class="modal-title">
-
                         <i class="fa-solid fa-users me-2"></i>
-
                         Usuarios del Rol
-
                     </h5>
-
                 </div>
-
                 <div class="modal-body">
-
                     <div class="alert alert-info mb-3">
-
                         <strong>Rol:</strong>
-
                         <span id="nombreRol"></span>
-
                     </div>
-
                     <div id="listaUsuarios">
-
                     </div>
-
                 </div>
-
                 <div class="modal-footer">
-
-                    <button
-                        type="button"
-                        class="btn btn-secondary"
-                        data-bs-dismiss="modal">
-
-                        Cancelar
-
-                    </button>
-
-                    <button
-                        type="submit"
-                        class="btn btn-info">
-
-                        Guardar
-
-                    </button>
-
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Cancelar </button>
+                    <button type="submit" class="btn btn-info">Guardar</button>
                 </div>
-
             </form>
-
         </div>
-
     </div>
-
+</div>
+<!-- Modal Permisos -->
+<div class="modal fade" id="modalPermisosRol" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="POST" id="formPermisosRol">
+                @csrf
+                <div class="modal-header bg-secondary text-white">
+                    <h5 class="modal-title">
+                        <i class="fa-solid fa-key me-2"></i>
+                        Permisos del Rol
+                    </h5>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-secondary mb-3">
+                        <strong>Rol:</strong>
+                        <span id="nombreRolPermiso"></span>
+                    </div>
+                    <div id="listaPermisos"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>

@@ -1,120 +1,136 @@
 import * as bootstrap from "bootstrap";
 
 document.addEventListener("DOMContentLoaded", function () {
-
-    const modalEditarElement =
-        document.getElementById("modalEditarRol");
+    const modalEditarElement = document.getElementById("modalEditarRol");
 
     if (!modalEditarElement) return;
 
-    const modalEditar =
-        bootstrap.Modal.getOrCreateInstance(
-            modalEditarElement
-        );
+    const modalEditar = bootstrap.Modal.getOrCreateInstance(modalEditarElement);
 
-    document.querySelectorAll(".btnEditarRol")
-        .forEach((btn) => {
+    document.querySelectorAll(".btnEditarRol").forEach((btn) => {
+        btn.addEventListener("click", function () {
+            document.getElementById("edit_name").value = this.dataset.name;
 
-            btn.addEventListener("click", function () {
+            document.getElementById("formEditarRol").action =
+                `/roles/${this.dataset.id}`;
 
-                document.getElementById("edit_name")
-                    .value =
-                    this.dataset.name;
-
-                document.getElementById("formEditarRol")
-                    .action =
-                    `/roles/${this.dataset.id}`;
-
-                modalEditar.show();
-
-            });
-
+            modalEditar.show();
         });
-
+    });
 });
-
 /*
  * Modal Usuarios Rol
  */
-const modalUsuariosElement =
-    document.getElementById("modalUsuariosRol");
+const modalUsuariosElement = document.getElementById("modalUsuariosRol");
 
 if (modalUsuariosElement) {
-
     const modalUsuarios =
-        bootstrap.Modal.getOrCreateInstance(
-            modalUsuariosElement
-        );
+        bootstrap.Modal.getOrCreateInstance(modalUsuariosElement);
 
-   document.querySelectorAll(".btnUsuariosRol")
-    .forEach((btn) => {
-
+    document.querySelectorAll(".btnUsuariosRol").forEach((btn) => {
         btn.addEventListener("click", function () {
+            const roleId = this.dataset.id;
 
-    const roleId = this.dataset.id;
+            document.getElementById("formUsuariosRol").action =
+                `/roles/${roleId}/usuarios`;
+            document.getElementById("nombreRol").textContent =
+                this.dataset.name;
 
-    console.log("ROLE ID:", roleId);
+            axios
+                .get(`/roles/${roleId}/usuarios`)
+                .then((response) => {
+                    const listaUsuarios =
+                        document.getElementById("listaUsuarios");
 
-    document.getElementById("nombreRol").textContent =
-        this.dataset.name;
-console.log("ANTES AXIOS");
-    axios.get(`/roles/${roleId}/usuarios`).then((response) => {
+                    listaUsuarios.innerHTML = "";
 
-            const listaUsuarios =
-        document.getElementById("listaUsuarios");
+                    const asignados = response.data.asignados;
 
-    listaUsuarios.innerHTML = "";
+                    response.data.usuarios.forEach((usuario) => {
+                        const checked = asignados.includes(usuario.id)
+                            ? "checked"
+                            : "";
 
-   const asignados = response.data.asignados;
+                        listaUsuarios.innerHTML += `<div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" value="${usuario.id}" name="usuarios[]" id="usuario_${usuario.id}"${checked}>
+                        <label class="form-check-label" for="usuario_${usuario.id}"><strong>${usuario.username}</strong>- ${usuario.name} </label></div>`;
+                    });
+                })
+                .catch((error) => {
+                    console.error("ERROR AXIOS:");
+                    console.error(error);
+                });
 
-response.data.usuarios.forEach((usuario) => {
+            modalUsuarios.show();
+        });
+    });
+}
 
-    const checked =
-        asignados.includes(usuario.id)
-            ? "checked"
-            : "";
+/*
+|--------------------------------------------------------------------------
+| Modal Permisos
+|--------------------------------------------------------------------------
+*/
 
-    listaUsuarios.innerHTML += `
+const modalPermisosElement = document.getElementById("modalPermisosRol");
+
+if (modalPermisosElement) {
+    const modalPermisos =
+        bootstrap.Modal.getOrCreateInstance(modalPermisosElement);
+
+    document.querySelectorAll(".btnPermisosRol").forEach((btn) => {
+        btn.addEventListener("click", function () {
+            const roleId = this.dataset.id;
+
+            document.getElementById("nombreRolPermiso").textContent =
+                this.dataset.name;
+
+            document.getElementById("formPermisosRol").action =
+                `/roles/${roleId}/permisos`;
+
+            axios
+                .get(`/roles/${roleId}/permisos`)
+                .then((response) => {
+                    const listaPermisos =
+                        document.getElementById("listaPermisos");
+
+                    listaPermisos.innerHTML = "";
+
+                    const asignados = response.data.asignados;
+
+                    response.data.permisos.forEach((permiso) => {
+                        const checked = asignados.includes(permiso.id)
+                            ? "checked"
+                            : "";
+
+                        listaPermisos.innerHTML += `
         <div class="form-check mb-2">
 
             <input
                 class="form-check-input"
                 type="checkbox"
-                value="${usuario.id}"
-                name="usuarios[]"
-                id="usuario_${usuario.id}"
+                value="${permiso.name}"
+                name="permisos[]"
+                id="permiso_${permiso.id}"
                 ${checked}>
 
             <label
                 class="form-check-label"
-                for="usuario_${usuario.id}">
+                for="permiso_${permiso.id}">
 
-                <strong>${usuario.username}</strong>
-                - ${usuario.name}
+                ${permiso.name}
 
             </label>
 
         </div>
     `;
+                    });
+                })
+                .catch((error) => {
+                    console.error(error);
+                });
 
-});
-
-
-        })
-        .catch((error) => {
-
-            console.error("ERROR AXIOS:");
-            console.error(error);
-
+            modalPermisos.show();
         });
-        console.log("despues AXIOS");
-
-    modalUsuarios.show();
-
-});
-
-  
-
-        });
-
+    });
 }
