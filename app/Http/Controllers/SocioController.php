@@ -8,6 +8,16 @@ use App\Models\Fuerza;
 use App\Models\Arma;
 use App\Models\Escalafon;
 use App\Models\Diplomado;
+use App\Models\Dominio;
+use App\Models\ResolucionesJuridica;
+use App\Http\Requests\StoreSocioRequest;
+
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+
+use App\Models\Socio;
+use App\Models\Residencia;
+use App\Models\SocioInstitucion;
 
 class SocioController extends Controller
 {
@@ -30,14 +40,139 @@ class SocioController extends Controller
             'armas' => Arma::orderBy('descripcion_arma')->get(),
             'escalafones' => Escalafon::orderBy('descripcion')->get(),
             'diplomados' => Diplomado::orderBy('descripcion')->get(),
+
+            'departamentos' => Dominio::where('dominio','DEPARTAMENTOS')->orderBy('Descripcion')->get(),
+            'sexos' => Dominio::where('dominio','SEXO')->orderBy('Descripcion')->get(),
+            'estadosCiviles' => Dominio::where('dominio','ECIVIL')->orderBy('Descripcion')->get(),
+            'meses' => Dominio::where('dominio','MESES')->orderBy('id')->get(),
+            'juridicas' => Dominio::where('dominio','JURIDICA')->orderBy('Descripcion')->get(),
+            'resoluciones' => ResolucionesJuridica::where('tipo', 59) ->where('estado', 'AC')->orderByDesc('gestion')->orderByDesc('num')->get(),
         ]);
     }
         /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+   public function store(StoreSocioRequest $request)
     {
-        //
+        dd($request->all());
+        /*
+        DB::transaction(function () use ($request) {
+
+            $foto = null;
+
+            if ($request->hasFile('foto')) {
+
+                $foto = time() . '_' .
+                        $request->file('foto')->getClientOriginalName();
+
+                $request->file('foto')
+                    ->storeAs(
+                        'socios',
+                        $foto,
+                        'public'
+                    );
+            }
+
+            $socio = Socio::create([
+
+                'nombres' => strtoupper($request->nombres),
+                'paterno' => strtoupper($request->paterno),
+                'materno' => strtoupper($request->materno),
+
+                'nro_doc' => $request->nro_doc,
+                'expedido' => $request->expedido,
+
+                'sexo' => $request->sexo,
+                'fecha_nac' => $request->fecha_nac,
+                'estado_civil' => $request->estado_civil,
+
+                'foto' => $foto,
+
+                'estado' => 'AC',
+
+                'num_correlativo' => 0,
+
+                'estado_kardex' => 'AC',
+
+                'mindef' => 'NO',
+
+                'es_revinculacion' => 0,
+                'cantidad_revinculaciones' => 0,
+
+                'vinculacion_actual' => 1,
+            ]);
+
+            Residencia::create([
+
+                'id_socio' => $socio->id,
+
+                'departamento' => $request->departamento,
+                'ciudad' => $request->ciudad,
+
+                'radicatoria' => $request->radicatoria,
+
+                'zona' => $request->zona,
+                'calle' => $request->calle,
+
+                'nro' => $request->nro,
+
+                'telefono' => $request->telefono,
+
+                'correo' => $request->correo,
+
+                'formularioSolicitud' => $request->solicitud,
+
+                'afiliacionAfcoop' =>
+                    $request->boolean('afiliacion_afcoop')
+                        ? 'CA'
+                        : null,
+
+                'fotocopiaCarnet' =>
+                    $request->boolean('fotocopia_ci')
+                        ? 'FC'
+                        : null,
+
+                'resolucion' => $request->resolucion,
+
+                'estado' => 'AC',
+            ]);
+
+            SocioInstitucion::create([
+
+                'id_socio' => $socio->id,
+
+                'papeleta' => $request->papeleta,
+                'carnet_mil' => $request->carnet_mil,
+                'cossmil' => $request->cossmil,
+
+                'afil_mes' => $request->afil_mes,
+                'afil_anio' => $request->afil_anio,
+
+                'anio_prom' => $request->anio_prom,
+
+                'id_escalafon' => $request->id_escalafon,
+                'id_fuerza' => $request->id_fuerza,
+                'id_arma' => $request->id_arma,
+                'id_grado' => $request->id_grado,
+                'id_diplomado' => $request->id_diplomado,
+
+                'salario' => $request->salario,
+
+                'estado' => 'AC',
+
+                'devolAportes' => '',
+                'devolCapitalizacion' => '',
+            ]);
+
+        });
+
+        return redirect()
+            ->route('socios.index')
+            ->with(
+                'success',
+                'Socio registrado correctamente.'
+            );
+            */
     }
 
     /**
