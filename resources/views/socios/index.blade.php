@@ -40,15 +40,47 @@
                         </th>
                     </tr>
                 </thead>
-                <tbody>
-                    {{-- Temporal hasta conectar BD --}}
+               <tbody>
+                    @forelse($socios as $socio)
                     <tr>
-                        <td colspan="6" class="text-center text-muted">
-                            No existen registros
+                        <td><span class="fw-bold text-primary">{{ $socio->institucion?->papeleta }}</span></td>
+                        <td>{{ $socio->institucion?->grado?->grado }}</td>
+                        <td>
+                            {{ $socio->paterno }}
+                            {{ $socio->materno }}
+                            {{ $socio->nombres }}
+                        </td>
+                        <td>
+                            {{ $socio->nro_doc }}
+                            {{ $socio->expedido }}
+                        </td>
+                        <td>
+                            @if($socio->estado == 'AC')
+                                <span class="badge bg-success">ACTIVO</span>
+                            @elseif($socio->estado == 'BA')
+                                <span class="badge bg-danger">BAJA</span>
+                            @elseif($socio->estado == 'SU')
+                                <span class="badge bg-warning text-dark">SUSPENDIDO</span>
+                            @else
+                                <span class="badge bg-secondary">{{ $socio->estado }}</span>
+                            @endif
+                        </td>
+                        <td>
+                            <a href="{{ route('socios.edit', $socio->id) }}"
+                            class="btn btn-warning btn-sm"
+                            title="Editar"><i class="fas fa-edit"></i></a>
                         </td>
                     </tr>
-                </tbody>
+                    @empty
+                    <tr>
+                        <td colspan="6" class="text-center">No existen registros</td>
+                    </tr>
+                    @endforelse
+                    </tbody>
             </table>
+            <div class="mt-3">
+                {{ $socios->links() }}
+            </div>
         </div>
     </div>
 </x-app-layout>

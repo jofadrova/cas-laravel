@@ -33,25 +33,25 @@
                         <div class="row g-3">
                             <div class="col-md-4">
                                 <label class="form-label">Nombres</label>
-                                <input type="text" class="form-control" name="nombres" value="{{ old('nombres') }}">
+                                <input type="text" class="form-control letters-only" name="nombres" maxlength="35" value="{{ old('nombres') }}">
                                 @error('nombres')<small class="text-danger">{{ $message }}</small>@enderror
                             </div>
 
                             <div class="col-md-4">
                                 <label class="form-label">Paterno</label>
-                                <input type="text" class="form-control" name="paterno" value="{{ old('paterno') }}">
+                                <input type="text" class="form-control letters-only" name="paterno" maxlength="35" value="{{ old('paterno') }}">
                                 @error('paterno')<small class="text-danger">{{ $message }}</small>@enderror
                             </div>
 
                             <div class="col-md-4">
                                 <label class="form-label">Materno</label>
-                                <input type="text" class="form-control" name="materno" value="{{ old('materno') }}">
+                                <input type="text" class="form-control letters-only"  name="materno" maxlength="35" value="{{ old('materno') }}">
                                 @error('materno')<small class="text-danger">{{ $message }}</small>@enderror
                             </div>
 
                             <div class="col-md-4">
                                 <label class="form-label">CI</label>
-                                <input type="text" class="form-control" name="nro_doc" value="{{ old('nro_doc') }}">
+                                <input type="text" class="form-control numbers-only" name="nro_doc" maxlength="15" value="{{ old('nro_doc') }}">
                                 @error('nro_doc')<small class="text-danger">{{ $message }}</small>@enderror
                             </div>
 
@@ -115,17 +115,17 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Papeleta</label>
-                                <input type="text" class="form-control" name="papeleta" value="{{ old('papeleta') }}">
+                                <input type="text" class="form-control numbers-only" maxlength="8" name="papeleta" value="{{ old('papeleta') }}">
                                 @error('papeleta')<small class="text-danger">{{ $message }}</small>@enderror
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Carnet Militar</label>
-                                <input type="text" class="form-control" name="carnet_mil" value="{{ old('carnet_mil') }}">
+                                <input type="text" class="form-control numbers-only" maxlength="15" name="carnet_mil" value="{{ old('carnet_mil') }}">
                                 @error('carnet_mil')<small class="text-danger">{{ $message }}</small>@enderror
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">COSSMIL</label>
-                                <input type="text" class="form-control" name="cossmil" value="{{ old('cossmil') }}">
+                                <input type="text" class="form-control numbers-only" maxlength="15" name="cossmil" value="{{ old('cossmil') }}">
                                 @error('cossmil')<small class="text-danger">{{ $message }}</small>@enderror
                             </div>
                             {{-- AFILIACION --}}
@@ -134,7 +134,7 @@
                                 <select class="form-select"name="afil_mes">
                                     <option value="">- Seleccione -</option>
                                         @foreach($meses as $item)
-                                            <option value="{{ $item->abrev }}">{{ $item->Descripcion }}</option>
+                                            <option value="{{ $item->abrev }}" {{ old('afil_mes') == $item->abrev ? 'selected' : '' }}>{{ $item->Descripcion }}</option>
                                         @endforeach
                                 </select>
                                 @error('afil_mes')<small class="text-danger">{{ $message }}</small>@enderror
@@ -217,7 +217,7 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Salario</label>
-                                <input type="number" step="0.01" class="form-control" name="salario" value="{{ old('salario') }}">
+                                <input type="number" max="99999.99" step="0.01" class="form-control" name="salario" value="{{ old('salario') }}">
                                 @error('salario')<small class="text-danger">{{ $message }}</small>@enderror
                             </div>
                         </div>
@@ -239,57 +239,50 @@
                             </div>
 
                             <div class="col-md-4">
-                                <label class="form-label">Ciudad</label>
-                                <input type="text" class="form-control" name="ciudad" value="{{ old('ciudad') }}">
+                                <label class="form-label">Radicatoria</label>
+                                <input type="text" class="form-control alphanumeric-only" maxlength="50" name="ciudad" value="{{ old('ciudad') }}">
                                 @error('ciudad')<small class="text-danger">{{ $message }}</small>@enderror
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">Radicatoria</label>
-                                <input type="text" class="form-control" name="radicatoria" value="{{ old('radicatoria') }}">
-                                @error('radicatoria')<small class="text-danger">{{ $message }}</small>@enderror
-                            </div>
-                            <div class="col-md-4">
                                 <label class="form-label">Zona</label>
-                                <input type="text" class="form-control" name="zona" value="{{ old('zona') }}">
+                                <input type="text" class="form-control alphanumeric-only" maxlength="50" name="zona" value="{{ old('zona') }}">
                                 @error('zona')<small class="text-danger">{{ $message }}</small>@enderror
                             </div>
 
                             <div class="col-md-6">
                                 <label class="form-label">Calle</label>
-                                <input type="text" class="form-control" name="calle" value="{{ old('calle') }}">
+                                <input type="text" class="form-control alphanumeric-only" maxlength="50" name="calle" value="{{ old('calle') }}">
                                 @error('calle')<small class="text-danger">{{ $message }}</small>@enderror
                             </div>
 
                             <div class="col-md-2">
                                 <label class="form-label">Nro</label>
-                                <input type="text" class="form-control" name="nro" value="{{ old('nro') }}">
+                                <input type="text" class="form-control numbers-only" maxlength="5" name="nro" value="{{ old('nro') }}">
                                 @error('nro')<small class="text-danger">{{ $message }}</small>@enderror
                             </div>
 
                             <div class="col-md-4">
                                 <label class="form-label">Teléfono</label>
-                                <input type="text" class="form-control" name="telefono" value="{{ old('telefono') }}">
+                                <input type="text" class="form-control numbers-only" maxlength="8" name="telefono" value="{{ old('telefono') }}">
                                 @error('telefono')<small class="text-danger">{{ $message }}</small>@enderror
                             </div>
 
                             <div class="col-md-6">
                                 <label class="form-label">Correo</label>
-                                <input type="email" class="form-control" name="correo" value="{{ old('correo') }}">
+                                <input type="email" class="form-control" maxlength="100" name="correo" value="{{ old('correo') }}">
                                 @error('correo')<small class="text-danger">{{ $message }}</small>@enderror
                             </div>
-                            <div class="row g-3">
-                                <div class="col-md-4">
-                                    <label class="form-label">Resolución Inc. AFCOOP</label>
-                                    <select class="form-select" name="resolucion">
-                                        <option value="">- Seleccione -</option>
-                                            @foreach($resoluciones as $item)
-                                                <option value="{{ $item->id }}" {{ old('resolucion') == $item->id ? 'selected' : '' }}>
-                                                    {{ $item->num }}/{{ $item->gestion }}
-                                                </option>
-                                            @endforeach
-                                    </select>
-                                    @error('resolucion')<small class="text-danger">{{ $message }}</small>@enderror
-                                </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Resolución Inc. AFCOOP</label>
+                                <select class="form-select" name="resolucion">
+                                    <option value="">- Seleccione -</option>
+                                        @foreach($resoluciones as $item)
+                                            <option value="{{ $item->id }}" {{ old('resolucion') == $item->id ? 'selected' : '' }}>
+                                                {{ $item->num }}/{{ $item->gestion }}
+                                            </option>
+                                        @endforeach
+                                </select>
+                                @error('resolucion')<small class="text-danger">{{ $message }}</small>@enderror
                             </div>
                         </div>
                     </div>
@@ -348,5 +341,73 @@
             }
             reader.readAsDataURL(event.target.files[0]);
         }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.letters-only').forEach(function (input) {
+                input.addEventListener('keydown', function (event) {
+                    const allowedKeys = [
+                        'Backspace', 'Tab', 'Enter', 'Escape', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
+                        'Home', 'End', 'Delete', 'Shift', 'Control', 'Alt', 'Meta'
+                    ];
+
+                    if (allowedKeys.includes(event.key)) {
+                        return;
+                    }
+
+                    const letterRegex = /^[A-Za-z\s]$/;
+                    if (!letterRegex.test(event.key)) {
+                        event.preventDefault();
+                    }
+                });
+
+                input.addEventListener('input', function () {
+                    this.value = this.value.replace(/[^A-Za-z\s]/g, '');
+                });
+            });
+
+            document.querySelectorAll('.numbers-only').forEach(function (input) {
+                input.addEventListener('keydown', function (event) {
+                    const allowedKeys = [
+                        'Backspace', 'Tab', 'Enter', 'Escape', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
+                        'Home', 'End', 'Delete', 'Shift', 'Control', 'Alt', 'Meta'
+                    ];
+
+                    if (allowedKeys.includes(event.key)) {
+                        return;
+                    }
+
+                    const numberRegex = /^[0-9]$/;
+                    if (!numberRegex.test(event.key)) {
+                        event.preventDefault();
+                    }
+                });
+
+                input.addEventListener('input', function () {
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                });
+            });
+
+            document.querySelectorAll('.alphanumeric-only').forEach(function (input) {
+                input.addEventListener('keydown', function (event) {
+                    const allowedKeys = [
+                        'Backspace', 'Tab', 'Enter', 'Escape', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
+                        'Home', 'End', 'Delete', 'Shift', 'Control', 'Alt', 'Meta'
+                    ];
+
+                    if (allowedKeys.includes(event.key)) {
+                        return;
+                    }
+
+                    const alphanumericRegex = /^[A-Za-z0-9\s]$/;
+                    if (!alphanumericRegex.test(event.key)) {
+                        event.preventDefault();
+                    }
+                });
+
+                input.addEventListener('input', function () {
+                    this.value = this.value.replace(/[^A-Za-z0-9\s]/g, '');
+                });
+            });
+        });
     </script>
 </x-app-layout>

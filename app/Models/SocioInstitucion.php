@@ -30,11 +30,12 @@ class SocioInstitucion extends Model
 
     public function socio()
     {
-        return $this->belongsTo(
-            Socio::class,
-            'id_socio',
-            'id'
-        );
+        return $this->belongsTo(Socio::class,'id_socio','id');
+    }
+
+    public function grado()
+    {
+        return $this->belongsTo(Grado::class,'id_grado','id_grado');
     }
 
 

@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\Socio;
 use App\Models\Residencia;
 use App\Models\SocioInstitucion;
+use App\Models\ContaSubcuenta;
 
 class SocioController extends Controller
 {
@@ -26,9 +27,15 @@ class SocioController extends Controller
      */
     public function index()
     {
-        return view('socios.index');
-    }
+        $socios = Socio::with([
+            'institucion',
+            'institucion.grado'
+        ])
+        ->orderByDesc('id')
+        ->paginate(15);
 
+        return view('socios.index', compact('socios'));
+    }
     /**
      * Show the form for creating a new resource.
      */
@@ -123,12 +130,12 @@ class SocioController extends Controller
                 'afiliacionAfcoop' =>
                     $request->boolean('afiliacion_afcoop')
                         ? 'CA'
-                        : null,
+                        : 'NO',
 
                 'fotocopiaCarnet' =>
                     $request->boolean('fotocopia_ci')
                         ? 'FC'
-                        : null,
+                        : 'NO',
 
                 'resolucion' => $request->resolucion,
 
@@ -160,6 +167,25 @@ class SocioController extends Controller
 
                 'devolAportes' => '',
                 'devolCapitalizacion' => '',
+            ]);
+
+            ContaSubcuenta::create([
+
+                'codigo' => $request->papeleta,
+
+                'descripcion' =>
+                    trim(
+                        $request->paterno . ' ' .
+                        $request->materno . ' ' .
+                        $request->nombres
+                    ),
+
+                'cod_tipo' => 'SOCIO',
+
+                'estado' => 'AC',
+
+                'id_socio' => $socio->id,
+
             ]);
 
         });
