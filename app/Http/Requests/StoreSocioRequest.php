@@ -69,7 +69,7 @@ class StoreSocioRequest extends FormRequest
             // FOTO
             'foto'          => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'es_asociado'       => 'required|in:SI,NO',
-            'solicitud'         => 'required|in:001AB,006,OBS',
+            'solicitud'         => 'required|in:FA,FI,OB',
             'afiliacion_afcoop' => 'nullable|boolean',
             'fotocopia_ci'      => 'nullable|boolean',
         ];

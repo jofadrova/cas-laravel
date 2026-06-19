@@ -54,8 +54,6 @@ class SocioController extends Controller
      */
    public function store(StoreSocioRequest $request)
     {
-        dd($request->all());
-        /*
         DB::transaction(function () use ($request) {
 
             $foto = null;
@@ -172,7 +170,6 @@ class SocioController extends Controller
                 'success',
                 'Socio registrado correctamente.'
             );
-            */
     }
 
     /**
