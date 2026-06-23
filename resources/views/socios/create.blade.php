@@ -3,7 +3,7 @@
     <div class="card shadow-sm">
         <div class="card-header bg-success text-white">
             <h5 class="mb-0">
-                <i class="bi bi-person-plus-fill me-2"></i>
+                <i class="fas fa-user-plus"></i>
                 Registro de Nuevo Socio
             </h5>
         </div>
@@ -104,15 +104,6 @@
                     {{-- DATOS INSTITUCIONALES --}}
                     <div class="tab-pane fade" id="institucionales">
                         <div class="row g-3">
-                            <div class="col-md-4">
-                                <label class="form-label">Es Asociado(a)</label>
-                                <select class="form-select"name="es_asociado">
-                                    <option value="">- Seleccione -</option>
-                                    <option value="SI" {{ old('es_asociado') == 'SI' ? 'selected' : '' }}>SI</option>
-                                    <option value="NO" {{ old('es_asociado') == 'NO' ? 'selected' : '' }}>NO</option>
-                                </select>
-                                @error('es_asociado')<small class="text-danger">{{ $message }}</small>@enderror
-                            </div>
                             <div class="col-md-4">
                                 <label class="form-label">Papeleta</label>
                                 <input type="text" class="form-control numbers-only" maxlength="8" name="papeleta" value="{{ old('papeleta') }}">

@@ -19,20 +19,67 @@ use App\Models\Socio;
 use App\Models\Residencia;
 use App\Models\SocioInstitucion;
 use App\Models\ContaSubcuenta;
+use App\Http\Requests\UpdateSocioRequest;
 
 class SocioController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $socios = Socio::with([
-            'institucion',
+        $query = Socio::with([
             'institucion.grado'
-        ])
-        ->orderByDesc('id')
-        ->paginate(15);
+        ]);
+
+        if ($request->filled('estado')) {
+            $query->where('estado', $request->estado);
+        }
+        if ($request->filled('valor')) {
+
+            switch ($request->buscar_por) {
+                case 'papeleta':
+                    $query->whereHas('institucion', function ($q) use ($request) {
+                        $q->where('papeleta','like','%' . $request->valor . '%');
+                    });
+
+                    break;
+
+                case 'ci':
+                    $query->where('nro_doc','like','%' . $request->valor . '%');
+                    break;
+                case 'apellido':
+                    $query->where(function ($q) use ($request) {
+                        $q->where('paterno','like','%' . $request->valor . '%')
+                        ->orWhere('materno','like','%' . $request->valor . '%');
+                    });
+                    break;
+                case 'nombre':
+                    $query->where('nombres','like','%' . $request->valor . '%');
+                    break;
+            }
+        }
+
+        $sort = $request->input('sort', 'paterno');
+        $direction = $request->input('direction', 'asc');
+
+        $allowedSorts = [
+            'paterno',
+            'nro_doc',
+            'estado'
+        ];
+
+        if (!in_array($sort, $allowedSorts)) {
+            $sort = 'paterno';
+        }
+
+
+        $perPage = $request->per_page ?? 10;
+
+        $socios = $query
+            ->orderBy($sort, $direction)
+            ->paginate($perPage)
+            ->withQueryString();
 
         return view('socios.index', compact('socios'));
     }
@@ -70,12 +117,7 @@ class SocioController extends Controller
                 $foto = time() . '_' .
                         $request->file('foto')->getClientOriginalName();
 
-                $request->file('foto')
-                    ->storeAs(
-                        'socios',
-                        $foto,
-                        'public'
-                    );
+                $request->file('foto')->storeAs('socios',$foto,'public');
             }
 
             $socio = Socio::create([
@@ -192,34 +234,153 @@ class SocioController extends Controller
 
         return redirect()
             ->route('socios.index')
-            ->with(
-                'success',
-                'Socio registrado correctamente.'
-            );
+            ->with('success','Socio registrado correctamente.');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show($id)
     {
-        //
+        $socio = Socio::with(['institucion.grado','residencia'])->findOrFail($id);
+
+        return view('socios.show', compact('socio'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+   public function edit($id)
     {
-        //
+        $socio = Socio::with(['institucion','residencia'])->findOrFail($id);
+
+        $departamentos = Dominio::where('dominio', 'DEPARTAMENTOS')->get();
+        $sexos = Dominio::where('dominio', 'SEXO')->get();
+        $estadosCiviles = Dominio::where('dominio', 'ECIVIL')->get();
+        $meses = Dominio::where('dominio', 'MESES')->orderBy('id')->get();
+
+        $grados = Grado::orderBy('grado')->get();
+        $fuerzas = Fuerza::orderBy('fuerza')->get();
+        $armas = Arma::orderBy('descripcion_arma')->get();
+        $escalafones = Escalafon::orderBy('descripcion')->get();
+        $diplomados = Diplomado::orderBy('descripcion')->get();
+
+        $resoluciones = ResolucionesJuridica::where('estado', 'AC')->get();
+
+        return view('socios.edit', compact(
+            'socio',
+            'departamentos',
+            'sexos',
+            'estadosCiviles',
+            'meses',
+            'grados',
+            'fuerzas',
+            'armas',
+            'escalafones',
+            'diplomados',
+            'resoluciones'
+        ));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(UpdateSocioRequest $request, Socio $socio)
     {
-        //
+        DB::transaction(function () use ($request, $socio) {
+
+            $foto = $socio->foto;
+
+            if ($request->hasFile('foto')) {
+                if ($socio->foto && Storage::disk('public')->exists('socios/' . $socio->foto)) {
+                    Storage::disk('public')->delete('socios/' . $socio->foto);
+                }
+                $foto = time() . '_' . $request->file('foto')->getClientOriginalName();
+                $request->file('foto')->storeAs('socios', $foto, 'public');
+
+                $socio->foto = $foto;
+            }
+            $socio->save();
+
+            $socio->update([
+
+                'nombres' => strtoupper($request->nombres),
+                'paterno' => strtoupper($request->paterno),
+                'materno' => strtoupper($request->materno),
+
+                'nro_doc' => $request->nro_doc,
+                'expedido' => $request->expedido,
+
+                'sexo' => $request->sexo,
+                'fecha_nac' => $request->fecha_nac,
+                'estado_civil' => $request->estado_civil,
+
+                'foto' => $foto,
+            ]);
+
+            $socio->residencia()->update([
+
+                'id_socio' => $socio->id,
+                'departamento' => $request->departamento,
+                'ciudad' => $request->ciudad,
+                'zona' => $request->zona,
+                'calle' => $request->calle,
+                'nro' => $request->nro,
+                'telefono' => $request->telefono,
+                'correo' => $request->correo,
+                'formularioSolicitud' => $request->solicitud,
+                'afiliacionAfcoop' =>
+                    $request->boolean('afiliacion_afcoop')
+                        ? 'CA'
+                        : 'NO',
+                'fotocopiaCarnet' =>
+                    $request->boolean('fotocopia_ci')
+                        ? 'FC'
+                        : 'NO',
+                'resolucion' => $request->resolucion,
+            ]);
+
+            $socio->institucion()->update([
+
+                 'id_socio' => $socio->id,
+
+                'papeleta' => $request->papeleta,
+                'carnet_mil' => $request->carnet_mil,
+                'cossmil' => $request->cossmil,
+
+                'afil_mes' => $request->afil_mes,
+                'afil_anio' => $request->afil_anio,
+
+                'anio_prom' => $request->anio_prom,
+
+                'id_escalafon' => $request->id_escalafon,
+                'id_fuerza' => $request->id_fuerza,
+                'id_arma' => $request->id_arma,
+                'id_grado' => $request->id_grado,
+                'id_diplomado' => $request->id_diplomado,
+
+                'salario' => $request->salario,
+
+                'estado' => 'AC',
+
+                'devolAportes' => '',
+                'devolCapitalizacion' => '',
+            ]);
+
+            $subcuenta = ContaSubcuenta::where('id_socio', $socio->id)->first();
+            if ($subcuenta) {
+                $subcuenta->descripcion = trim(
+                    $request->paterno . ' ' .
+                    $request->materno . ' ' .
+                    $request->nombres
+                );
+                $subcuenta->codigo = $request->papeleta;
+                $subcuenta->save();
+            }
+        });
+        return redirect()
+            ->route('socios.index')
+            ->with('success', 'Socio actualizado correctamente.');
     }
 
     /**

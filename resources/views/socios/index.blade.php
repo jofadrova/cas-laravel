@@ -16,25 +16,195 @@
     @endif
 
     <div class="card shadow-sm">
-
         <div class="card-header d-flex justify-content-between">
-            <h5 class="mb-0">
-                Gestión de Socios
-            </h5>
+            <h5 class="mb-0">Gestión de Socios</h5>
             <a href="{{ route('socios.create') }}"
                class="btn btn-success">
                 <i class="bi bi-plus-circle me-1"></i>Nuevo Socio
             </a>
         </div>
+        <div class="card-body border-bottom bg-light">
+
+            <form method="GET" action="{{ route('socios.index') }}">
+
+                <div class="row g-3">
+
+                    <div class="col-md-3">
+                        <label class="form-label">Buscar por</label>
+                        <select name="buscar_por" class="form-select">
+                            <option value="papeleta"
+                                {{ request('buscar_por') == 'papeleta' ? 'selected' : '' }}>
+                                Nro Papeleta
+                            </option>
+
+                            <option value="ci"
+                                {{ request('buscar_por') == 'ci' ? 'selected' : '' }}>
+                                CI
+                            </option>
+
+                            <option value="apellido"
+                                {{ request('buscar_por') == 'apellido' ? 'selected' : '' }}>
+                                Apellido
+                            </option>
+
+                            <option value="nombre"
+                                {{ request('buscar_por') == 'nombre' ? 'selected' : '' }}>
+                                Nombre
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Valor</label>
+                        <input type="text"
+                            name="valor"
+                            class="form-control"
+                            value="{{ request('valor') }}">
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label">Estado</label>
+                        <select name="estado" class="form-select">
+                            <option value="">Todos</option>
+
+                            <option value="AC"
+                                {{ request('estado') == 'AC' ? 'selected' : '' }}>
+                                Activos
+                            </option>
+
+                            <option value="BA"
+                                {{ request('estado') == 'BA' ? 'selected' : '' }}>
+                                Baja
+                            </option>
+
+                            <option value="SU"
+                                {{ request('estado') == 'SU' ? 'selected' : '' }}>
+                                Suspendidos
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label">Registros</label>
+                        <select name="per_page" class="form-select">
+                            <option value="10" {{ request('per_page',10)==10 ? 'selected':'' }}>10</option>
+                            <option value="25" {{ request('per_page')==25 ? 'selected':'' }}>25</option>
+                            <option value="50" {{ request('per_page')==50 ? 'selected':'' }}>50</option>
+                            <option value="100" {{ request('per_page')==100 ? 'selected':'' }}>100</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit"
+                                class="btn btn-primary w-100">
+                            <i class="fas fa-search me-1"></i>
+                            Buscar
+                        </button>
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
         <div class="card-body">
             <table class="table table-hover align-middle">
                 <thead class="table-light">
+                    @php
+                        $currentSort = request('sort');
+                        $currentDirection = request('direction', 'asc');
+                    @endphp
                     <tr>
-                        <th>Papeleta</th>
-                        <th>Grado</th>
-                        <th>Socio</th>
-                        <th>CI</th>
-                        <th>Estado</th>
+                        <th>
+                            <a href="{{ route('socios.index', array_merge(request()->query(), [
+                                'sort' => 'papeleta',
+                                'direction' => $currentSort == 'papeleta' && $currentDirection == 'asc'
+                                    ? 'desc'
+                                    : 'asc'
+                            ])) }}"
+                            class="text-dark text-decoration-none fw-bold">
+
+                                Papeleta
+
+                                @if($currentSort == 'papeleta')
+                                    <i class="fas fa-sort-{{ $currentDirection == 'asc' ? 'up' : 'down' }} ms-1"></i>
+                                @else
+                                    <i class="fas fa-sort text-muted ms-1"></i>
+                                @endif
+                            </a>
+                        </th>
+                        <th>
+                            <a href="{{ route('socios.index', array_merge(request()->query(), [
+                                'sort' => 'grado',
+                                'direction' => $currentSort == 'grado' && $currentDirection == 'asc'
+                                    ? 'desc'
+                                    : 'asc'
+                            ])) }}"
+                            class="text-dark text-decoration-none fw-bold">
+
+                                Grado
+
+                                @if($currentSort == 'grado')
+                                    <i class="fas fa-sort-{{ $currentDirection == 'asc' ? 'up' : 'down' }} ms-1"></i>
+                                @else
+                                    <i class="fas fa-sort text-muted ms-1"></i>
+                                @endif
+                            </a>
+                        </th>
+                        <th>
+                            <a href="{{ route('socios.index', array_merge(request()->query(), [
+                                'sort' => 'paterno',
+                                'direction' => $currentSort == 'paterno' && $currentDirection == 'asc'
+                                    ? 'desc'
+                                    : 'asc'
+                            ])) }}"
+                            class="text-dark text-decoration-none fw-bold">
+
+                                Socio
+
+                                @if($currentSort == 'paterno')
+                                    <i class="fas fa-sort-{{ $currentDirection == 'asc' ? 'up' : 'down' }} ms-1"></i>
+                                @else
+                                    <i class="fas fa-sort text-muted ms-1"></i>
+                                @endif
+                            </a>
+                        </th>
+                        <th>
+                            <a href="{{ route('socios.index', array_merge(request()->query(), [
+                                'sort' => 'nro_doc',
+                                'direction' => $currentSort == 'nro_doc' && $currentDirection == 'asc'
+                                    ? 'desc'
+                                    : 'asc'
+                            ])) }}"
+                            class="text-dark text-decoration-none fw-bold">
+
+                                CI
+
+                                @if($currentSort == 'nro_doc')
+                                    <i class="fas fa-sort-{{ $currentDirection == 'asc' ? 'up' : 'down' }} ms-1"></i>
+                                @else
+                                    <i class="fas fa-sort text-muted ms-1"></i>
+                                @endif
+                            </a>
+                        </th>
+                        <th>
+                            <a href="{{ route('socios.index', array_merge(request()->query(), [
+                                'sort' => 'estado',
+                                'direction' => $currentSort == 'estado' && $currentDirection == 'asc'
+                                    ? 'desc'
+                                    : 'asc'
+                            ])) }}"
+                            class="text-dark text-decoration-none fw-bold">
+
+                                Estado
+
+                                @if($currentSort == 'estado')
+                                    <i class="fas fa-sort-{{ $currentDirection == 'asc' ? 'up' : 'down' }} ms-1"></i>
+                                @else
+                                    <i class="fas fa-sort text-muted ms-1"></i>
+                                @endif
+                            </a>
+                        </th>
                         <th class="text-center">
                             Opciones
                         </th>
@@ -67,8 +237,10 @@
                         </td>
                         <td>
                             <a href="{{ route('socios.edit', $socio->id) }}"
-                            class="btn btn-warning btn-sm"
-                            title="Editar"><i class="fas fa-edit"></i></a>
+                            class="btn btn-warning btn-sm" title="Editar"><i class="fas fa-edit"></i></a>
+
+                            <a href="{{ route('socios.show', $socio->id) }}"
+                            class="btn btn-info btn-sm" title="Información del Socio"><i class="fas fa-eye"></i></a>
                         </td>
                     </tr>
                     @empty

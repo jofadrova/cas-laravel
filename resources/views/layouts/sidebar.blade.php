@@ -1,4 +1,4 @@
-<div class="bg-success text-white vh-100 p-3">
+<div class="bg-success text-white h-100 p-3" style="min-height:100vh;">
         <img src="{{ asset('images/cas_sidebar.png') }}" alt="CAS" class="d-block mx-auto mb-3" style="max-height: 120px;  filter: drop-shadow(0px 8px 16px rgba(0, 0, 0, 0.3));">
 
     <hr>
@@ -50,23 +50,24 @@
         @can('socios.ver')
         <li class="nav-item">
             <a href="{{ route('socios.index') }}"
-            class="nav-link text-white {{ request()->routeIs('socios.*') ? 'active-menu' : '' }}">
+            class="nav-link text-white
+            {{
+                request()->routeIs(
+                    'socios.index',
+                    'socios.create',
+                    'socios.store',
+                    'socios.show',
+                    'socios.edit',
+                    'socios.update'
+                )
+                ? 'active-menu'
+                : ''
+            }}">
                 <i class="bi bi-people me-2"></i>
                 Gestión de Socios
             </a>
         </li>
         @endcan
-
-        @can('socios.informacion')
-        <li class="nav-item">
-            <a href="{{ route('socios.informacion') }}"
-            class="nav-link text-white {{ request()->routeIs('socios.informacion') ? 'active-menu' : '' }}">
-                <i class="bi bi-person-vcard me-2"></i>
-                Información Socio
-            </a>
-        </li>
-        @endcan
-
         @can('socios.reportes')
         <li class="nav-item">
             <a href="{{ route('socios.reportes') }}"
