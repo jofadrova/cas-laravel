@@ -77,8 +77,10 @@
             </a>
         </li>
         @endcan
-        <li class="nav-header text-uppercase mt-3 mb-2">
-            PRÉSTAMOS
+        <li class="nav-item mt-3">
+            <h6 class="text-uppercase text-light mt-4 mb-3">
+                Prestamos
+            </h6>
         </li>
 
         <li class="nav-item">
