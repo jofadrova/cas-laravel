@@ -240,7 +240,32 @@
                             class="btn btn-warning btn-sm" title="Editar"><i class="fas fa-edit"></i></a>
 
                             <a href="{{ route('socios.show', $socio->id) }}"
-                            class="btn btn-info btn-sm" title="Información del Socio"><i class="fas fa-eye"></i></a>
+                            class="btn btn-info btn-sm" title="Información del Socio"><i class="fas fa-eye"></i></a>                       
+                            @if($socio->estado == 'AC')
+                            <button class="btn btn-sm btn-danger btnCambiarEstadoSocio"
+                                title="Dar de Baja"
+                                data-id="{{ $socio->id }}"
+                                data-socio="{{ $socio->paterno }} {{ $socio->materno }} {{ $socio->nombres }}"
+                                data-estado="BA">
+
+                                <i class="fas fa-user-slash"></i>
+
+                            </button>
+
+                        @else
+
+                            <button class="btn btn-sm btn-success btnCambiarEstadoSocio"
+                                title="Reactivar Asociado"
+                                data-id="{{ $socio->id }}"
+                                data-socio="{{ $socio->paterno }} {{ $socio->materno }} {{ $socio->nombres }}"
+                                data-estado="AC">
+
+                                <i class="fas fa-user-check"></i>
+
+                            </button>
+
+                        @endif
+                           
                         </td>
                     </tr>
                     @empty
@@ -256,3 +281,45 @@
         </div>
     </div>
 </x-app-layout>
+<div class="modal fade" id="modalEstadoSocio" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Confirmar Acción
+                </h5>
+            </div>
+
+            <div class="modal-body">
+                <p id="mensajeEstadoSocio"></p>
+            </div>
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    Cancelar
+                </button>
+
+                <form id="formEstadoSocio" method="POST">
+                    @csrf
+                    @method('PATCH')
+
+                    <input type="hidden"
+                           name="estado"
+                           id="nuevoEstadoSocio">
+
+                    <button type="submit"
+                            class="btn btn-danger">
+                        Confirmar
+                    </button>
+                </form>
+
+            </div>
+
+        </div>
+    </div>
+</div>

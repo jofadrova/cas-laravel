@@ -386,8 +386,44 @@ class SocioController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy($id)
     {
-        //
+        $socio = Socio::findOrFail($id);
+
+        $socio->estado = 'BA';
+
+        $socio->save();
+
+        return redirect()
+            ->route('socios.index')
+            ->with('success', 'Socio dado de baja correctamente.');
     }
+
+    public function reactivar($id)
+    {
+        $socio = Socio::findOrFail($id);
+
+        $socio->estado = 'AC';
+
+        $socio->save();
+
+        return back()
+            ->with('success', 'Socio reactivado correctamente.');
+    }
+
+    public function cambiarEstado(Request $request, Socio $socio)
+{
+    $socio->estado = $request->estado;
+
+    $socio->save();
+
+    return redirect()
+        ->route('socios.index')
+        ->with(
+            'success',
+            $request->estado == 'BA'
+                ? 'Asociado dado de baja correctamente.'
+                : 'Asociado reactivado correctamente.'
+        );
+}
 }

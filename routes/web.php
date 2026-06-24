@@ -48,6 +48,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('socios', SocioController::class)->middleware('permission:socios.ver');
     Route::get('/socios-informacion',[SocioInformacionController::class, 'index'])->name('socios.informacion')->middleware('permission:socios.informacion');
     Route::get('/socios-reportes',[SocioReporteController::class, 'index'])->name('socios.reportes')->middleware('permission:socios.reportes');
-});
+    Route::patch('/socios/{socio}/estado',[SocioController::class, 'cambiarEstado'])->name('socios.estado');
+
+    });
 
 require __DIR__.'/auth.php';
