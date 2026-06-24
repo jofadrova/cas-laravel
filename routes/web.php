@@ -9,13 +9,13 @@ use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\SocioController;
 use App\Http\Controllers\SocioInformacionController;
 use App\Http\Controllers\SocioReporteController;
+use App\Http\Controllers\PrestamoController;
+use App\Http\Controllers\TipoPrestamoController;
 
 
 Route::get('/', function () {
-
     if (Auth::check()) { return redirect('/dashboard');
     }
-
     return redirect('/login');
 });
 
@@ -49,6 +49,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/socios-informacion',[SocioInformacionController::class, 'index'])->name('socios.informacion')->middleware('permission:socios.informacion');
     Route::get('/socios-reportes',[SocioReporteController::class, 'index'])->name('socios.reportes')->middleware('permission:socios.reportes');
     Route::patch('/socios/{socio}/estado',[SocioController::class, 'cambiarEstado'])->name('socios.estado');
+    Route::get('/socios/{socio}/kardex',[SocioController::class, 'kardex'])->name('socios.kardex');
+    Route::get('/socios/{socio}/revincular',[SocioController::class,'revincular'])->name('socios.revincular');
+    /*
+    |--------------------------------------------------------------------------
+    | PRESTAMOS
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('prestamos')->name('prestamos.')->group(function() {
+        Route::get('/', [PrestamoController::class, 'index'])->name('index');
+        Route::get('/tipos', [TipoPrestamoController::class, 'index'])->name('tipos.index');
+        Route::get('/proyeccion', [PrestamoController::class, 'proyeccion'])->name('proyeccion');
+        Route::get('/depostios', [PrestamoController::class, 'depositos'])->name('depositos');
+    });
 
     });
 

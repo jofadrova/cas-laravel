@@ -38,5 +38,37 @@ class SocioInstitucion extends Model
         return $this->belongsTo(Grado::class,'id_grado','id_grado');
     }
 
+    public function escalafon()
+    {
+        return $this->belongsTo(
+            Escalafon::class,
+            'id_escalafon'
+        );
+    }
+
+    public function fuerza()
+    {
+        return $this->belongsTo(
+            Fuerza::class,
+            'id_fuerza'
+        );
+    }
+
+    public function arma()
+    {
+        return $this->belongsTo(
+            Arma::class,
+            'id_arma'
+        );
+    }
+
+    public function diplomado()
+    {
+        return $this->belongsTo(
+            Diplomado::class,
+            'id_diplomado'
+        );
+    }
+
 
 }

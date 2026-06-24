@@ -20,6 +20,8 @@ use App\Models\Residencia;
 use App\Models\SocioInstitucion;
 use App\Models\ContaSubcuenta;
 use App\Http\Requests\UpdateSocioRequest;
+use Barryvdh\DomPDF\Facade\Pdf;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class SocioController extends Controller
 {
@@ -412,18 +414,58 @@ class SocioController extends Controller
     }
 
     public function cambiarEstado(Request $request, Socio $socio)
-{
-    $socio->estado = $request->estado;
+    {
+        $socio->estado = $request->estado;
 
-    $socio->save();
+        $socio->save();
 
-    return redirect()
-        ->route('socios.index')
-        ->with(
-            'success',
-            $request->estado == 'BA'
-                ? 'Asociado dado de baja correctamente.'
-                : 'Asociado reactivado correctamente.'
+        return redirect()
+            ->route('socios.index')
+            ->with(
+                'success',
+                $request->estado == 'BA'
+                    ? 'Asociado dado de baja correctamente.'
+                    : 'Asociado reactivado correctamente.'
+            );
+    }
+
+    public function kardex(Socio $socio)
+    {
+        $socio->load([
+            'institucion.grado',
+            'institucion.escalafon',
+            'institucion.fuerza',
+            'institucion.arma',
+            'institucion.diplomado',
+            'residencia',
+        ]);
+
+         $contenidoQR = "SCAS
+        ID: {$socio->id}
+        PAPELETA: {$socio->institucion->papeleta}
+        CI: {$socio->nro_doc}
+        NOMBRE: {$socio->paterno} {$socio->materno} {$socio->nombres}
+        ESTADO: {$socio->estado}
+        ";
+        $qr = base64_encode(QrCode::format('svg')->size(200)->generate($contenidoQR));
+
+        $pdf = Pdf::loadView(
+            'socios.kardex',
+            compact('socio', 'qr')
         );
-}
+
+        $pdf->setPaper('letter');
+        $dompdf = $pdf->getDomPDF();
+        $dompdf->render();
+        $canvas = $dompdf->getCanvas();
+        $canvas->page_text(480,760,"Página {PAGE_NUM} de {PAGE_COUNT}",null,8);
+        return $pdf->stream(
+            'KARDEX_'.$socio->nro_doc.'.pdf'
+        );
+    }
+
+    public function revincular(Socio $socio)
+    {
+        return back()->with('info', 'funcionalidad en desarrollo');
+    }
 }

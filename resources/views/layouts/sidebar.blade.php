@@ -77,6 +77,40 @@
             </a>
         </li>
         @endcan
+        <li class="nav-header text-uppercase mt-3 mb-2">
+            PRÉSTAMOS
+        </li>
+
+        <li class="nav-item">
+            <a href="{{ route('prestamos.index') }}"
+            class="nav-link text-white">
+                <i class="bi bi-cash-coin me-2"></i>
+                Gestión de Préstamos
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a href="{{ route('prestamos.tipos.index') }}" class="nav-link text-white
+            {{ request()->routeIs('prestamos.tipos.*') ? 'active-menu' : '' }}">
+                <i class="bi bi-tags me-2"></i>
+                Tipo de Préstamos
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ route('prestamos.proyeccion') }}"
+            class="nav-link text-white">
+                <i class="bi bi-graph-up-arrow me-2"></i>
+                Proyección de Préstamos
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a href="{{ route('prestamos.depositos') }}"
+            class="nav-link text-white">
+                <i class="bi bi-piggy-bank me-2"></i>
+                Registro de Depósitos
+            </a>
+        </li>
 
     </ul>
 

@@ -14,7 +14,16 @@
             </button>
         </div>
     @endif
-
+     @if(session('info'))
+        <div class="alert alert-info alert-dismissible fade show">
+            <i class="fa-solid fa-circle-check me-2"></i>
+            {{ session('info') }}
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+        </div>
+    @endif
     <div class="card shadow-sm">
         <div class="card-header d-flex justify-content-between">
             <h5 class="mb-0">Gestión de Socios</h5>
@@ -24,11 +33,8 @@
             </a>
         </div>
         <div class="card-body border-bottom bg-light">
-
             <form method="GET" action="{{ route('socios.index') }}">
-
                 <div class="row g-3">
-
                     <div class="col-md-3">
                         <label class="form-label">Buscar por</label>
                         <select name="buscar_por" class="form-select">
@@ -36,7 +42,6 @@
                                 {{ request('buscar_por') == 'papeleta' ? 'selected' : '' }}>
                                 Nro Papeleta
                             </option>
-
                             <option value="ci"
                                 {{ request('buscar_por') == 'ci' ? 'selected' : '' }}>
                                 CI
@@ -240,32 +245,27 @@
                             class="btn btn-warning btn-sm" title="Editar"><i class="fas fa-edit"></i></a>
 
                             <a href="{{ route('socios.show', $socio->id) }}"
-                            class="btn btn-info btn-sm" title="Información del Socio"><i class="fas fa-eye"></i></a>                       
+                            class="btn btn-info btn-sm" title="Información del Socio"><i class="fas fa-eye"></i></a>
                             @if($socio->estado == 'AC')
-                            <button class="btn btn-sm btn-danger btnCambiarEstadoSocio"
-                                title="Dar de Baja"
-                                data-id="{{ $socio->id }}"
-                                data-socio="{{ $socio->paterno }} {{ $socio->materno }} {{ $socio->nombres }}"
-                                data-estado="BA">
-
-                                <i class="fas fa-user-slash"></i>
-
-                            </button>
-
-                        @else
-
-                            <button class="btn btn-sm btn-success btnCambiarEstadoSocio"
-                                title="Reactivar Asociado"
-                                data-id="{{ $socio->id }}"
-                                data-socio="{{ $socio->paterno }} {{ $socio->materno }} {{ $socio->nombres }}"
-                                data-estado="AC">
-
-                                <i class="fas fa-user-check"></i>
-
-                            </button>
-
-                        @endif
-                           
+                                <button class="btn btn-sm btn-danger btnCambiarEstadoSocio" title="Dar de Baja"
+                                    data-id="{{ $socio->id }}"
+                                    data-socio="{{ $socio->paterno }} {{ $socio->materno }} {{ $socio->nombres }}"
+                                    data-estado="BA">
+                                    <i class="fas fa-user-slash"></i>
+                                </button>
+                            @else
+                                <button class="btn btn-sm btn-success btnCambiarEstadoSocio" title="Reactivar Asociado"
+                                    data-id="{{ $socio->id }}"
+                                    data-socio="{{ $socio->paterno }} {{ $socio->materno }} {{ $socio->nombres }}"
+                                    data-estado="AC">
+                                    <i class="fas fa-user-check"></i>
+                                </button>
+                            @endif
+                            <a href="{{ route('socios.kardex', $socio->id) }}" class="btn btn-secondary btn-sm" title="Kardex" target="_blank"><i class="fas fa-file-pdf"></i></a>
+                            @if($socio->estado == 'BA')
+                                <a href="{{ route('socios.revincular', $socio->id) }}" class="btn btn-primary btn-sm"
+                                title="Revincular Asociado"><i class="fas fa-rotate-right"></i></a>
+                            @endif
                         </td>
                     </tr>
                     @empty

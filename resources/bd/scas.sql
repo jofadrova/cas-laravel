@@ -11,7 +11,7 @@
  Target Server Version : 120302
  File Encoding         : 65001
 
- Date: 19/06/2026 13:09:12
+ Date: 23/06/2026 16:46:38
 */
 
 SET NAMES utf8mb4;
@@ -70,7 +70,7 @@ CREATE TABLE `cache`  (
 -- ----------------------------
 -- Records of cache
 -- ----------------------------
-INSERT INTO `cache` VALUES ('laravel-cache-spatie.permission.cache', 'a:3:{s:5:\"alias\";a:4:{s:1:\"a\";s:2:\"id\";s:1:\"b\";s:4:\"name\";s:1:\"c\";s:10:\"guard_name\";s:1:\"r\";s:5:\"roles\";}s:11:\"permissions\";a:19:{i:0;a:4:{s:1:\"a\";i:1;s:1:\"b\";s:13:\"dashboard.ver\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:2:{i:0;i:1;i:1;i:3;}}i:1;a:4:{s:1:\"a\";i:2;s:1:\"b\";s:12:\"usuarios.ver\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:2:{i:0;i:1;i:1;i:3;}}i:2;a:4:{s:1:\"a\";i:3;s:1:\"b\";s:14:\"usuarios.crear\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:3;a:4:{s:1:\"a\";i:4;s:1:\"b\";s:15:\"usuarios.editar\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:4;a:4:{s:1:\"a\";i:5;s:1:\"b\";s:15:\"usuarios.estado\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:5;a:4:{s:1:\"a\";i:6;s:1:\"b\";s:17:\"usuarios.password\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:6;a:4:{s:1:\"a\";i:7;s:1:\"b\";s:9:\"roles.ver\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:7;a:4:{s:1:\"a\";i:8;s:1:\"b\";s:11:\"roles.crear\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:8;a:4:{s:1:\"a\";i:9;s:1:\"b\";s:12:\"roles.editar\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:9;a:4:{s:1:\"a\";i:10;s:1:\"b\";s:14:\"roles.usuarios\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:10;a:4:{s:1:\"a\";i:11;s:1:\"b\";s:12:\"permisos.ver\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:11;a:4:{s:1:\"a\";i:12;s:1:\"b\";s:16:\"permisos.asignar\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:12;a:4:{s:1:\"a\";i:13;s:1:\"b\";s:13:\"socios.editar\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:13;a:4:{s:1:\"a\";i:14;s:1:\"b\";s:10:\"socios.ver\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:14;a:4:{s:1:\"a\";i:15;s:1:\"b\";s:12:\"socios.crear\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:15;a:4:{s:1:\"a\";i:16;s:1:\"b\";s:15:\"socios.eliminar\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:16;a:4:{s:1:\"a\";i:17;s:1:\"b\";s:17:\"socios.revincular\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:17;a:4:{s:1:\"a\";i:18;s:1:\"b\";s:18:\"socios.informacion\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:18;a:4:{s:1:\"a\";i:19;s:1:\"b\";s:15:\"socios.reportes\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}}s:5:\"roles\";a:2:{i:0;a:3:{s:1:\"a\";i:1;s:1:\"b\";s:13:\"Administrador\";s:1:\"c\";s:3:\"web\";}i:1;a:3:{s:1:\"a\";i:3;s:1:\"b\";s:17:\"Operador-Sistemas\";s:1:\"c\";s:3:\"web\";}}}', 1781897858);
+INSERT INTO `cache` VALUES ('laravel-cache-spatie.permission.cache', 'a:3:{s:5:\"alias\";a:4:{s:1:\"a\";s:2:\"id\";s:1:\"b\";s:4:\"name\";s:1:\"c\";s:10:\"guard_name\";s:1:\"r\";s:5:\"roles\";}s:11:\"permissions\";a:19:{i:0;a:4:{s:1:\"a\";i:1;s:1:\"b\";s:13:\"dashboard.ver\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:2:{i:0;i:1;i:1;i:3;}}i:1;a:4:{s:1:\"a\";i:2;s:1:\"b\";s:12:\"usuarios.ver\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:2:{i:0;i:1;i:1;i:3;}}i:2;a:4:{s:1:\"a\";i:3;s:1:\"b\";s:14:\"usuarios.crear\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:3;a:4:{s:1:\"a\";i:4;s:1:\"b\";s:15:\"usuarios.editar\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:4;a:4:{s:1:\"a\";i:5;s:1:\"b\";s:15:\"usuarios.estado\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:5;a:4:{s:1:\"a\";i:6;s:1:\"b\";s:17:\"usuarios.password\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:6;a:4:{s:1:\"a\";i:7;s:1:\"b\";s:9:\"roles.ver\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:7;a:4:{s:1:\"a\";i:8;s:1:\"b\";s:11:\"roles.crear\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:8;a:4:{s:1:\"a\";i:9;s:1:\"b\";s:12:\"roles.editar\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:9;a:4:{s:1:\"a\";i:10;s:1:\"b\";s:14:\"roles.usuarios\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:10;a:4:{s:1:\"a\";i:11;s:1:\"b\";s:12:\"permisos.ver\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:11;a:4:{s:1:\"a\";i:12;s:1:\"b\";s:16:\"permisos.asignar\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:12;a:4:{s:1:\"a\";i:13;s:1:\"b\";s:13:\"socios.editar\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:13;a:4:{s:1:\"a\";i:14;s:1:\"b\";s:10:\"socios.ver\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:14;a:4:{s:1:\"a\";i:15;s:1:\"b\";s:12:\"socios.crear\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:15;a:4:{s:1:\"a\";i:16;s:1:\"b\";s:15:\"socios.eliminar\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:16;a:4:{s:1:\"a\";i:17;s:1:\"b\";s:17:\"socios.revincular\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:17;a:4:{s:1:\"a\";i:18;s:1:\"b\";s:18:\"socios.informacion\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:18;a:4:{s:1:\"a\";i:19;s:1:\"b\";s:15:\"socios.reportes\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}}s:5:\"roles\";a:2:{i:0;a:3:{s:1:\"a\";i:1;s:1:\"b\";s:13:\"Administrador\";s:1:\"c\";s:3:\"web\";}i:1;a:3:{s:1:\"a\";i:3;s:1:\"b\";s:17:\"Operador-Sistemas\";s:1:\"c\";s:3:\"web\";}}}', 1782307041);
 
 -- ----------------------------
 -- Table structure for cache_locks
@@ -104,13 +104,15 @@ CREATE TABLE `conta_subcuentas`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_codigo`(`codigo`) USING BTREE,
   INDEX `idx_id_socio`(`id_socio`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of conta_subcuentas
 -- ----------------------------
 INSERT INTO `conta_subcuentas` VALUES (1, '99999', 'Droguett Vargas Jose Faisal', 'SOCIO', 'AC', 5, '2026-06-19 14:53:16', '2026-06-19 14:53:16');
-INSERT INTO `conta_subcuentas` VALUES (2, '1111111', 'CALCINA PEREYRA PDERO', 'SOCIO', 'AC', 6, '2026-06-19 15:03:34', '2026-06-19 15:03:34');
+INSERT INTO `conta_subcuentas` VALUES (2, '27311', 'CALCINA PEREYRA PEDRO', 'SOCIO', 'AC', 6, '2026-06-19 15:03:34', '2026-06-23 18:55:45');
+INSERT INTO `conta_subcuentas` VALUES (3, '909090', 'MARIACA MEALLA LEIDY MABEL', 'SOCIO', 'AC', 7, '2026-06-23 15:31:39', '2026-06-23 17:24:47');
+INSERT INTO `conta_subcuentas` VALUES (4, '00024607', 'THE DUCK DISNEY DONALD', 'SOCIO', 'AC', 8, '2026-06-23 15:39:39', '2026-06-23 15:39:39');
 
 -- ----------------------------
 -- Table structure for diplomados
@@ -542,14 +544,16 @@ CREATE TABLE `residencias`  (
   `resolucion` int(11) NOT NULL,
   `idlog_coc` int(10) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of residencias
 -- ----------------------------
 INSERT INTO `residencias` VALUES (2, 4, 'OR', 'ORURO', 'EL BATEON', 'SANTA CRUZ', '16', '455234543', 'AC', 'olkerchoque123@gmail.com', 'FA', 'NO', 'NO', 117, 0);
-INSERT INTO `residencias` VALUES (3, 5, 'LP', 'la paz', 'MIRAFLORES', 'HANS KUNDT', '1550', '79577730', 'AC', 'josedrgttv30@gmail.com', 'FI', 'NO', 'NO', 117, 0);
-INSERT INTO `residencias` VALUES (4, 6, 'CB', NULL, 'EL BATEON', 'AV DEL EJERCITO', '16', '23232323', 'AC', 'olkerchoque123@gmail.com', 'FA', 'NO', 'NO', 135, 0);
+INSERT INTO `residencias` VALUES (3, 5, 'LP', 'la paz', 'MIRAFLORES', 'HANS KUNDT', '1550', '79577730', 'AC', 'josedrgttv30@gmail.com', 'FI', 'NO', 'SI', 117, 0);
+INSERT INTO `residencias` VALUES (4, 6, 'CB', 'QUILLACOLLO', 'EL BATEON', 'AV DEL EJERCITO', '16', '23232323', 'AC', 'olkerchoque123@gmail.com', 'FA', 'NO', 'NO', 135, 0);
+INSERT INTO `residencias` VALUES (5, 7, 'LP', 'LA PAZ', 'MIRAFLORES', 'HANS KUNDT ESQUINA COSTA RICA', '1550', '77790230', 'AC', 'leidymabel1@gmail.com', 'FI', 'NO', 'NO', 112, 0);
+INSERT INTO `residencias` VALUES (6, 8, 'LP', 'EL ALTO', 'ALTO CHUA LUMA BAJO', 'SANTA CRUZ', '16', '23232323', 'AC', 'migloa@gmail.com', 'FA', 'NO', 'NO', 115, 0);
 
 -- ----------------------------
 -- Table structure for resoluciones_juridica
@@ -865,7 +869,7 @@ CREATE TABLE `sessions`  (
 -- ----------------------------
 -- Records of sessions
 -- ----------------------------
-INSERT INTO `sessions` VALUES ('srgwhqJwnw1ePJzly2m7to1rUUvQmbgoylhKXcd1', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiQzZOZDVuSzhERU1pRGRuVGx1ZjRiY2ZkUWJXakFLNzZkUWJTdktjYyI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzU6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zb2Npb3MvNi9lZGl0IjtzOjU6InJvdXRlIjtzOjExOiJzb2Npb3MuZWRpdCI7fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjE7fQ==', 1781888642);
+INSERT INTO `sessions` VALUES ('udvCYXd1WBhwJivT9De8L4mIo1E8FrAv8GE7IgA3', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiQ0RCWElOQm9lTm1lMFFLaDN2UThJWnhWNUdTNVZVQWFXUko5UHNNViI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzc6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zb2Npb3MtcmVwb3J0ZXMiO3M6NToicm91dGUiO3M6MTU6InNvY2lvcy5yZXBvcnRlcyI7fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjE7fQ==', 1782246626);
 
 -- ----------------------------
 -- Table structure for socio_institucion
@@ -894,14 +898,16 @@ CREATE TABLE `socio_institucion`  (
   INDEX `papeleta`(`papeleta`) USING BTREE,
   INDEX `id_socio`(`id_socio`) USING BTREE,
   INDEX `id_grado`(`id_grado`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of socio_institucion
 -- ----------------------------
 INSERT INTO `socio_institucion` VALUES (1, 4, '00077777', 88888, '9999999', 'JUN', 2026, '2007-05-14', 7, 1, 5, 40, 1, 8000.00, 'AC', '', '', 0);
 INSERT INTO `socio_institucion` VALUES (2, 5, '99999', 88888, '77777', 'JUN', 2026, '2008-05-02', 7, 1, 5, 40, 1, 8000.00, 'AC', '', '', 0);
-INSERT INTO `socio_institucion` VALUES (3, 6, '1111111', 2222222, '3333333', 'MAR', 2025, '2009-12-12', 7, 5, 9, 43, 8, 6365.60, 'AC', '', '', 0);
+INSERT INTO `socio_institucion` VALUES (3, 6, '27311', 2222222, '3333333', 'MAR', 2025, '2009-12-12', 7, 5, 9, 43, 8, 6365.60, 'AC', '', '', 0);
+INSERT INTO `socio_institucion` VALUES (4, 7, '909090', 808080, '707070', 'JUL', 2025, '2005-05-12', 1, 3, 9, 39, 2, 7365.60, 'AC', '', '', 0);
+INSERT INTO `socio_institucion` VALUES (5, 8, '00024607', 88888, '855201', 'ENE', 2026, '1999-12-12', 7, 5, 16, 18, 1, 6365.60, 'AC', '', '', 0);
 
 -- ----------------------------
 -- Table structure for socios
@@ -934,14 +940,16 @@ CREATE TABLE `socios`  (
   INDEX `idx_vinculacion_actual`(`vinculacion_actual`) USING BTREE,
   INDEX `idx_id_socio_anterior`(`id_socio_anterior`) USING BTREE,
   INDEX `idx_id_socio_origen`(`id_socio_origen`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 9 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of socios
 -- ----------------------------
 INSERT INTO `socios` VALUES (4, 'OLKER', 'CHOQUE', 'GONZALES', '77777777', 'LP', 'M', '1996-02-11', 'CA', '1781877262_cas_log_dos.png', 'AC', 0, 'AC', 'NO', NULL, NULL, 0, 0, NULL, NULL, NULL, 1);
 INSERT INTO `socios` VALUES (5, 'JOSE FAISAL', 'DROGUETT', 'VARGAS', '4273955', 'LP', 'M', '1982-03-27', 'CA', '1781880796_cas.jpeg', 'AC', 0, 'AC', 'NO', NULL, NULL, 0, 0, NULL, NULL, NULL, 1);
-INSERT INTO `socios` VALUES (6, 'PDERO', 'CALCINA', 'PEREYRA', '77777777', 'CB', 'M', '1975-02-15', 'VI', '1781881414_cas_log_dos.png', 'AC', 0, 'AC', 'NO', NULL, NULL, 0, 0, NULL, NULL, NULL, 1);
+INSERT INTO `socios` VALUES (6, 'PEDRO', 'CALCINA', 'PEREYRA', '77777777', 'CB', 'M', '1975-02-15', 'VI', '1781881414_cas_log_dos.png', 'AC', 0, 'AC', 'NO', NULL, NULL, 0, 0, NULL, NULL, NULL, 1);
+INSERT INTO `socios` VALUES (7, 'LEIDY MABEL', 'MARIACA', 'MEALLA', '6135131', 'LP', 'F', '1984-05-27', 'VI', '1782228699_login.png', 'AC', 0, 'AC', 'NO', NULL, NULL, 0, 0, NULL, NULL, NULL, 1);
+INSERT INTO `socios` VALUES (8, 'DONALD', 'THE DUCK', 'DISNEY', '232323232323232', 'LP', 'M', '1984-05-27', 'SO', '1782229179_login.png', 'AC', 0, 'AC', 'NO', NULL, NULL, 0, 0, NULL, NULL, NULL, 1);
 
 -- ----------------------------
 -- Table structure for users
@@ -967,7 +975,7 @@ CREATE TABLE `users`  (
 -- ----------------------------
 -- Records of users
 -- ----------------------------
-INSERT INTO `users` VALUES (1, 'admin', 'Administrador del Sistema', 'admin@cas.local', NULL, '$2y$12$ipRmY12rvXFv/PEzC4U2CuB5x5nyHmW8YOTZ4Ik9jNDCymGJuDhsK', 'ACTIVO', '2026-06-19 15:36:31', NULL, '2026-06-15 18:48:47', '2026-06-19 15:36:31');
+INSERT INTO `users` VALUES (1, 'admin', 'Administrador del Sistema', 'admin@cas.local', NULL, '$2y$12$ipRmY12rvXFv/PEzC4U2CuB5x5nyHmW8YOTZ4Ik9jNDCymGJuDhsK', 'ACTIVO', '2026-06-23 20:08:01', NULL, '2026-06-15 18:48:47', '2026-06-23 20:08:01');
 INSERT INTO `users` VALUES (4, 'jose.droguett', 'Jose Faisal Droguett Vargas', 'josedrgttv30@gmail.com', NULL, '$2y$12$BYataApllG1gNz7hqLriauAMvumuRiEJSwhYonEpRW8d4WjsPyJT6', 'ACTIVO', NULL, NULL, '2026-06-16 18:39:52', '2026-06-16 20:28:35');
 INSERT INTO `users` VALUES (5, 'luis.perez', 'Luisito Perez Gonzales', 'rrhh@gmail.com', NULL, '$2y$12$CXLcMKqhsLQOfTd3ARFmeOAEd2TOK4vrMAoa3w62dF8MbuavWa.9O', 'ACTIVO', '2026-06-17 14:40:08', NULL, '2026-06-16 18:54:04', '2026-06-17 14:40:08');
 INSERT INTO `users` VALUES (6, 'araceli.machaca', 'Araceli Machaca Hilari', 'rrhh22@gmail.com', NULL, '$2y$12$8EokXakw0Gjn0z3IY80kQeH/ps8jPljpoAiufBftESWeByP5lUOKS', 'ACTIVO', '2026-06-17 14:41:41', NULL, '2026-06-17 13:14:14', '2026-06-17 14:41:41');
