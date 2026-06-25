@@ -1,9 +1,19 @@
 <x-app-layout>
     <x-slot name="header">Tipos de Préstamo</x-slot>
+     @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="fa-solid fa-circle-check me-2"></i>
+            {{ session('success') }}
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+        </div>
+    @endif
     <div class="card shadow-sm">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Tipos de Préstamo</h5>
-            <a href="#" class="btn btn-success">
+            <a href="{{ route('prestamos.tipos.create') }}" class="btn btn-success">
                 <i class="bi bi-plus-circle me-1"></i>
                 Nuevo Tipo de Préstamo
             </a>
@@ -48,8 +58,11 @@
                             @endif
                         </td>
                         <td class="text-center">
+                            <a href="{{ route('prestamos.tipos.edit', $tasa->id_tasa) }}" class="btn btn-warning btn-sm" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </a>
                             <button class="btn btn-info btn-sm" title="Ver"><i class="fas fa-eye"></i></button>
-                            <button class="btn btn-warning btn-sm"title="Editar"><i class="fas fa-edit"></i></button>
+
                         </td>
                     </tr>
                     @empty

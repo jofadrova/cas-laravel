@@ -59,6 +59,11 @@ Route::middleware('auth')->group(function () {
     Route::prefix('prestamos')->name('prestamos.')->group(function() {
         Route::get('/', [PrestamoController::class, 'index'])->name('index');
         Route::get('/tipos', [TipoPrestamoController::class, 'index'])->name('tipos.index');
+        Route::get('/tipos/create',[TipoPrestamoController::class, 'create'])->name('tipos.create');
+        Route::post('/tipos', [TipoPrestamoController::class, 'store'])->name('tipos.store');
+        Route::get('/tipos/{tasa}/edit', [TipoPrestamoController::class, 'edit'])->name('tipos.edit');
+        Route::put('/tipos/{tasa}', [TipoPrestamoController::class, 'update'])->name('tipos.update');
+        Route::patch('/tipos/{tasa}/estado', [TipoPrestamoController::class, 'estado'])->name('tipos.estado');
         Route::get('/proyeccion', [PrestamoController::class, 'proyeccion'])->name('proyeccion');
         Route::get('/depostios', [PrestamoController::class, 'depositos'])->name('depositos');
     });

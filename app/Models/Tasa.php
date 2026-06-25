@@ -23,7 +23,6 @@ class Tasa extends Model
         'garante',
         'obs',
         'estado',
-        'tipo_tasa',
-        'idlog',
+        'tipo_tasa'
     ];
 }
