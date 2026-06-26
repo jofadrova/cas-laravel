@@ -58,6 +58,10 @@ Route::middleware('auth')->group(function () {
     */
     Route::prefix('prestamos')->name('prestamos.')->group(function() {
         Route::get('/', [PrestamoController::class, 'index'])->name('index');
+        Route::get('/create', [PrestamoController::class, 'create'])->name('create');
+        Route::post('/', [PrestamoController::class, 'store'])->name('store');
+        Route::get('/{prestamo}/edit', [PrestamoController::class, 'edit'])->name('edit');
+        Route::put('/{prestamo}', [PrestamoController::class, 'update'])->name('update');
         Route::get('/tipos', [TipoPrestamoController::class, 'index'])->name('tipos.index');
         Route::get('/tipos/create',[TipoPrestamoController::class, 'create'])->name('tipos.create');
         Route::post('/tipos', [TipoPrestamoController::class, 'store'])->name('tipos.store');
@@ -65,7 +69,7 @@ Route::middleware('auth')->group(function () {
         Route::put('/tipos/{tasa}', [TipoPrestamoController::class, 'update'])->name('tipos.update');
         Route::patch('/tipos/{tasa}/estado', [TipoPrestamoController::class, 'estado'])->name('tipos.estado');
         Route::get('/proyeccion', [PrestamoController::class, 'proyeccion'])->name('proyeccion');
-        Route::get('/depostios', [PrestamoController::class, 'depositos'])->name('depositos');
+        Route::get('/depositos', [PrestamoController::class, 'depositos'])->name('depositos');
     });
 
     });

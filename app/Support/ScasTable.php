@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 class ScasTable
 {
 
-    
+
     protected Builder $query;
     protected Request $request;
 
@@ -18,6 +18,7 @@ class ScasTable
 
     protected array $filters = [];
     protected array $sortable = [];
+    protected $customSearch = null;
 
     public function __construct(Builder $query)
     {
@@ -33,20 +34,34 @@ class ScasTable
     public function search(array $fields): self
     {
         $this->searchable = $fields;
+        $buscar = trim($this->request->get('buscar', ''));
+        if ($this->customSearch) {
+            return $this;
+        }
+
+        if ($buscar !== '') {
+            $this->query->where(function ($q) use ($buscar) {
+                foreach ($this->searchable as $field) {
+                    $q->orWhere($field, 'LIKE', "%{$buscar}%");
+                }
+            });
+        }
+        return $this;
+    }
+
+    public function customSearch(callable $callback): self
+    {
+        $this->customSearch = $callback;
 
         $buscar = trim($this->request->get('buscar', ''));
 
         if ($buscar !== '') {
 
-            $this->query->where(function ($q) use ($buscar) {
-
-                foreach ($this->searchable as $field) {
-
-                    $q->orWhere($field, 'LIKE', "%{$buscar}%");
-
-                }
-
-            });
+            call_user_func(
+                $this->customSearch,
+                $this->query,
+                $buscar
+            );
 
         }
 
@@ -107,16 +122,20 @@ class ScasTable
             ->withQueryString();
     }
 
-    public function filters(array $filters): self
+   public function filters(array $fields): self
     {
-        foreach ($filters as $field) {
-
-            $value = $this->request->get($field);
-
-            if ($value !== null && $value !== '') {
-
-                $this->query->where($field, $value);
-
+        $this->filters = $fields;
+        foreach ($fields as $field) {
+            $valor = $this->request->get($field);
+            if (filled($valor)) {
+                if (str_contains($field, '.')) {
+                    [$relation, $column] = explode('.', $field);
+                    $this->query->whereHas($relation, function ($q) use ($column, $valor) {
+                        $q->where($column, $valor);
+                    });
+                } else {
+                    $this->query->where($field, $valor);
+                }
             }
         }
         return $this;
@@ -159,5 +178,5 @@ class ScasTable
             : 'fa-sort-down';
     }
 
-    
+
 }

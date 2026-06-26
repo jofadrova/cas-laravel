@@ -84,8 +84,8 @@
         </li>
 
         <li class="nav-item">
-            <a href="{{ route('prestamos.index') }}"
-            class="nav-link text-white">
+            <a href="{{ route('prestamos.index') }}" class="nav-link text-white
+            {{ request()->routeIs('prestamos.index') ? 'active:menu' : '' }}">
                 <i class="bi bi-cash-coin me-2"></i>
                 Gestión de Préstamos
             </a>
