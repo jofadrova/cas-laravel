@@ -12,14 +12,53 @@
             <h5 class="mb-0">Gestión de Usuarios</h5>
             <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalUsuario"><i class="bi bi-plus-circle me-1"></i> Nuevo Usuario </button>
         </div>
-
+        <form method="GET">
+            <div class="row mb-3 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label">Buscar</label>
+                <input type="text" name="buscar" class="form-control" placeholder="Usuario o nombre..." value="{{ request('buscar') }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Estado</label>
+                <select name="estado" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="ACTIVO"
+                        {{ request('estado')=='ACTIVO' ? 'selected':'' }}>
+                        Activo
+                    </option>
+                    <option value="INACTIVO"
+                        {{ request('estado')=='INACTIVO' ? 'selected':'' }}>
+                        Inactivo
+                    </option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button class="btn btn-primary">
+                    <i class="fas fa-search me-1"></i>
+                    Buscar
+                </button>
+                <a href="{{ route('usuarios.index') }}" class="btn btn-secondary">
+                    Limpiar
+                </a>
+            </div>
+            </div>
+        </form>
         <div class="card-body">
             <table class="table table-hover align-middle">
                 <thead class="table-light">
                     <tr>
-                        <th>Usuario</th>
-                        <th>Nombre</th>
-                        <th>Estado</th>
+                        <th><a href="{{ $table->sortUrl('username') }}"class="text-decoration-none text-dark">
+                            Usuario
+                            <i class="fas {{ $table->sortIcon('username') }}"></i></a>
+                        </th>
+                       <th><a href="{{ $table->sortUrl('name') }}" class="text-decoration-none text-dark">
+                            Nombre
+                            <i class="fas {{ $table->sortIcon('name') }}"></i></a>
+                        </th>
+                        <th><a href="{{ $table->sortUrl('estado') }}" class="text-decoration-none text-dark">
+                            Estado
+                            <i class="fas {{ $table->sortIcon('estado') }}"></i></a>
+                        </th>
                         <th>Rol</th>
                         <th class="text-center">Opciones</th>
                     </tr>
@@ -236,16 +275,9 @@
     </div>
 </div>
 <!-- Modal Restablecer Contraseña -->
-<div class="modal fade"
-     id="modalPassword"
-     tabindex="-1"
-     data-bs-backdrop="static"
-     data-bs-keyboard="false">
-
+<div class="modal fade" id="modalPassword" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog">
-
         <div class="modal-content">
-
             <form method="POST" id="formPassword">
                 <input type="hidden" id="password_user_id" value="{{ session('reset_password_user.id') }}">
                 @csrf

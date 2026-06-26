@@ -12,6 +12,7 @@ import "./usuarios";
 import "./roles";
 import "./permisos";
 import "./socios";
+import "./tasa.js";
 
 window.Alpine = Alpine;
 

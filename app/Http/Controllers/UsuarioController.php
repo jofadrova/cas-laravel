@@ -7,17 +7,39 @@ use App\Models\User;
 use App\Http\Requests\StoreUsuarioRequest;
 use App\Http\Requests\ResetPasswordRequest;
 use Illuminate\Support\Facades\Hash;
+use App\Traits\HasTable;
+use App\Support\ScasTable;
+
 class UsuarioController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    
+     use HasTable;
+
     public function index()
     {
-        $usuarios = User::orderBy('name')->paginate(10);
+        $table = ScasTable::make(User::query())
 
-        return view('usuarios.index', compact('usuarios'));
-        //
+            ->search([
+                'name',
+                'username',
+                'email',
+            ])
+
+            ->sortable([
+                'name',
+                'username',
+                'email',
+                'estado',
+            ])
+
+            ->defaultSort('name');
+
+        $usuarios = $table->paginate();
+
+        return view(
+            'usuarios.index',
+            compact('usuarios', 'table')
+        );
     }
 
     /**

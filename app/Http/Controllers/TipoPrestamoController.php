@@ -6,18 +6,41 @@ use Illuminate\Http\Request;
 use App\Models\Tasa;
 use App\Http\Requests\StoreTipoPrestamoRequest;
 use App\Http\Requests\UpdateTipoPrestamoRequest;
+use App\Traits\HasTable;
+use App\Support\ScasTable;
 
 class TipoPrestamoController extends Controller
 {
+    use HasTable;
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $tasas = Tasa::orderBy('descripcion_tasa')->paginate(10);
-        return view('prestamos.tipos.index', compact('tasas'));
-    }
+       $table = ScasTable::make(Tasa::query())
+            ->search([
+                'descripcion_tasa'
+            ])
+            ->filters([
+                'tipo_moneda',
+                'estado'
+            ])
+            ->sortable([
+                'descripcion_tasa',
+                'porcentaje',
+                'monto_max',
+                'plazo_max',
+                'estado'
+            ])
+            ->defaultSort('descripcion_tasa');
 
+        $tasas = $table->paginate();
+
+        return view(
+            'prestamos.tipos.index',
+            compact('tasas', 'table')
+        );
+    }
     /**
      * Show the form for creating a new resource.
      */
@@ -101,8 +124,23 @@ class TipoPrestamoController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function estado(string $id)
+    public function estado(Request $request, Tasa $tasa)
     {
-        //
+        $request->validate([
+            'estado' => 'required|in:AC,IN',
+        ]);
+
+        $tasa->update([
+            'estado' => $request->estado,
+        ]);
+
+        return redirect()
+            ->route('prestamos.tipos.index')
+            ->with(
+                'success',
+                'Estado del tipo de préstamo actualizado correctamente.'
+            );
     }
+       
+    
 }
