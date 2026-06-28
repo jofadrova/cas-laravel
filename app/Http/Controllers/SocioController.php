@@ -468,4 +468,39 @@ class SocioController extends Controller
     {
         return back()->with('info', 'funcionalidad en desarrollo');
     }
+
+    public function buscar(Request $request)
+    {
+        $buscar = trim($request->q);
+        if (strlen($buscar) < 2) {
+            return response()->json([]);
+        }
+
+        $socios = SocioInstitucion::with('socio')
+            ->where('estado', 'AC')
+            ->where(function ($q) use ($buscar) {
+                $q->where('papeleta', 'like', "%{$buscar}%")
+                ->orWhereHas('socio', function ($s) use ($buscar) {
+                        $s->where('nombres', 'like', "%{$buscar}%")
+                        ->orWhere('paterno', 'like', "%{$buscar}%")
+                        ->orWhere('materno', 'like', "%{$buscar}%");
+                });
+            })
+            ->orderBy('papeleta')
+            ->limit(10)
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => $item->id_socio,
+                    'papeleta' => $item->papeleta,
+                    'nombre' => trim(
+                        $item->socio->paterno.' '.
+                        $item->socio->materno.' '.
+                        $item->socio->nombres
+                    ),
+                    'estado' => $item->estado
+                ];
+            });
+        return response()->json($socios);
+    }
 }

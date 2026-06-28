@@ -31,6 +31,7 @@
                         @endif
                         {{ $slot }}
                     </main>
+                    <div id="scas-notify" class="position-fixed top-0 end-0 p-3" style="z-index:2000;width:380px;"></div>
                 </div>
             </div>
         </div>

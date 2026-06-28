@@ -7,6 +7,10 @@ use App\Traits\HasTable;
 use App\Support\ScasTable;
 use App\Models\Prestamo;
 use App\Models\Tasa;
+use App\Services\Prestamos\CalculadoraPrestamo;
+
+use App\Http\Requests\StorePrestamoRequest;
+use App\Services\PrestamoService;
 
 class PrestamoController extends Controller
 {
@@ -94,5 +98,75 @@ class PrestamoController extends Controller
 
         return view('prestamos.index', compact('prestamos', 'table', 'tipos')
         );
+    }
+
+    public function create()
+    {
+        $tipos = Tasa::where('estado', 'AC')
+        ->orderBy('descripcion_tasa')
+        ->get();
+
+        return view('prestamos.create', compact('tipos'));
+    }
+
+    public function validarSolicitud(Request $request)
+    {
+        $request->validate([
+            'id_socio' => 'required|integer',
+            'id_tasa'  => 'required|integer',
+        ]);
+
+        $prestamo = Prestamo::where('ide_per', $request->id_socio)
+            ->where('tipo_prestamo', $request->id_tasa)
+            ->whereIn('estado', ['AC','PE'])
+            ->first();
+
+        if ($prestamo) {
+
+            return response()->json([
+                'ok' => false,
+                'mensaje' => 'El asociado ya tiene un préstamo ACTIVO de este tipo.',
+                'prestamo' => [
+                    'solicitud' => $prestamo->nro_solicitud,
+                    'monto'     => $prestamo->monto,
+                    'saldo'     => $prestamo->saldo_actual,
+                ]
+            ]);
+
+        }
+        return response()->json([
+            'ok' => true
+        ]);
+    }
+
+    public function simular(Request $request)
+    {
+        $request->validate([
+            'monto'       => 'required|numeric|min:1',
+            'plazo'       => 'required|integer|min:1',
+            'porcentaje'  => 'required|numeric|min:0',
+            'fecha'       => 'required|date',
+            'tipo_moneda' => 'required',
+            'itf'         => 'nullable|numeric',
+            'papeleria'   => 'nullable|numeric',
+            'tipo'        => 'nullable|integer',
+        ]);
+
+        $calculadora = new CalculadoraPrestamo();
+
+        return response()->json(
+            $calculadora->simular($request->all())
+        );
+    }
+
+    public function store(StorePrestamoRequest $request, PrestamoService $service)
+    {
+        $service->consolidar(
+            $request->validated()
+        );
+
+        return redirect()
+            ->route('prestamos.index')
+            ->with('success','Préstamo guardado y consolidado correctamente.');
     }
 }

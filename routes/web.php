@@ -45,12 +45,14 @@ Route::middleware('auth')->group(function () {
     | SOCIOS
     |--------------------------------------------------------------------------
     */
+    Route::get('/socios/buscar', [SocioController::class, 'buscar'])->name('socios.buscar');
     Route::resource('socios', SocioController::class)->middleware('permission:socios.ver');
     Route::get('/socios-informacion',[SocioInformacionController::class, 'index'])->name('socios.informacion')->middleware('permission:socios.informacion');
     Route::get('/socios-reportes',[SocioReporteController::class, 'index'])->name('socios.reportes')->middleware('permission:socios.reportes');
     Route::patch('/socios/{socio}/estado',[SocioController::class, 'cambiarEstado'])->name('socios.estado');
     Route::get('/socios/{socio}/kardex',[SocioController::class, 'kardex'])->name('socios.kardex');
     Route::get('/socios/{socio}/revincular',[SocioController::class,'revincular'])->name('socios.revincular');
+   
     /*
     |--------------------------------------------------------------------------
     | PRESTAMOS
@@ -62,6 +64,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/', [PrestamoController::class, 'store'])->name('store');
         Route::get('/{prestamo}/edit', [PrestamoController::class, 'edit'])->name('edit');
         Route::put('/{prestamo}', [PrestamoController::class, 'update'])->name('update');
+        Route::post('/validar-solicitud', [PrestamoController::class, 'validarSolicitud'])->name('validarSolicitud');   
+        //Route::get('/simular',[PrestamoController::class, 'simular'])->name('simular');    
+        Route::post('/simular',[PrestamoController::class, 'simular'])->name('simular');     
         Route::get('/tipos', [TipoPrestamoController::class, 'index'])->name('tipos.index');
         Route::get('/tipos/create',[TipoPrestamoController::class, 'create'])->name('tipos.create');
         Route::post('/tipos', [TipoPrestamoController::class, 'store'])->name('tipos.store');

@@ -5,7 +5,7 @@ use Illuminate\Database\Eloquent\Model;
 class Prestamo extends Model
 {
     protected $table = 'solicitudes';
-    protected $primaryKey = 'idsolicitud';
+    protected $primaryKey = 'id_solicitud';
     public $timestamps = false;
     protected $fillable = [
         'nro_solicitud',
@@ -62,6 +62,4 @@ class Prestamo extends Model
             'id'
         );
     }
-
-
 }

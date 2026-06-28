@@ -12,7 +12,7 @@ class StorePrestamoRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,7 +23,17 @@ class StorePrestamoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'id_socio' => ['required','exists:socios,id'],
+            'tipo_prestamo' => ['required','exists:tasas,id_tasa'],
+            'id_garante1' => ['nullable','exists:socios,id'],
+            'id_garante2' => ['nullable','exists:socios,id'],
+            'monto' => ['required','numeric','min:0.01'],
+            'plazo' => ['required','integer','min:1'],
+            'motivo' => ['nullable','string','max:250'],
+            'asiento' => ['required','string','max:20'],
+            'fecha' => ['required','date'],
         ];
     }
+
+   
 }
