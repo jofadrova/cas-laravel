@@ -4,6 +4,7 @@
     @csrf
 <input type="hidden" id="urlValidarSolicitud" value="{{ route('prestamos.validarSolicitud') }}">
 <input type="hidden" id="urlSimular" value="{{ route('prestamos.simular') }}">
+<input type="hidden" id="cronograma" name="cronograma">
 <div class="row g-4"> 
     <div class="col-xl-8">
         {{-- Datos del préstamo --}}
@@ -15,24 +16,28 @@
                 <div class="row g-4">
                     <div class="col-md-6">
                         <label class="form-label">Tipo de préstamo</label>
-                        <select id="tipoPrestamo" name="tipo_prestamo" class="form-select">
+                        <select id="tipoPrestamo" name="tipo_prestamo" class="form-select @error('tipo_prestamo') is-invalid @enderror">
                             <option value="">-- Seleccione --</option>
                             @foreach($tipos as $tipo)
-                                <option value="{{ $tipo->id_tasa }}"
+                                <option
+                                    value="{{ $tipo->id_tasa }}"
+                                    @selected(old('tipo_prestamo') == $tipo->id_tasa)
                                     data-garante="{{ $tipo->garante }}"
                                     data-plazo="{{ $tipo->plazo_max }}"
                                     data-monto="{{ $tipo->monto_max }}"
                                     data-interes="{{ $tipo->porcentaje }}"
                                     data-moneda="{{ $tipo->tipo_moneda }}"
                                     data-mindefensa="{{ $tipo->min_defensa }}"
-                                    data-itf="{{ $tipo->itf }}">                                    
+                                    data-itf="{{ $tipo->itf }}"
+                                    data-papeleria="{{ $tipo->papeleria }}">
                                     {{ $tipo->descripcion_tasa }}
                                 </option>
                             @endforeach
                         </select>
+                        @error('tipo_prestamo')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-6">
-                        <x-scas.papeleta-search name="id_socio" label="Solicitante" required="true"/>
+                        <x-scas.papeleta-search name="id_socio" label="Solicitante" :value="old('id_socio')" />
                     </div>
                 </div>
             </div>
@@ -54,13 +59,15 @@
         <div class="row g-4">
             <div class="col-lg-3">
                 <label class="form-label">Monto</label>
-                <input id="monto" name="monto" type="number" step="0.01" class="form-control">
+                <input id="monto" name="monto" type="number" step="0.01" class="form-control @error('monto') is-invalid @enderror" value="{{ old('monto') }}">
                 <small id="maxMonto" class="text-muted d-block mt-2"></small>
+                @error('monto')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
             <div class="col-lg-3">
                 <label class="form-label">Plazo (meses)</label>
-                <input id="plazo" name="plazo" type="number" class="form-control">
+                <input id="plazo" name="plazo" type="number" class="form-control @error('plazo') is-invalid @enderror" value="{{ old('plazo') }}">
                 <small id="maxPlazo" class="text-muted d-block mt-2"></small>
+                @error('plazo') <div class="invalid-feedback"> {{ $message }}</div>@enderror
             </div>
             <div class="col-lg-3">
                 <label class="form-label">Nro. Asiento</label>
@@ -68,16 +75,19 @@
                     <span class="input-group-text">
                         EG-
                     </span>
-                    <input id="asiento" name="asiento" class="form-control">
+                    <input id="asiento" name="asiento" class="form-control @error('asiento') is-invalid @enderror" value="{{ old('asiento') }}">
+                    @error('asiento') <div class="invalid-feedback"> {{ $message }}</div>@enderror
                 </div>
             </div>
             <div class="col-lg-3">
                 <label class="form-label">Fecha préstamo</label>
-                <input type="date" id="fechaPrestamo" name="fecha" class="form-control" value="{{ now()->format('Y-m-d') }}">
+                <input type="date" id="fechaPrestamo" name="fechaPrestamo" class="form-control @error('fecha') is-invalid @enderror" value="{{ old('fechaPrestamo', now()->format('Y-m-d')) }}">
+                 @error('fechaPrestamo') <div class="invalid-feedback"> {{ $message }}</div>@enderror
             </div>
             <div class="col-12">
                 <label class="form-label">Motivo</label>
-                <textarea name="motivo" rows="3" class="form-control"></textarea>
+                <textarea name="motivo" rows="3" class="form-control @error('motivo') is-invalid @enderror" style="resize:none" maxlength="200" >{{ old('motivo') }}</textarea>
+                 @error('motivo') <div class="invalid-feedback"> {{ $message }}</div>@enderror
             </div>
         </div>
     </div>
@@ -118,7 +128,6 @@
     </a>
 </div>
 </div>
-
     <!-- =======================
           RESUMEN
     ======================== -->

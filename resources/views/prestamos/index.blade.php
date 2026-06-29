@@ -104,7 +104,12 @@
                         @forelse($prestamos as $prestamo)
                             <tr>
                                 <td>{{ $prestamo->nro_solicitud }}</td>
-                                <td>{{ optional($prestamo->socio)->nombre_completo }}</td>
+                                <td>{{ implode(' ', array_filter([
+                                        optional($prestamo->socio)->paterno,
+                                        optional($prestamo->socio)->materno,
+                                        optional($prestamo->socio)->nombres,
+                                    ])) }}
+                                </td>
                                 <td>{{ optional($prestamo->tipo)->descripcion_tasa }}</td>
                                 <td class="text-end">{{ number_format($prestamo->monto,2) }}</td>
                                 <td class="text-center">{{ $prestamo->ultima_cuota }}/{{ $prestamo->periodo }}</td>
@@ -119,6 +124,10 @@
                                 <td class="text-center">
                                     <a href="{{ route('prestamos.edit',$prestamo) }}" class="btn btn-warning btn-sm" title="Editar">
                                         <i class="fas fa-edit"></i>
+                                    </a>                               
+                                    <a href="{{ route('prestamos.reporte', $prestamo) }}" class="btn btn-sm btn-outline-danger"
+                                        target="_blank" title="Cronograma de pagos">
+                                            <i class="fas fa-file-pdf"></i>
                                     </a>
                                 </td>
                             </tr>

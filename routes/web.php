@@ -64,6 +64,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/', [PrestamoController::class, 'store'])->name('store');
         Route::get('/{prestamo}/edit', [PrestamoController::class, 'edit'])->name('edit');
         Route::put('/{prestamo}', [PrestamoController::class, 'update'])->name('update');
+        Route::get('/{prestamo}/reporte',[PrestamoController::class, 'reporte'])->name('reporte');
         Route::post('/validar-solicitud', [PrestamoController::class, 'validarSolicitud'])->name('validarSolicitud');   
         //Route::get('/simular',[PrestamoController::class, 'simular'])->name('simular');    
         Route::post('/simular',[PrestamoController::class, 'simular'])->name('simular');     

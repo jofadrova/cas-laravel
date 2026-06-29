@@ -37,6 +37,12 @@ class PrestamoForm {
 
         this.configPrestamo = {};
         this.init();
+        
+        // Restaurar el tipo de préstamo después de una validación
+        if (this.tipo && this.tipo.value !== '') {
+            this.cargarTipo();
+        }
+                
     }
 
     init() {
@@ -102,7 +108,6 @@ class PrestamoForm {
     }
 
     cargarTipo() {
-
         const opcion = this.tipo.options[this.tipo.selectedIndex];
 
         if (!opcion.value) {
@@ -554,6 +559,10 @@ class PrestamoForm {
             })
         });
         const datos =await response.json();
+
+        this.cronograma = datos.cronograma;
+        document.getElementById('cronograma').value = JSON.stringify(this.cronograma);
+       console.log(datos.cronograma[0]);
        
         this.mostrarCronograma(datos);
         this.actualizarResumen(datos);

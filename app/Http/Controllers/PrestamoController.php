@@ -11,6 +11,8 @@ use App\Services\Prestamos\CalculadoraPrestamo;
 
 use App\Http\Requests\StorePrestamoRequest;
 use App\Services\PrestamoService;
+use Barryvdh\DomPDF\Facade\Pdf;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class PrestamoController extends Controller
 {
@@ -168,5 +170,51 @@ class PrestamoController extends Controller
         return redirect()
             ->route('prestamos.index')
             ->with('success','Préstamo guardado y consolidado correctamente.');
+    }
+
+    public function reporte(Prestamo $prestamo)
+    {
+        $prestamo->load([
+            'socio',
+            'tipo',
+            'garante1',
+            'garante2',
+        ]);
+
+        $cuotas = \App\Models\CuotaSolicitud::where(
+                'id_solicitud',
+                $prestamo->id_solicitud
+            )
+            ->orderBy('nro_cuota')
+            ->get();
+        
+
+        $contenidoQr ="Socio: ".$prestamo->socio->paterno." ".
+        $prestamo->socio->materno." ".
+        $prestamo->socio->nombres."\n".
+        "CI: ".$prestamo->socio->nro_doc."\n".
+        "Papeleta: ".optional($prestamo->socio->institucion)->papeleta."\n".
+        "Prestamo: ".$prestamo->nro_solicitud;
+
+         $qr = base64_encode(QrCode::format('svg')
+            ->size(180)
+            ->margin(0)
+            ->generate($contenidoQr)
+        );
+
+        $pdf = Pdf::loadView(
+            'prestamos.pdf.cronograma',
+            compact('prestamo', 'cuotas','qr')
+        );
+
+        $pdf->setPaper('letter');
+        $dompdf = $pdf->getDomPDF();
+        $dompdf->render();
+        $canvas = $dompdf->getCanvas();
+        $canvas->page_text(480,760,"Página {PAGE_NUM} de {PAGE_COUNT}",null,8);
+        
+        return $pdf->stream('Prestamo-'.$prestamo->nro_solicitud.'.pdf');
+
+       
     }
 }

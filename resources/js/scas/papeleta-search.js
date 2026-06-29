@@ -10,16 +10,13 @@ class PapeletaSearch {
         this.nombre = container.querySelector('.scas-nombre');
 
         this.url = this.input.dataset.url;
-
         this.timer = null;
-
         this.cache = {};
-
         this.items = [];
-
         this.selected = -1;
-
         this.eventos();
+        // Restaurar el socio después de una validación
+        this.restaurar();
 
     }
 
@@ -106,33 +103,23 @@ class PapeletaSearch {
                     this.ocultar();
 
                     break;
-
             }
-
         });
 
         // Ocultar resultados al perder el foco
         this.input.addEventListener('blur', () => {
-
             setTimeout(() => {
-
                 this.ocultar();
-
             }, 200);
-
         });
-
     }
 
     async buscar(texto) {
 
         // Cache
         if (this.cache[texto]) {
-
             this.render(this.cache[texto]);
-
             return;
-
         }
 
         try {
@@ -142,23 +129,16 @@ class PapeletaSearch {
             );
 
             if (!response.ok) {
-
                 throw new Error('Error al consultar el servidor.');
-
             }
 
             const datos = await response.json();
-
             this.cache[texto] = datos;
-
             this.render(datos);
 
         } catch (error) {
-
             console.error(error);
-
             this.ocultar();
-
         }
 
     }
@@ -166,17 +146,11 @@ class PapeletaSearch {
     render(datos) {
 
         this.resultados.innerHTML = '';
-
         this.items = [];
-
         this.selected = -1;
-
         if (!datos.length) {
-
             this.ocultar();
-
             return;
-
         }
 
         datos.forEach((socio) => {
@@ -205,7 +179,6 @@ class PapeletaSearch {
             });
 
             this.resultados.appendChild(item);
-
             this.items.push(item);
 
         });
@@ -214,7 +187,6 @@ class PapeletaSearch {
             this.seleccionar(datos[0]);
             return;
         }
-
         this.resultados.style.display = 'block';
 
     }
@@ -234,17 +206,41 @@ class PapeletaSearch {
 
     }
 
+    async restaurar() {
+        if (!this.hidden.value) {
+            return;
+        }
+
+        try {
+
+            const response = await fetch(
+                this.url + '?id=' + this.hidden.value
+            );
+
+            if (!response.ok) {
+                return;
+            }
+
+            const socio = await response.json();
+
+            if (socio) {
+                this.seleccionar(socio);
+            }
+
+        } catch (e) {
+            console.error(e);
+        }
+
+    }
+
     marcar() {
 
         if (!this.items.length) return;
         if (this.selected < 0) {
             this.selected = this.items.length - 1;
         }
-
         if (this.selected >= this.items.length) {
-
             this.selected = 0;
-
         }
 
         this.items.forEach(item => {
@@ -263,23 +259,16 @@ class PapeletaSearch {
         this.selected = -1;
         this.ocultar();
     }
-
     ocultar() {
-
         this.resultados.style.display = 'none';
-
     }
-
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-
     document
         .querySelectorAll('.scas-papeleta')
         .forEach(container => {
-
             new PapeletaSearch(container);
-
         });
 
 });

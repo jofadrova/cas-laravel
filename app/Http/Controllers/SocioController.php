@@ -471,6 +471,29 @@ class SocioController extends Controller
 
     public function buscar(Request $request)
     {
+        // Restaurar un socio por su ID (old())
+        if ($request->filled('id')) {
+
+            $item = SocioInstitucion::with('socio')
+                ->where('estado', 'AC')
+                ->where('id_socio', $request->id)
+                ->first();
+
+            if (!$item) {
+                return response()->json(null);
+            }
+
+            return response()->json([
+                'id' => $item->id_socio,
+                'papeleta' => $item->papeleta,
+                'nombre' => trim(
+                    $item->socio->paterno . ' ' .
+                    $item->socio->materno . ' ' .
+                    $item->socio->nombres
+                ),
+                'estado' => $item->estado,
+            ]);
+        }
         $buscar = trim($request->q);
         if (strlen($buscar) < 2) {
             return response()->json([]);
