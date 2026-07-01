@@ -190,13 +190,9 @@ table{
                                 </td>
                             </tr>
                         </table>
-
                     </td>
-
                 </tr>
-
             </table>
-
         </td>
 <!--
         <td width="25%">
@@ -247,7 +243,7 @@ table{
         <!-- ========================= -->
         <!-- COLUMNA IZQUIERDA -->
         <!-- ========================= -->
-        <td width="36%" valign="top" style="padding:12px;"> 
+        <td width="36%" valign="top" style="padding:12px;">
             <table width="100%">
                 <tr>
                     <td><strong>Otorgado a</strong></td>
@@ -260,7 +256,7 @@ table{
                 </tr>
                 <tr>
                     <td><strong>Por la suma</strong></td>
-                    <td>Bs {{ number_format($prestamo->monto,2) }}</td>
+                    <td>$us {{ number_format($prestamo->monto,2) }}</td>
                 </tr>
                 <tr>
                     <td><strong>Tiempo Mora</strong></td>
@@ -271,7 +267,6 @@ table{
                     <td>{{ number_format($prestamo->interes,2) }} %</td>
                 </tr>
                @if($prestamo->id_garante1 != 0)
-
                 <tr>
                     <td><strong>Garante 1</strong></td>
                     <td>
@@ -280,11 +275,8 @@ table{
                         {{ optional($prestamo->garante1)->nombres }}
                     </td>
                 </tr>
-
                 @endif
-
                 @if($prestamo->id_garante2 != 0)
-
                 <tr>
                     <td><strong>Garante 2</strong></td>
                     <td>
@@ -293,7 +285,6 @@ table{
                         {{ optional($prestamo->garante2)->nombres }}
                     </td>
                 </tr>
-
                 @endif
                 <tr>
                     <td><strong>Motivo</strong></td>
@@ -301,39 +292,19 @@ table{
                 </tr>
             </table>
         </td>
-
-        <!-- ========================= -->
-        <!-- CENTRO -->
-        <!-- ========================= -->
-
-        <td width="30%"
-            valign="top"
-            style="
-                padding:12px;
-                border-left:1px solid #dddddd;
-            ">
-
-            <table width="100%">               
+        <td width="30%" valign="top" style="padding:12px; border-left:1px solid #dddddd;">
+            <table width="100%">
                 <tr>
                     <td><strong>Código</strong></td>
                     <td>{{ optional($prestamo->socio->institucion)->papeleta }}</td>
-
                 </tr>
                 <tr>
                     <td><strong>Int. Penal</strong></td>
                     <td>{{ number_format($prestamo->interes_penal ?? 0,2) }} %</td>
                 </tr>
-
                 <tr>
-
                     <td><strong>Min. Defensa</strong></td>
-
-                    <td>
-
-                        {{ number_format($prestamo->min_defensa,2) }} %
-
-                    </td>
-
+                    <td>{{ number_format($prestamo->min_defensa,2) }} %</td>
                 </tr>
 
                 <tr>
@@ -379,90 +350,58 @@ table{
         <!-- DERECHA -->
         <!-- ========================= -->
 
-        <td width="34%"
-            valign="top"
-            style="
-                padding:12px;
-                border-left:1px solid #dddddd;
-            ">
-
+        <td width="34%" valign="top" style=" padding:12px; border-left:1px solid #dddddd; ">
             <table width="100%">
                 <tr>
-
                     <td><strong>Tipo Cambio</strong></td>
-
-                    <td>
-
-                        T/C Oficial
-
-                    </td>
-
+                    <td>T/C Oficial</td>
                 </tr>
-
                 <tr>
-
                     <td><strong>Desc. Desde</strong></td>
-
-                    <td>
-
-                        {{ \Carbon\Carbon::parse($prestamo->fecha)->translatedFormat('F/Y') }}
-
-                    </td>
-
+                    <td>{{ \Carbon\Carbon::parse($prestamo->fecha)->translatedFormat('F/Y') }}</td>
                 </tr>
-
                 <tr>
-
                     <td><strong>Gasto Papel.</strong></td>
-
-                    <td>
-
-                        {{ number_format($prestamo->papeleria ?? 0,2) }}
-
-                    </td>
-
+                    <td>{{ number_format($prestamo->papeleria ?? 0,2) }}</td>
                 </tr>
-
                 <tr>
-
                     <td><strong>Total Cancelar</strong></td>
-
-                    <td style="
-                        color:#0B4EA2;
-                        font-size:14px;
-                        font-weight:bold;
-                    ">
-
-                        Bs {{ number_format($prestamo->monto,2) }}
-
+                    <td style=" color:#0B4EA2; font-size:14px; font-weight:bold; ">
+                        $us {{ number_format($prestamo->monto,2) }}
                     </td>
-
                 </tr>
-
             </table>
-
         </td>
-
     </tr>
-
 </table>
 <div class="band">CRONOGRAMA DE PAGOS</div>
 <table class="crono">
     <thead>
-        <tr><th>#</th><th>Periodo</th><th>Cuota</th><th>Capital</th><th>Interés</th><th>Min.Def.</th><th>ITF</th><th>Papel</th><th>Saldo</th></tr></thead>
+        <tr>
+            <th>N°</th>
+            <th>Periodo</th>
+            <th>Cuota</th>
+            <th>Capital</th>
+            <th>Interés</th>
+            <th>Min.Def.</th>
+            <th>ITF</th>
+            <th>Papel</th>
+            <th>Saldo</th>
+        </tr>
+    </thead>
 <tbody>
-@php($tCuota=$tCap=$tInt=$tMin=$tItf=$tPap=0)
-@foreach($cuotas as $c)
-@php($tCuota+=$c->cuota_fija) @php($tCap+=$c->amortizacion_cap) @php($tInt+=$c->interes) @php($tMin+=$c->min_defensa) @php($tItf+=$c->itf) @php($tPap+=$c->papel)
-    <tr>
-        <td class="c">{{ $c->nro_cuota }}</td>
-        <td class="c">{{ sprintf('%02d',$c->mes) }}/{{ $c->gestion }}</td>
-        <td class="r">{{ number_format($c->cuota_fija,2) }}</td><td class="r">{{ number_format($c->amortizacion_cap,2) }}</td><td class="r">{{ number_format($c->interes,2) }}</td><td class="r">{{ number_format($c->min_defensa,2) }}</td><td class="r">{{ number_format($c->itf,2) }}</td><td class="r">{{ number_format($c->papel,2) }}</td><td class="r">{{ number_format($c->saldo,2) }}</td></tr>
-@endforeach
-<tr class="total"><td colspan="2">TOTAL</td><td class="r">{{ number_format($tCuota,2) }}</td><td class="r">{{ number_format($tCap,2) }}</td><td class="r">{{ number_format($tInt,2) }}</td><td class="r">{{ number_format($tMin,2) }}</td><td class="r">{{ number_format($tItf,2) }}</td><td class="r">{{ number_format($tPap,2) }}</td><td></td></tr>
-</tbody></table>
+    @php($tCuota=$tCap=$tInt=$tMin=$tItf=$tPap=0)
+    @foreach($cuotas as $c)
+    @php($tCuota+=$c->cuota_fija) @php($tCap+=$c->amortizacion_cap) @php($tInt+=$c->interes) @php($tMin+=$c->min_defensa) @php($tItf+=$c->itf) @php($tPap+=$c->papel)
+        <tr>
+            <td class="c">{{ $c->nro_cuota }}</td>
+            <td class="c">{{ sprintf('%02d',$c->mes) }}/{{ $c->gestion }}</td>
+            <td class="r">{{ number_format($c->cuota_fija,2) }}</td><td class="r">{{ number_format($c->amortizacion_cap,2) }}</td><td class="r">{{ number_format($c->interes,2) }}</td><td class="r">{{ number_format($c->min_defensa,2) }}</td><td class="r">{{ number_format($c->itf,2) }}</td><td class="r">{{ number_format($c->papel,2) }}</td><td class="r">{{ number_format($c->saldo,2) }}</td></tr>
+    @endforeach
+    <tr class="total"><td colspan="2">TOTAL</td><td class="r">{{ number_format($tCuota,2) }}</td><td class="r">{{ number_format($tCap,2) }}</td><td class="r">{{ number_format($tInt,2) }}</td><td class="r">{{ number_format($tMin,2) }}</td><td class="r">{{ number_format($tItf,2) }}</td><td class="r">{{ number_format($tPap,2) }}</td><td></td></tr>
+    </tbody>
+</table>
 <div class="footer">Documento generado por SCAS</div>
 <hr style="border:none;border-top:1px solid #cccccc;margin-top:10px;">
 </body>
-
 </html>

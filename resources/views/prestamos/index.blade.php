@@ -97,7 +97,7 @@
                             <th class="text-center">Cuotas</th>
                             <th class="text-end">Saldo</th>
                             <th class="text-center">Estado</th>
-                            <th class="text-center">Opciones</th>
+                            <th class="text-center">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -122,13 +122,91 @@
                                     @endif
                                 </td>
                                 <td class="text-center">
-                                    <a href="{{ route('prestamos.edit',$prestamo) }}" class="btn btn-warning btn-sm" title="Editar">
-                                        <i class="fas fa-edit"></i>
-                                    </a>                               
-                                    <a href="{{ route('prestamos.reporte', $prestamo) }}" class="btn btn-sm btn-outline-danger"
-                                        target="_blank" title="Cronograma de pagos">
-                                            <i class="fas fa-file-pdf"></i>
-                                    </a>
+                                    <div class="dropdown">
+                                        <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="bi bi-gear-fill me-1"></i>
+                                            Acciones
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end shadow">
+                                            <li>
+                                                <h6 class="dropdown-header">CONSULTA</h6>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="{{ route('prestamos.show',$prestamo) }}">
+                                                    <i class="bi bi-eye me-2 text-primary"></i>
+                                                    Ver detalle
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="{{ route('prestamos.reporte',$prestamo) }}" target="_blank">
+                                                    <i class="bi bi-file-earmark-pdf me-2 text-danger"></i>
+                                                    Cronograma PDF
+                                                </a>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <h6 class="dropdown-header">MANTENIMIENTO</h6>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item"
+                                                href="{{ route('prestamos.edit',$prestamo) }}">
+                                                    <i class="bi bi-pencil-square me-2 text-warning"></i>
+                                                    Editar préstamo
+                                                </a>
+                                            </li>
+
+                                            <li>
+                                                <a class="dropdown-item disabled"
+                                                href="#">
+
+                                                    <i class="bi bi-people me-2 text-secondary"></i>
+                                                    Cambiar garante
+
+                                                </a>
+                                            </li>
+
+                                            <li><hr class="dropdown-divider"></li>
+
+                                            <li>
+                                                <h6 class="dropdown-header">
+                                                    OPERACIONES
+                                                </h6>
+                                            </li>
+
+                                            <li>
+                                                <a class="dropdown-item disabled"
+                                                href="#">
+
+                                                    <i class="bi bi-cash-coin me-2 text-success"></i>
+                                                    Registrar pago
+
+                                                </a>
+                                            </li>
+
+                                            <li>
+                                                <a class="dropdown-item disabled"
+                                                href="#">
+
+                                                    <i class="bi bi-receipt me-2 text-info"></i>
+                                                    Reporte de pagos
+
+                                                </a>
+                                            </li>
+
+                                            <li>
+                                                <a class="dropdown-item disabled"
+                                                href="#">
+
+                                                    <i class="bi bi-arrow-repeat me-2 text-warning"></i>
+                                                    Refinanciar
+
+                                                </a>
+                                            </li>
+
+                                        </ul>
+
+                                    </div>
+
                                 </td>
                             </tr>
                         @empty

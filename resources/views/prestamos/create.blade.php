@@ -5,7 +5,7 @@
 <input type="hidden" id="urlValidarSolicitud" value="{{ route('prestamos.validarSolicitud') }}">
 <input type="hidden" id="urlSimular" value="{{ route('prestamos.simular') }}">
 <input type="hidden" id="cronograma" name="cronograma">
-<div class="row g-4"> 
+<div class="row g-4">
     <div class="col-xl-8">
         {{-- Datos del préstamo --}}
         <div class="card shadow-sm mb-4">
@@ -119,8 +119,13 @@
     </div>
 </div><br>
   <div class="d-flex gap-2">
-    <button type="submit" class="btn btn-success"><i class="fas fa-floppy-disk me-1"></i>
-        Guardar y Consolidar el Préstamo
+    <button
+        type="button"
+        class="btn btn-success"
+        data-bs-toggle="modal"
+        data-bs-target="#modalConfirmarConsolidacion">
+        <i class="bi bi-check-circle"></i>
+        Consolidar y Guardar Prestamo
     </button>
     <a href="{{ route('prestamos.index') }}" class="btn btn-secondary">
         <i class="fas fa-arrow-left me-1"></i>
@@ -208,7 +213,7 @@
                         0
                     </div>
                 </div>
-                <hr>                
+                <hr>
                 <div class="mb-2">
                     <small class="text-muted">ITF</small>
                     <div id="rItf" class="fw-bold">-</div>
@@ -232,10 +237,69 @@
                 <div>
                     <small class="text-muted">Total a pagar</small>
                     <div id="rTotalPagado" class="fw-bold">0.00</div>
-                </div>               
+                </div>
             </div>
         </div>
     </div>
 </div>
 </form>
 </x-app-layout>
+<div class="modal fade" id="modalConfirmarConsolidacion" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow">
+
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-check-circle me-2"></i>
+                    Confirmar consolidación
+                </h5>
+
+                <button type="button"
+                        class="btn-close btn-close-white"
+                        data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <p class="mb-3">
+                    ¿Desea consolidar y guardar este préstamo?
+                </p>
+
+                <div class="alert alert-warning mb-0">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+
+                    El préstamo será registrado de forma definitiva y se
+                    generará el cronograma de pagos correspondiente.
+                    <strong>Esta acción no puede deshacerse.</strong>
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    Cancelar
+                </button>
+
+                <button type="button"
+                        class="btn btn-success"
+                        id="btnConfirmarConsolidacion">
+                    <i class="bi bi-check-circle me-1"></i>
+                    Consolidar
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById('btnConfirmarConsolidacion')
+    .addEventListener('click', function () {
+
+        document.getElementById('frmPrestamo').submit();
+
+    });
+</script>

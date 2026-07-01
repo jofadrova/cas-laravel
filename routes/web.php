@@ -11,6 +11,7 @@ use App\Http\Controllers\SocioInformacionController;
 use App\Http\Controllers\SocioReporteController;
 use App\Http\Controllers\PrestamoController;
 use App\Http\Controllers\TipoPrestamoController;
+use App\Services\ExchangeRateService;
 
 
 Route::get('/', function () {
@@ -18,9 +19,20 @@ Route::get('/', function () {
     }
     return redirect('/login');
 });
-
+/*
 Route::get('/dashboard', function () {
     return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
+*/
+Route::get('/dashboard', function (ExchangeRateService $exchangeRateService) {
+
+    return view('dashboard', [
+    'exchangeRate'   => $exchangeRateService->getLatest(),
+    'monthlyAverage' => $exchangeRateService->getMonthlyAverages(),
+    'history'        => $exchangeRateService->getHistory(30),
+
+]);
+
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -52,7 +64,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/socios/{socio}/estado',[SocioController::class, 'cambiarEstado'])->name('socios.estado');
     Route::get('/socios/{socio}/kardex',[SocioController::class, 'kardex'])->name('socios.kardex');
     Route::get('/socios/{socio}/revincular',[SocioController::class,'revincular'])->name('socios.revincular');
-   
+
     /*
     |--------------------------------------------------------------------------
     | PRESTAMOS
@@ -64,10 +76,11 @@ Route::middleware('auth')->group(function () {
         Route::post('/', [PrestamoController::class, 'store'])->name('store');
         Route::get('/{prestamo}/edit', [PrestamoController::class, 'edit'])->name('edit');
         Route::put('/{prestamo}', [PrestamoController::class, 'update'])->name('update');
+        Route::get('/{prestamo}', [PrestamoController::class, 'show'])->name('show');
         Route::get('/{prestamo}/reporte',[PrestamoController::class, 'reporte'])->name('reporte');
-        Route::post('/validar-solicitud', [PrestamoController::class, 'validarSolicitud'])->name('validarSolicitud');   
-        //Route::get('/simular',[PrestamoController::class, 'simular'])->name('simular');    
-        Route::post('/simular',[PrestamoController::class, 'simular'])->name('simular');     
+        Route::post('/validar-solicitud', [PrestamoController::class, 'validarSolicitud'])->name('validarSolicitud');
+        //Route::get('/simular',[PrestamoController::class, 'simular'])->name('simular');
+        Route::post('/simular',[PrestamoController::class, 'simular'])->name('simular');
         Route::get('/tipos', [TipoPrestamoController::class, 'index'])->name('tipos.index');
         Route::get('/tipos/create',[TipoPrestamoController::class, 'create'])->name('tipos.create');
         Route::post('/tipos', [TipoPrestamoController::class, 'store'])->name('tipos.store');

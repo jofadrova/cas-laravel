@@ -13,10 +13,13 @@ import "./roles";
 import "./permisos";
 import "./socios";
 import "./tasa.js";
-import './scas/papeleta-search.js';
-import './prestamos/form';
-import './scas/notifier';
+import "./scas/papeleta-search.js";
+import "./prestamos/form";
+import "./scas/notifier";
 
+import { initDashboard } from "./dashboard";
+
+window.initDashboard = initDashboard;
 window.Alpine = Alpine;
 
 Alpine.start();

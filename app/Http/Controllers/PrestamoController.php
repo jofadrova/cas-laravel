@@ -76,17 +76,13 @@ class PrestamoController extends Controller
                         'like',
                         "%{$buscar}%"
                     );
-
                     break;
             }
-
         })
-
         ->filters([
             'estado',
             'tipo_prestamo'
         ])
-
         ->sortable([
             'nro_solicitud',
             'monto',
@@ -94,7 +90,7 @@ class PrestamoController extends Controller
             'estado'
         ])
 
-        ->defaultSort('nro_solicitud');
+        ->defaultSort('nro_solicitud', 'desc');
 
         $prestamos = $table->paginate();
 
@@ -187,7 +183,7 @@ class PrestamoController extends Controller
             )
             ->orderBy('nro_cuota')
             ->get();
-        
+
 
         $contenidoQr ="Socio: ".$prestamo->socio->paterno." ".
         $prestamo->socio->materno." ".
@@ -212,9 +208,14 @@ class PrestamoController extends Controller
         $dompdf->render();
         $canvas = $dompdf->getCanvas();
         $canvas->page_text(480,760,"Página {PAGE_NUM} de {PAGE_COUNT}",null,8);
-        
+
         return $pdf->stream('Prestamo-'.$prestamo->nro_solicitud.'.pdf');
 
-       
+
+    }
+
+    public function show()
+    {
+
     }
 }
