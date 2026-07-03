@@ -26,7 +26,7 @@ class PrestamoController extends Controller
 
 
         $table = ScasTable::make(
-            Prestamo::with(['socio', 'tipo'])
+            Prestamo::with(['socio.institucion', 'tipo'])
         )
 
        ->customSearch(function ($query, $buscar) {

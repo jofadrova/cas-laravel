@@ -14,7 +14,7 @@
             </div>
             <div class="card-body">
                 <div class="row g-4">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label class="form-label">Tipo de préstamo</label>
                         <select id="tipoPrestamo" name="tipo_prestamo" class="form-select @error('tipo_prestamo') is-invalid @enderror">
                             <option value="">-- Seleccione --</option>
@@ -36,9 +36,15 @@
                         </select>
                         @error('tipo_prestamo')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-5">
                         <x-scas.papeleta-search name="id_socio" label="Solicitante" :value="old('id_socio')" />
                     </div>
+                     <div class="col-md-3">
+                        <label class="form-label">Fecha Depósito</label>
+                        <input type="date" id="fechaPrestamo" name="fechaPrestamo" class="form-control @error('fecha') is-invalid @enderror" value="{{ old('fechaPrestamo', now()->format('Y-m-d')) }}">
+                        @error('fechaPrestamo') <div class="invalid-feedback"> {{ $message }}</div>@enderror
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -63,6 +69,11 @@
                 <small id="maxMonto" class="text-muted d-block mt-2"></small>
                 @error('monto')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
+             <div class="col-lg-3">
+                <label class="form-label">Tipo de Cambio</label>
+                <input  type="number" step="0.00001" class="form-control @error('tipo_cambio') is-invalid @enderror" id="tipo_cambio" name="tipo_cambio" value="{{ old('tipo_cambio') }}">
+                @error('tipo_cambio')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </div>
             <div class="col-lg-3">
                 <label class="form-label">Plazo (meses)</label>
                 <input id="plazo" name="plazo" type="number" class="form-control @error('plazo') is-invalid @enderror" value="{{ old('plazo') }}">
@@ -79,11 +90,7 @@
                     @error('asiento') <div class="invalid-feedback"> {{ $message }}</div>@enderror
                 </div>
             </div>
-            <div class="col-lg-3">
-                <label class="form-label">Fecha préstamo</label>
-                <input type="date" id="fechaPrestamo" name="fechaPrestamo" class="form-control @error('fecha') is-invalid @enderror" value="{{ old('fechaPrestamo', now()->format('Y-m-d')) }}">
-                 @error('fechaPrestamo') <div class="invalid-feedback"> {{ $message }}</div>@enderror
-            </div>
+
             <div class="col-12">
                 <label class="form-label">Motivo</label>
                 <textarea name="motivo" rows="3" class="form-control @error('motivo') is-invalid @enderror" style="resize:none" maxlength="200" >{{ old('motivo') }}</textarea>
@@ -302,4 +309,5 @@
         document.getElementById('frmPrestamo').submit();
 
     });
+
 </script>

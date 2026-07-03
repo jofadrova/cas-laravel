@@ -141,6 +141,6 @@ class TipoPrestamoController extends Controller
                 'Estado del tipo de préstamo actualizado correctamente.'
             );
     }
-       
-    
+
+
 }

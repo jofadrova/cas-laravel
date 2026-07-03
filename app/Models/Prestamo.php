@@ -26,6 +26,8 @@ class Prestamo extends Model
         'estado',
         'gadm',
         'periodo_gadm',
+        'fecha_deposito',
+        'tipo_cambio',
     ];
 
     public function socio()

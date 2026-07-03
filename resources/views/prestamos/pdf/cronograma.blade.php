@@ -177,7 +177,7 @@ table{
                             </tr>
                             <tr>
                                 <td style="font-weight:bold;">Fecha:</td>
-                                <td> {{ \Carbon\Carbon::parse($prestamo->fecha)->format('d/m/Y') }}</td>
+                                <td> {{ \Carbon\Carbon::parse($prestamo->fecha_deposito)->format('d/m/Y') }}</td>
                             </tr>
                             <tr>
                                 <td style="font-weight:bold;">Periodo</td>

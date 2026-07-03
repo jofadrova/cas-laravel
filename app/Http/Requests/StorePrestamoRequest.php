@@ -56,7 +56,7 @@ class StorePrestamoRequest extends FormRequest
 
             'asiento' => [
                 'required',
-                'string',                
+                'string',
             ],
 
             'fechaPrestamo' => [
@@ -66,11 +66,16 @@ class StorePrestamoRequest extends FormRequest
 
             'motivo' => [
                 'required',
-                'string',               
+                'string',
             ],
             'cronograma' => [
                 'required',
                 'json',
+            ],
+            'tipo_cambio' => [
+                'required',
+                'numeric',
+                'gt:0',
             ],
 
         ];
@@ -107,7 +112,8 @@ class StorePrestamoRequest extends FormRequest
             'fecha.date'              => 'La fecha del préstamo no es válida.',
 
             'motivo.required'              => 'El motivo no puede exceder los 255 caracteres.',
-            
+            'tipo_cambio.required'        => 'Debe introducir el Tipo de Cambio del Comprobante.',
+
         ];
     }
 
@@ -126,6 +132,7 @@ class StorePrestamoRequest extends FormRequest
             'asiento'        => 'asiento',
             'fecha'          => 'fecha del préstamo',
             'motivo'         => 'motivo',
+            'tipo_cambio'    => 'tipo_cambio'
         ];
     }
 }

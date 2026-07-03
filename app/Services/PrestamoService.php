@@ -30,7 +30,7 @@ class PrestamoService
             }
             $prestamo = $this->guardarSolicitud($datos, $tasa);
             $this->guardarCuotas($prestamo, json_decode($datos['cronograma'], true));
-           
+
 
 
             return $prestamo;
@@ -69,12 +69,13 @@ class PrestamoService
 
             'gadm'           => 0,
             'periodo_gadm'   => 0,
+            'fecha_deposito' => $datos['fechaPrestamo'],
 
         ]);
         $prestamo->save();
         return $prestamo;
 
-       
+
     }
 
     private function guardarCuotas(

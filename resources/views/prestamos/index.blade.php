@@ -91,6 +91,7 @@
                     <thead class="table-light">
                         <tr>
                             <th>Solicitud</th>
+                            <th class="text-center">Nro. Papeleta</th>
                             <th>Socio</th>
                             <th>Tipo</th>
                             <th class="text-end">Monto</th>
@@ -104,6 +105,7 @@
                         @forelse($prestamos as $prestamo)
                             <tr>
                                 <td>{{ $prestamo->nro_solicitud }}</td>
+                                <td class="text-center">{{ $prestamo->socio->institucion->papeleta ?? '-' }}</td>
                                 <td>{{ implode(' ', array_filter([
                                         optional($prestamo->socio)->paterno,
                                         optional($prestamo->socio)->materno,
@@ -123,7 +125,7 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="dropdown">
-                                        <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <button class="btn btn-outline-primary btn-sm dropdown-toggle w-100" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                             <i class="bi bi-gear-fill me-1"></i>
                                             Acciones
                                         </button>

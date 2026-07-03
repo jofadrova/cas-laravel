@@ -70,27 +70,62 @@ Route::middleware('auth')->group(function () {
     | PRESTAMOS
     |--------------------------------------------------------------------------
     */
-    Route::prefix('prestamos')->name('prestamos.')->group(function() {
-        Route::get('/', [PrestamoController::class, 'index'])->name('index');
-        Route::get('/create', [PrestamoController::class, 'create'])->name('create');
-        Route::post('/', [PrestamoController::class, 'store'])->name('store');
-        Route::get('/{prestamo}/edit', [PrestamoController::class, 'edit'])->name('edit');
-        Route::put('/{prestamo}', [PrestamoController::class, 'update'])->name('update');
-        Route::get('/{prestamo}', [PrestamoController::class, 'show'])->name('show');
-        Route::get('/{prestamo}/reporte',[PrestamoController::class, 'reporte'])->name('reporte');
-        Route::post('/validar-solicitud', [PrestamoController::class, 'validarSolicitud'])->name('validarSolicitud');
-        //Route::get('/simular',[PrestamoController::class, 'simular'])->name('simular');
-        Route::post('/simular',[PrestamoController::class, 'simular'])->name('simular');
+   /*
+|--------------------------------------------------------------------------
+| PRESTAMOS
+|--------------------------------------------------------------------------
+*/
+Route::prefix('prestamos')->name('prestamos.')->group(function () {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Catálogos
+        |--------------------------------------------------------------------------
+        */
         Route::get('/tipos', [TipoPrestamoController::class, 'index'])->name('tipos.index');
-        Route::get('/tipos/create',[TipoPrestamoController::class, 'create'])->name('tipos.create');
+        Route::get('/tipos/create', [TipoPrestamoController::class, 'create'])->name('tipos.create');
         Route::post('/tipos', [TipoPrestamoController::class, 'store'])->name('tipos.store');
         Route::get('/tipos/{tasa}/edit', [TipoPrestamoController::class, 'edit'])->name('tipos.edit');
         Route::put('/tipos/{tasa}', [TipoPrestamoController::class, 'update'])->name('tipos.update');
         Route::patch('/tipos/{tasa}/estado', [TipoPrestamoController::class, 'estado'])->name('tipos.estado');
-        Route::get('/proyeccion', [PrestamoController::class, 'proyeccion'])->name('proyeccion');
-        Route::get('/depositos', [PrestamoController::class, 'depositos'])->name('depositos');
-    });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Consultas y procesos
+        |--------------------------------------------------------------------------
+        */
+        Route::post('/validar-solicitud', [PrestamoController::class, 'validarSolicitud'])
+            ->name('validarSolicitud');
+
+        Route::post('/simular', [PrestamoController::class, 'simular'])
+            ->name('simular');
+
+        Route::get('/proyeccion', [PrestamoController::class, 'proyeccion'])
+            ->name('proyeccion');
+
+        Route::get('/depositos', [PrestamoController::class, 'depositos'])
+            ->name('depositos');
+
+        /*
+        |--------------------------------------------------------------------------
+        | CRUD de Préstamos
+        |--------------------------------------------------------------------------
+        */
+        Route::get('/', [PrestamoController::class, 'index'])->name('index');
+        Route::get('/create', [PrestamoController::class, 'create'])->name('create');
+        Route::post('/', [PrestamoController::class, 'store'])->name('store');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Rutas con parámetros (SIEMPRE AL FINAL)
+        |--------------------------------------------------------------------------
+        */
+        Route::get('/{prestamo}', [PrestamoController::class, 'show'])->name('show');
+        Route::get('/{prestamo}/edit', [PrestamoController::class, 'edit'])->name('edit');
+        Route::put('/{prestamo}', [PrestamoController::class, 'update'])->name('update');
+        Route::get('/{prestamo}/reporte', [PrestamoController::class, 'reporte'])->name('reporte');
 
     });
+});
 
 require __DIR__.'/auth.php';
