@@ -86,7 +86,7 @@
 <div class="row mt-4">
     <div class="col-lg-8">
         <div class="card shadow-sm border-0 rounded-4">
-            <div class="card-header bg-white">
+            <div class="card-header">
                 <strong>Evolución del USD</strong>
             </div>
             <div class="card-body" style="height:350px">
@@ -96,7 +96,7 @@
     </div>
     <div class="col-lg-4">
         <div class="card shadow-sm border-0 rounded-4">
-            <div class="card-header bg-white">
+            <div class="card-header">
                 <strong>Últimas cotizaciones</strong>
             </div>
             <div class="table-responsive">
