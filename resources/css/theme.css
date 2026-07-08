@@ -1,0 +1,307 @@
+/*
+|--------------------------------------------------------------------------
+| SCAS Theme
+|--------------------------------------------------------------------------
+| Variables de color para Light y Dark Mode
+*/
+
+:root {
+     --bg-body: #f5f6fa;
+    --bg-content: #ffffff;
+    --bg-sidebar: #198754;
+    --bg-navbar: #ffffff;
+    --bg-card: #ffffff;
+    --bg-hover: #f8f9fa;
+
+    /* Texto */
+
+    --text-primary: #212529;
+    --text-secondary: #6c757d;
+    --text-muted: #868e96;
+
+    /* Bordes */
+
+    --border-color: #dee2e6;
+
+    /* Sombras */
+
+    --shadow-sm: 0 .125rem .25rem rgba(0,0,0,.075);
+
+    /* Componentes */
+
+    --table-header: #f8f9fa;
+
+}
+/*
+|--------------------------------------------------------------------------
+| Dark Theme
+|--------------------------------------------------------------------------
+*/
+
+[data-theme="dark"] {
+
+    /* ===== Fondo ===== */
+
+    --bg-body:#121212;
+    --bg-content:#181818;
+    --bg-sidebar:#0f5132;
+    --bg-navbar:#1d1d1d;
+    --bg-card:#232323;
+    --bg-hover:#2d2d2d;
+
+    --text-primary:#f8f9fa;
+    --text-secondary:#ced4da;
+    --text-muted:#adb5bd;
+
+    --border-color:#444;
+
+    --shadow-sm:0 .125rem .25rem rgba(0,0,0,.45);
+
+    --table-header:#2c2c2c;
+
+}
+
+/* ==========================
+   Layout principal
+========================== */
+
+body{
+    background: var(--bg-body);
+    color: var(--text-primary);
+    transition: background .25s ease, color .25s ease;
+}
+
+main{
+
+    background: var(--bg-body);
+    color: var(--text-primary);
+    min-height: calc(100vh - 56px);
+
+}
+
+.scas-topbar{
+     background-color:var(--bg-navbar)!important;
+    border-bottom:1px solid var(--border-color)!important;
+}
+
+.scas-topbar .navbar-brand{
+    color: var(--text-primary) !important;
+
+}
+
+.scas-topbar,
+.scas-topbar *{
+    color: var(--text-primary);
+}
+.scas-topbar .btn-outline-danger{
+    color:#dc3545;
+}
+.scas-sidebar{
+    background:var(--bg-sidebar);
+    box-shadow:4px 0 15px rgba(0,0,0,.15);
+    min-height:100vh;
+    transition: background .25s ease;
+}
+
+.card{
+    background-color:var(--bg-card);
+    color:var(--text-primary);
+    border:1px solid var(--border-color);
+    box-shadow:var(--shadow-sm);
+    border-radius:10px;
+}
+.card:hover{
+    transform:translateY(-2px);
+    transition:.18s;
+}
+
+
+[data-bs-theme="dark"]{
+
+    --bs-body-bg:#181818;
+    --bs-body-color:#f8f9fa;
+
+    --bs-border-color:#444;
+
+    --bs-card-bg:#232323;
+    --bs-card-color:#f8f9fa;
+
+    --bs-tertiary-bg:#2d2d2d;
+
+    --bs-secondary-bg:#252525;
+
+    --bs-table-bg:#232323;
+    --bs-table-color:#f8f9fa;
+    --bs-table-striped-bg:#282828;
+    --bs-table-hover-bg:#313131;
+    --table-header:#30353b;
+
+}
+
+.card-header,
+.card-body{
+    background:var(--bs-card-bg);
+}
+.card-header{
+    border-bottom:1px solid var(--bs-border-color);
+}
+.card-footer{
+    background-color: var(--bs-card-bg);
+    border-top: 1px solid var(--bs-border-color);
+}
+
+.table thead{
+
+    background: var(--table-header);
+
+}
+.table thead th{
+
+    border-bottom:2px solid #198754 !important;
+
+}
+.table-hover tbody tr:hover{
+
+    background:var(--bg-hover);
+
+}
+
+.form-control,
+.form-select{
+
+    background:var(--bg-card);
+    color:var(--text-primary);
+    border:1px solid var(--border-color);
+}
+.form-control::placeholder{
+
+    color:var(--text-muted);
+
+}
+
+[data-theme="dark"] .form-control,
+[data-theme="dark"] .form-select{
+
+    background:#2a2a2a !important;
+    color:#f8f9fa !important;  
+    border-color:#198754;
+    box-shadow:0 0 0 .2rem rgba(25,135,84,.25);
+}
+[data-theme="dark"] .form-control::placeholder{
+
+    color:#9ca3af !important;
+
+}
+[data-theme="dark"] .table{
+
+    --bs-table-bg: var(--bg-card);
+    --bs-table-color: var(--text-primary);
+    --bs-table-border-color: var(--border-color);
+    --bs-table-striped-bg:#252525;
+    --bs-table-hover-bg:#313131;
+}
+
+.modal-content{
+
+    background:var(--bg-card);
+    color:var(--text-primary);
+    border-color:var(--border-color);
+}
+
+.dropdown-menu{
+
+    background:var(--bg-card);
+
+    border-color:var(--border-color);
+
+}
+
+/* ==========================
+   Sidebar
+========================== */
+
+.scas-sidebar .nav-link{
+
+    padding:.65rem .9rem;
+
+    margin-bottom:4px;
+
+}
+
+.scas-sidebar .nav-link:hover{
+
+    background:rgba(255,255,255,.12);
+
+}
+.active-menu{
+
+    background:rgba(255,255,255,.92);
+    box-shadow:0 2px 6px rgba(0,0,0,.15);
+    color:#198754!important;
+
+    border-left:4px solid #14532d;
+
+}
+
+.scas-sidebar h6{
+
+    opacity:.75;
+    letter-spacing:1px;
+    font-size:.72rem;
+}
+
+.scas-sidebar img{
+    transition:.30s;
+}
+
+.card,
+.table,
+.form-control,
+.form-select,
+.modal-content,
+.dropdown-menu{
+
+    transition:
+        background-color .20s ease,
+        color .20s ease,
+        border-color .20s ease;
+
+}
+
+.form-control:focus,
+.form-select:focus{
+
+    box-shadow:none;
+
+}
+
+/*==================================================
+    TABLE HEADER
+==================================================*/
+
+.table thead th{
+
+    background-color: var(--table-header) !important;
+
+    color: var(--text-primary) !important;
+
+    border-color: var(--border-color) !important;
+
+    font-weight:600;
+
+    vertical-align:middle;
+
+}
+
+[data-bs-theme="dark"] .btn:disabled,
+[data-bs-theme="dark"] .btn.disabled{
+
+    background:#3a3a3a;
+
+    border-color:#555;
+
+    color:#bfbfbf;
+
+    opacity:1;
+
+}

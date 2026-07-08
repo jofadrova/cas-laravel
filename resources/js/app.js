@@ -16,6 +16,7 @@ import "./tasa.js";
 import "./scas/papeleta-search.js";
 import "./prestamos/form";
 import "./scas/notifier";
+import './theme';
 
 import { initDashboard } from "./dashboard";
 

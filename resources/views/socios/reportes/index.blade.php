@@ -36,7 +36,7 @@
                         </p>
                     </div>
 
-                    <div class="card-footer bg-white border-0">
+                    <div class="card-footer border-0">
                         <button class="btn btn-outline-secondary btn-sm" disabled>
                             Próximamente
                         </button>
@@ -81,7 +81,7 @@
                         </p>
                     </div>
 
-                    <div class="card-footer bg-white border-0">
+                    <div class="card-footer border-0">
                         <button class="btn btn-outline-secondary btn-sm" disabled>
                             Próximamente
                         </button>
@@ -97,9 +97,7 @@
         <i class="fas fa-users me-2"></i>
         Socios
     </h4>
-
     <div class="row g-4 mb-5">
-
         @php
             $reportesSocios = [
                 ['icono' => 'fas fa-user-graduate', 'titulo' => 'Promociones', 'descripcion' => 'Socios por año de promoción.'],
@@ -122,7 +120,7 @@
                         </p>
                     </div>
 
-                    <div class="card-footer bg-white border-0">
+                    <div class="card-footer border-0">
                         <button class="btn btn-outline-secondary btn-sm" disabled>
                             Próximamente
                         </button>
@@ -130,46 +128,30 @@
                 </div>
             </div>
         @endforeach
-
     </div>
-
     {{-- KARDEX --}}
     <h4 class="mb-3 text-warning">
         <i class="fas fa-book me-2"></i>
         Kardex
     </h4>
-
     <div class="row g-4">
-
         <div class="col-md-6 col-xl-4">
-
             <div class="card h-100 shadow-sm border-0">
-
                 <div class="card-body">
-
                     <h5 class="card-title">
                         <i class="fas fa-book text-warning me-2"></i>
                         Kardex CAS
                     </h5>
-
                     <p class="card-text text-muted">
                         Kardex Conta - Cartera consolidado.
                     </p>
-
                 </div>
-
-                <div class="card-footer bg-white border-0">
-
+                <div class="card-footer border-0">
                     <button class="btn btn-outline-secondary btn-sm" disabled>
                         Próximamente
                     </button>
-
                 </div>
-
             </div>
-
         </div>
-
     </div>
-
 </x-app-layout>

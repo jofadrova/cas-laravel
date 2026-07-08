@@ -1,4 +1,4 @@
-<div class="bg-success text-white h-100 p-3" style="min-height:100vh;">
+<div class="scas-sidebar text-white h-100 p-3">
         <img src="{{ asset('images/cas_sidebar.png') }}" alt="CAS" class="d-block mx-auto mb-3" style="max-height: 120px;  filter: drop-shadow(0px 8px 16px rgba(0, 0, 0, 0.3));">
 
     <hr>
@@ -85,7 +85,7 @@
 
         <li class="nav-item">
             <a href="{{ route('prestamos.index') }}" class="nav-link text-white
-            {{ request()->routeIs('prestamos.index') ? 'active:menu' : '' }}">
+            {{ request()->routeIs('prestamos.index') ? 'active-menu' : '' }}">
                 <i class="bi bi-cash-coin me-2"></i>
                 Gestión de Préstamos
             </a>

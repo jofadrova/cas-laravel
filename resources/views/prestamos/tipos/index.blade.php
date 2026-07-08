@@ -72,17 +72,18 @@
             <table class="table table-hover align-middle">
                 <thead class="table-light">
                     <tr>
-                        <th><a href="{{ $table->sortUrl('descripcion_tasa') }}" class="text-decoration-none text-dark">
+                        <th><a href="{{ $table->sortUrl('descripcion_tasa') }}" class="text-decoration-none">
                         Descripción<i class="fas {{ $table->sortIcon('descripcion_tasa') }}"></i></a>
-                       <th><a href="{{ $table->sortUrl('tipo_moneda') }}" class="text-decoration-none text-dark">
+                        </th>
+                        <th><a href="{{ $table->sortUrl('tipo_moneda') }}" class="text-decoration-none">
                         Moneda<i class="fas {{ $table->sortIcon('tipo_moneda') }}"></i></a>
                         </th>
-                        <th><a href="{{ $table->sortUrl('porcentaje') }}" class="text-decoration-none text-dark">
+                        <th><a href="{{ $table->sortUrl('porcentaje') }}" class="text-decoration-none">
                         % Interés<i class="fas {{ $table->sortIcon('porcentaje') }}"></i></a>  
                         </th>                      
                         <th>Monto Máximo</th>
                         <th>Plazo Máximo</th>
-                         <th><a href="{{ $table->sortUrl('estado') }}" class="text-decoration-none text-dark">
+                         <th><a href="{{ $table->sortUrl('estado') }}" class="text-decoration-none">
                         Estado<i class="fas {{ $table->sortIcon('estado') }}"></i></a>  
                         </th>   
                         <th class="text-center">Opciones</th>

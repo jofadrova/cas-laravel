@@ -1,9 +1,5 @@
 <x-app-layout>
-
-    <x-slot name="header">
-        Gestión de Socios
-    </x-slot>
-
+    <x-slot name="header">Gestión de Socios</x-slot>
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show">
             <i class="fa-solid fa-circle-check me-2"></i>
@@ -25,93 +21,88 @@
         </div>
     @endif
     <div class="card shadow-sm">
-        <div class="card-header d-flex justify-content-between">
+        <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Gestión de Socios</h5>
             <a href="{{ route('socios.create') }}"
                class="btn btn-success">
                 <i class="bi bi-plus-circle me-1"></i>Nuevo Socio
             </a>
-        </div>
-        <div class="card-body border-bottom bg-light">
-            <form method="GET" action="{{ route('socios.index') }}">
-                <div class="row g-3">
-                    <div class="col-md-3">
-                        <label class="form-label">Buscar por</label>
-                        <select name="buscar_por" class="form-select">
-                            <option value="papeleta"
-                                {{ request('buscar_por') == 'papeleta' ? 'selected' : '' }}>
-                                Nro Papeleta
-                            </option>
-                            <option value="ci"
-                                {{ request('buscar_por') == 'ci' ? 'selected' : '' }}>
-                                CI
-                            </option>
+        </div>       
+        <form method="GET" action="{{ route('socios.index') }}">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Buscar por</label>
+                    <select name="buscar_por" class="form-select">
+                        <option value="papeleta"
+                            {{ request('buscar_por') == 'papeleta' ? 'selected' : '' }}>
+                            Nro Papeleta
+                        </option>
+                        <option value="ci"
+                            {{ request('buscar_por') == 'ci' ? 'selected' : '' }}>
+                            CI
+                        </option>
 
-                            <option value="apellido"
-                                {{ request('buscar_por') == 'apellido' ? 'selected' : '' }}>
-                                Apellido
-                            </option>
+                        <option value="apellido"
+                            {{ request('buscar_por') == 'apellido' ? 'selected' : '' }}>
+                            Apellido
+                        </option>
 
-                            <option value="nombre"
-                                {{ request('buscar_por') == 'nombre' ? 'selected' : '' }}>
-                                Nombre
-                            </option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-3">
-                        <label class="form-label">Valor</label>
-                        <input type="text"
-                            name="valor"
-                            class="form-control"
-                            value="{{ request('valor') }}">
-                    </div>
-
-                    <div class="col-md-2">
-                        <label class="form-label">Estado</label>
-                        <select name="estado" class="form-select">
-                            <option value="">Todos</option>
-
-                            <option value="AC"
-                                {{ request('estado') == 'AC' ? 'selected' : '' }}>
-                                Activos
-                            </option>
-
-                            <option value="BA"
-                                {{ request('estado') == 'BA' ? 'selected' : '' }}>
-                                Baja
-                            </option>
-
-                            <option value="SU"
-                                {{ request('estado') == 'SU' ? 'selected' : '' }}>
-                                Suspendidos
-                            </option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-2">
-                        <label class="form-label">Registros</label>
-                        <select name="per_page" class="form-select">
-                            <option value="10" {{ request('per_page',10)==10 ? 'selected':'' }}>10</option>
-                            <option value="25" {{ request('per_page')==25 ? 'selected':'' }}>25</option>
-                            <option value="50" {{ request('per_page')==50 ? 'selected':'' }}>50</option>
-                            <option value="100" {{ request('per_page')==100 ? 'selected':'' }}>100</option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-2 d-flex align-items-end">
-                        <button type="submit"
-                                class="btn btn-primary w-100">
-                            <i class="fas fa-search me-1"></i>
-                            Buscar
-                        </button>
-                    </div>
-
+                        <option value="nombre"
+                            {{ request('buscar_por') == 'nombre' ? 'selected' : '' }}>
+                            Nombre
+                        </option>
+                    </select>
                 </div>
 
-            </form>
+                <div class="col-md-3">
+                    <label class="form-label">Valor</label>
+                    <input type="text"
+                        name="valor"
+                        class="form-control"
+                        value="{{ request('valor') }}">
+                </div>
 
-        </div>
+                <div class="col-md-2">
+                    <label class="form-label">Estado</label>
+                    <select name="estado" class="form-select">
+                        <option value="">Todos</option>
+
+                        <option value="AC"
+                            {{ request('estado') == 'AC' ? 'selected' : '' }}>
+                            Activos
+                        </option>
+
+                        <option value="BA"
+                            {{ request('estado') == 'BA' ? 'selected' : '' }}>
+                            Baja
+                        </option>
+
+                        <option value="SU"
+                            {{ request('estado') == 'SU' ? 'selected' : '' }}>
+                            Suspendidos
+                        </option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Registros</label>
+                    <select name="per_page" class="form-select">
+                        <option value="10" {{ request('per_page',10)==10 ? 'selected':'' }}>10</option>
+                        <option value="25" {{ request('per_page')==25 ? 'selected':'' }}>25</option>
+                        <option value="50" {{ request('per_page')==50 ? 'selected':'' }}>50</option>
+                        <option value="100" {{ request('per_page')==100 ? 'selected':'' }}>100</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit"
+                            class="btn btn-primary w-100">
+                        <i class="fas fa-search me-1"></i>
+                        Buscar
+                    </button>
+                </div>
+            </div>
+        </form>       
         <div class="card-body">
             <table class="table table-hover align-middle">
                 <thead class="table-light">
@@ -127,10 +118,8 @@
                                     ? 'desc'
                                     : 'asc'
                             ])) }}"
-                            class="text-dark text-decoration-none fw-bold">
-
+                            class="text-decoration-none fw-bold">
                                 Papeleta
-
                                 @if($currentSort == 'papeleta')
                                     <i class="fas fa-sort-{{ $currentDirection == 'asc' ? 'up' : 'down' }} ms-1"></i>
                                 @else
@@ -145,10 +134,8 @@
                                     ? 'desc'
                                     : 'asc'
                             ])) }}"
-                            class="text-dark text-decoration-none fw-bold">
-
+                            class="text-decoration-none fw-bold">
                                 Grado
-
                                 @if($currentSort == 'grado')
                                     <i class="fas fa-sort-{{ $currentDirection == 'asc' ? 'up' : 'down' }} ms-1"></i>
                                 @else
@@ -163,10 +150,8 @@
                                     ? 'desc'
                                     : 'asc'
                             ])) }}"
-                            class="text-dark text-decoration-none fw-bold">
-
+                            class="text-decoration-none fw-bold">
                                 Socio
-
                                 @if($currentSort == 'paterno')
                                     <i class="fas fa-sort-{{ $currentDirection == 'asc' ? 'up' : 'down' }} ms-1"></i>
                                 @else
@@ -181,10 +166,8 @@
                                     ? 'desc'
                                     : 'asc'
                             ])) }}"
-                            class="text-dark text-decoration-none fw-bold">
-
+                            class="text-decoration-none fw-bold">
                                 CI
-
                                 @if($currentSort == 'nro_doc')
                                     <i class="fas fa-sort-{{ $currentDirection == 'asc' ? 'up' : 'down' }} ms-1"></i>
                                 @else
@@ -199,10 +182,8 @@
                                     ? 'desc'
                                     : 'asc'
                             ])) }}"
-                            class="text-dark text-decoration-none fw-bold">
-
+                            class="text-decoration-none fw-bold">
                                 Estado
-
                                 @if($currentSort == 'estado')
                                     <i class="fas fa-sort-{{ $currentDirection == 'asc' ? 'up' : 'down' }} ms-1"></i>
                                 @else

@@ -8,43 +8,16 @@
         </div>
     @endif
     <form method="GET">
-
-<div class="row mb-3">
-
-<div class="col-md-5">
-
-<input
-
-name="buscar"
-
-class="form-control"
-
-placeholder="Buscar permiso..."
-
-value="{{ request('buscar') }}">
-
-</div>
-
-<div class="col-md-3">
-
-<button class="btn btn-primary">
-
-Buscar
-
-</button>
-
-<a href="{{ route('permisos.index') }}"
-class="btn btn-secondary">
-
-Limpiar
-
-</a>
-
-</div>
-
-</div>
-
-</form>
+        <div class="row mb-3">
+            <div class="col-md-5">
+                <input name="buscar"  class="form-control" placeholder="Buscar permiso..." value="{{ request('buscar') }}">
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-primary">Buscar</button>
+                <a href="{{ route('permisos.index') }}" class="btn btn-secondary">Limpiar</a>
+            </div>
+        </div>
+    </form>
     <div class="card shadow-sm">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">
@@ -59,28 +32,15 @@ Limpiar
             <table class="table table-hover align-middle">
                 <thead class="table-light">
                     <tr>
-                       <th><a href="{{ $table->sortUrl('id') }}" class="text-decoration-none text-dark">
-
-
-
-ID
-
-<i class="fas {{ $table->sortIcon('id') }}"></i>
-
-</a>
-
-</th>
-                        <th>
-
-<a href="{{ $table->sortUrl('name') }}" class="text-decoration-none text-dark">
-
-Permiso
-
-<i class="fas {{ $table->sortIcon('name') }}"></i>
-
-</a>
-
-</th>
+                        <th><a href="{{ $table->sortUrl('id') }}" class="text-decoration-none">
+                            ID
+                            <i class="fas {{ $table->sortIcon('id') }}"></i></a>
+                        </th>
+                        <th><a href="{{ $table->sortUrl('name') }}" class="text-decoration-none">
+                            Permiso
+                            <i class="fas {{ $table->sortIcon('name') }}"></i>
+                            </a>
+                        </th>
                         <th>Guard</th>
                         <th class="text-center">Opciones</th>
                     </tr>

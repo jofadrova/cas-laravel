@@ -47,15 +47,15 @@
             <table class="table table-hover align-middle">
                 <thead class="table-light">
                     <tr>
-                        <th><a href="{{ $table->sortUrl('username') }}"class="text-decoration-none text-dark">
+                        <th><a href="{{ $table->sortUrl('username') }}"class="text-decoration-none">
                             Usuario
                             <i class="fas {{ $table->sortIcon('username') }}"></i></a>
                         </th>
-                       <th><a href="{{ $table->sortUrl('name') }}" class="text-decoration-none text-dark">
+                       <th><a href="{{ $table->sortUrl('name') }}" class="text-decoration-none">
                             Nombre
                             <i class="fas {{ $table->sortIcon('name') }}"></i></a>
                         </th>
-                        <th><a href="{{ $table->sortUrl('estado') }}" class="text-decoration-none text-dark">
+                        <th><a href="{{ $table->sortUrl('estado') }}" class="text-decoration-none">
                             Estado
                             <i class="fas {{ $table->sortIcon('estado') }}"></i></a>
                         </th>

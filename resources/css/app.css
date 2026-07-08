@@ -1,3 +1,6 @@
+@import './theme.css';
+
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -17,3 +20,4 @@
 .nav-link.active-menu span {
     color: #ffffff !important;
 }
+
