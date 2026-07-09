@@ -247,9 +247,7 @@ table{
             <table width="100%">
                 <tr>
                     <td><strong>Otorgado a</strong></td>
-                    <td>
-
-                        {{ $prestamo->socio->paterno }}
+                    <td>{{ $prestamo->socio->paterno }}
                         {{ $prestamo->socio->materno }}
                         {{ $prestamo->socio->nombres }}
                     </td>
@@ -269,8 +267,7 @@ table{
                @if($prestamo->id_garante1 != 0)
                 <tr>
                     <td><strong>Garante 1</strong></td>
-                    <td>
-                        {{ optional($prestamo->garante1)->paterno }}
+                    <td>{{ optional($prestamo->garante1)->paterno }}
                         {{ optional($prestamo->garante1)->materno }}
                         {{ optional($prestamo->garante1)->nombres }}
                     </td>
@@ -279,8 +276,7 @@ table{
                 @if($prestamo->id_garante2 != 0)
                 <tr>
                     <td><strong>Garante 2</strong></td>
-                    <td>
-                        {{ optional($prestamo->garante2)->paterno }}
+                    <td>{{ optional($prestamo->garante2)->paterno }}
                         {{ optional($prestamo->garante2)->materno }}
                         {{ optional($prestamo->garante2)->nombres }}
                     </td>
@@ -306,46 +302,20 @@ table{
                     <td><strong>Min. Defensa</strong></td>
                     <td>{{ number_format($prestamo->min_defensa,2) }} %</td>
                 </tr>
-
                 <tr>
-
                     <td><strong>ITF</strong></td>
-
-                    <td>
-
-                        {{ number_format($prestamo->itf,2) }}
-
-                    </td>
-
+                    <td>{{ number_format($prestamo->itf,2) }}</td>
                 </tr>
-
                 <tr>
-
                     <td><strong>Estado</strong></td>
-
                     <td>
-
-                        <span style="
-                            background:#198754;
-                            color:white;
-                            padding:3px 10px;
-                            border-radius:12px;
-                            font-size:10px;
-                            font-weight:bold;
-                        ">
-
+                        <span style=" background:#198754;  color:white; padding:3px 10px; border-radius:12px; font-size:10px; font-weight:bold; ">
                             ACTIVO
-
                         </span>
-
                     </td>
-
                 </tr>
-
             </table>
-
         </td>
-
         <!-- ========================= -->
         <!-- DERECHA -->
         <!-- ========================= -->
@@ -374,7 +344,7 @@ table{
         </td>
     </tr>
 </table>
-<div class="band">CRONOGRAMA DE PAGOS</div>
+<div class="band">PLAN DE PAGOS</div>
 <table class="crono">
     <thead>
         <tr>
@@ -392,13 +362,20 @@ table{
 <tbody>
     @php($tCuota=$tCap=$tInt=$tMin=$tItf=$tPap=0)
     @foreach($cuotas as $c)
-    @php($tCuota+=$c->cuota_fija) @php($tCap+=$c->amortizacion_cap) @php($tInt+=$c->interes) @php($tMin+=$c->min_defensa) @php($tItf+=$c->itf) @php($tPap+=$c->papel)
+    @php($tCuota+=$c->cuota_fija)
+    @php($tCap+=$c->amortizacion_cap) @php($tInt+=$c->interes) @php($tMin+=$c->min_defensa) @php($tItf+=$c->itf) @php($tPap+=$c->papel)
         <tr>
             <td class="c">{{ $c->nro_cuota }}</td>
             <td class="c">{{ sprintf('%02d',$c->mes) }}/{{ $c->gestion }}</td>
             <td class="r">{{ number_format($c->cuota_fija,2) }}</td><td class="r">{{ number_format($c->amortizacion_cap,2) }}</td><td class="r">{{ number_format($c->interes,2) }}</td><td class="r">{{ number_format($c->min_defensa,2) }}</td><td class="r">{{ number_format($c->itf,2) }}</td><td class="r">{{ number_format($c->papel,2) }}</td><td class="r">{{ number_format($c->saldo,2) }}</td></tr>
     @endforeach
-    <tr class="total"><td colspan="2">TOTAL</td><td class="r">{{ number_format($tCuota,2) }}</td><td class="r">{{ number_format($tCap,2) }}</td><td class="r">{{ number_format($tInt,2) }}</td><td class="r">{{ number_format($tMin,2) }}</td><td class="r">{{ number_format($tItf,2) }}</td><td class="r">{{ number_format($tPap,2) }}</td><td></td></tr>
+    <tr class="total">
+        <td colspan="2">TOTAL</td>
+        <td class="r">{{ number_format($tCuota,2) }}</td>
+        <td class="r">{{ number_format($tCap,2) }}</td>
+        <td class="r">{{ number_format($tInt,2) }}</td>
+        <td class="r">{{ number_format($tMin,2) }}</td>
+        <td class="r">{{ number_format($tItf,2) }}</td><td class="r">{{ number_format($tPap,2) }}</td><td></td></tr>
     </tbody>
 </table>
 <div class="footer">Documento generado por SCAS</div>

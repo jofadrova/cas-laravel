@@ -70,6 +70,7 @@ class PrestamoService
             'gadm'           => 0,
             'periodo_gadm'   => 0,
             'fecha_deposito' => $datos['fechaPrestamo'],
+            'tipo_cambio' => $datos['tipo_cambio'],
 
         ]);
         $prestamo->save();

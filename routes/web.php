@@ -94,6 +94,7 @@ Route::prefix('prestamos')->name('prestamos.')->group(function () {
         | Consultas y procesos
         |--------------------------------------------------------------------------
         */
+
         Route::post('/validar-solicitud', [PrestamoController::class, 'validarSolicitud'])
             ->name('validarSolicitud');
 
@@ -105,6 +106,8 @@ Route::prefix('prestamos')->name('prestamos.')->group(function () {
 
         Route::get('/depositos', [PrestamoController::class, 'depositos'])
             ->name('depositos');
+
+         Route::get('tipo-cambio/{fecha}',[PrestamoController::class, 'buscarTipoCambio'])->name('tipo-cambio');
 
         /*
         |--------------------------------------------------------------------------
@@ -124,6 +127,8 @@ Route::prefix('prestamos')->name('prestamos.')->group(function () {
         Route::get('/{prestamo}/edit', [PrestamoController::class, 'edit'])->name('edit');
         Route::put('/{prestamo}', [PrestamoController::class, 'update'])->name('update');
         Route::get('/{prestamo}/reporte', [PrestamoController::class, 'reporte'])->name('reporte');
+
+        Route::get('/{prestamo}/detalle', [PrestamoController::class, 'detalle'])->name('detalle');
 
     });
 });

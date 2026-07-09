@@ -13,7 +13,7 @@ use App\Http\Requests\StorePrestamoRequest;
 use App\Services\PrestamoService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
-
+use App\Services\ExchangeRateService;
 class PrestamoController extends Controller
 {
 
@@ -28,54 +28,26 @@ class PrestamoController extends Controller
         $table = ScasTable::make(
             Prestamo::with(['socio.institucion', 'tipo'])
         )
-
        ->customSearch(function ($query, $buscar) {
-
             switch (request('campo')) {
-
                 case 'solicitud':
-
-                    $query->where(
-                        'nro_solicitud',
-                        'like',
-                        "%{$buscar}%"
-                    );
-
+                    $query->where('nro_solicitud','like',"%{$buscar}%");
                     break;
-
                 case 'papeleta':
-
                     $query->whereHas('socio', function ($q) use ($buscar) {
-
-                        $q->where(
-                            'nro_papeleta',
-                            'like',
-                            "%{$buscar}%"
-                        );
-
+                        $q->where('nro_papeleta', 'like', "%{$buscar}%");
                     });
-
                     break;
-
                 case 'asociado':
-
                     $query->whereHas('socio', function ($q) use ($buscar) {
 
                         $q->where('nombres', 'like', "%{$buscar}%")
                         ->orWhere('paterno', 'like', "%{$buscar}%")
                         ->orWhere('materno', 'like', "%{$buscar}%");
-
                     });
-
                     break;
-
                 default:
-
-                    $query->where(
-                        'nro_solicitud',
-                        'like',
-                        "%{$buscar}%"
-                    );
+                    $query->where('nro_solicitud','like',"%{$buscar}%");
                     break;
             }
         })
@@ -162,7 +134,6 @@ class PrestamoController extends Controller
         $service->consolidar(
             $request->validated()
         );
-
         return redirect()
             ->route('prestamos.index')
             ->with('success','Préstamo guardado y consolidado correctamente.');
@@ -183,7 +154,6 @@ class PrestamoController extends Controller
             )
             ->orderBy('nro_cuota')
             ->get();
-
 
         $contenidoQr ="Socio: ".$prestamo->socio->paterno." ".
         $prestamo->socio->materno." ".
@@ -214,6 +184,22 @@ class PrestamoController extends Controller
 
     }
 
+    public function buscarTipoCambio(string $fecha, ExchangeRateService $exchangeRateService)
+    {
+        $cotizacion = $exchangeRateService->getByDate($fecha);
+        if (!$cotizacion) {
+            return response()->json([
+                'ok' => false,
+                'tipo_cambio' => null,
+                'message' => 'No existe una cotización registrada para la fecha seleccionada.',
+            ]);
+        }
+        return response()->json([
+            'ok' => true,
+            'tipo_cambio' => $cotizacion->usd_bob,
+            'fecha' => $cotizacion->rate_date,
+        ]);
+    }
     public function show()
     {
 

@@ -86,140 +86,124 @@
             </a>
         </div>
         <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Solicitud</th>
+                        <th class="text-center">Nro. Papeleta</th>
+                        <th>Socio</th>
+                        <th>Tipo</th>
+                        <th class="text-end">Monto</th>
+                        <th class="text-center">Cuotas</th>
+                        <th class="text-end">Saldo</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($prestamos as $prestamo)
                         <tr>
-                            <th>Solicitud</th>
-                            <th class="text-center">Nro. Papeleta</th>
-                            <th>Socio</th>
-                            <th>Tipo</th>
-                            <th class="text-end">Monto</th>
-                            <th class="text-center">Cuotas</th>
-                            <th class="text-end">Saldo</th>
-                            <th class="text-center">Estado</th>
-                            <th class="text-center">Acciones</th>
+                            <td>{{ $prestamo->nro_solicitud }}</td>
+                            <td class="text-center">{{ $prestamo->socio->institucion->papeleta ?? '-' }}</td>
+                            <td>{{ implode(' ', array_filter([
+                                    optional($prestamo->socio)->paterno,
+                                    optional($prestamo->socio)->materno,
+                                    optional($prestamo->socio)->nombres,
+                                ])) }}
+                            </td>
+                            <td>{{ optional($prestamo->tipo)->descripcion_tasa }}</td>
+                            <td class="text-end">{{ number_format($prestamo->monto,2) }}</td>
+                            <td class="text-center">{{ $prestamo->ultima_cuota }}/{{ $prestamo->periodo }}</td>
+                            <td class="text-end">{{ number_format($prestamo->saldo_actual,2) }}</td>
+                            <td class="text-center">
+                                @if($prestamo->estado=='AC')
+                                    <span class="badge bg-success">ACTIVO</span>
+                                @else
+                                    <span class="badge bg-secondary">{{ $prestamo->estado }}</span>
+                                @endif
+                            </td>
+                            <td class="text-center">
+                                <div class="dropdown">
+                                        <button class="btn btn-outline-primary btn-sm dropdown-toggle w-100" type="button" data-bs-toggle="dropdown"
+                                        aria-expanded="false">
+                                        <i class="bi bi-gear-fill me-1"></i>
+                                        Acciones
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow">
+                                        <li>
+                                            <h6 class="dropdown-header text-uppercase text-muted fw-bold">Consulta</h6>
+                                        </li>
+                                            <li>
+                                            <a class="dropdown-item" href="{{ route('prestamos.show',$prestamo) }}">
+                                                <i class="bi bi-eye me-2 text-primary"></i>
+                                                Ver detalle
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="{{ route('prestamos.reporte',$prestamo) }}" target="_blank">
+                                                <i class="bi bi-file-earmark-pdf me-2 text-danger"></i>
+                                                Cronograma PDF
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <h6 class="dropdown-header">MANTENIMIENTO</h6>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item disabled" href="#">
+                                                <i class="bi bi-pencil-square me-2 text-warning"></i>
+                                                Editar préstamo
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item disabled" href="#">
+                                                <i class="bi bi-people me-2 text-secondary"></i>
+                                                Cambiar garante
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <h6 class="dropdown-header">OPERACIONES</h6>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item disabled"href="#">
+                                                <i class="bi bi-cash-coin me-2 text-success"></i>
+                                                Registrar pago
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item disabled"
+                                            href="#">
+                                                <i class="bi bi-receipt me-2 text-info"></i>
+                                                Reporte de pagos
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item disabled"
+                                            href="#">
+                                                <i class="bi bi-arrow-down-circle me-2 text-warning"></i>
+                                                Amortización de capital
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item disabled"
+                                            href="#">
+                                                <i class="bi bi-arrow-repeat me-2 text-warning"></i>
+                                                Refinanciar
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($prestamos as $prestamo)
-                            <tr>
-                                <td>{{ $prestamo->nro_solicitud }}</td>
-                                <td class="text-center">{{ $prestamo->socio->institucion->papeleta ?? '-' }}</td>
-                                <td>{{ implode(' ', array_filter([
-                                        optional($prestamo->socio)->paterno,
-                                        optional($prestamo->socio)->materno,
-                                        optional($prestamo->socio)->nombres,
-                                    ])) }}
-                                </td>
-                                <td>{{ optional($prestamo->tipo)->descripcion_tasa }}</td>
-                                <td class="text-end">{{ number_format($prestamo->monto,2) }}</td>
-                                <td class="text-center">{{ $prestamo->ultima_cuota }}/{{ $prestamo->periodo }}</td>
-                                <td class="text-end">{{ number_format($prestamo->saldo_actual,2) }}</td>
-                                <td class="text-center">
-                                    @if($prestamo->estado=='AC')
-                                        <span class="badge bg-success">ACTIVO</span>
-                                    @else
-                                        <span class="badge bg-secondary">{{ $prestamo->estado }}</span>
-                                    @endif
-                                </td>
-                                <td class="text-center">
-                                    <div class="dropdown">
-                                        <button class="btn btn-outline-primary btn-sm dropdown-toggle w-100" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="bi bi-gear-fill me-1"></i>
-                                            Acciones
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end shadow">
-                                            <li>
-                                                <h6 class="dropdown-header">CONSULTA</h6>
-                                            </li>
-                                            <li>
-                                                <a class="dropdown-item" href="{{ route('prestamos.show',$prestamo) }}">
-                                                    <i class="bi bi-eye me-2 text-primary"></i>
-                                                    Ver detalle
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a class="dropdown-item" href="{{ route('prestamos.reporte',$prestamo) }}" target="_blank">
-                                                    <i class="bi bi-file-earmark-pdf me-2 text-danger"></i>
-                                                    Cronograma PDF
-                                                </a>
-                                            </li>
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li>
-                                                <h6 class="dropdown-header">MANTENIMIENTO</h6>
-                                            </li>
-                                            <li>
-                                                <a class="dropdown-item"
-                                                href="{{ route('prestamos.edit',$prestamo) }}">
-                                                    <i class="bi bi-pencil-square me-2 text-warning"></i>
-                                                    Editar préstamo
-                                                </a>
-                                            </li>
-
-                                            <li>
-                                                <a class="dropdown-item disabled"
-                                                href="#">
-
-                                                    <i class="bi bi-people me-2 text-secondary"></i>
-                                                    Cambiar garante
-
-                                                </a>
-                                            </li>
-
-                                            <li><hr class="dropdown-divider"></li>
-
-                                            <li>
-                                                <h6 class="dropdown-header">
-                                                    OPERACIONES
-                                                </h6>
-                                            </li>
-
-                                            <li>
-                                                <a class="dropdown-item disabled"
-                                                href="#">
-
-                                                    <i class="bi bi-cash-coin me-2 text-success"></i>
-                                                    Registrar pago
-
-                                                </a>
-                                            </li>
-
-                                            <li>
-                                                <a class="dropdown-item disabled"
-                                                href="#">
-
-                                                    <i class="bi bi-receipt me-2 text-info"></i>
-                                                    Reporte de pagos
-
-                                                </a>
-                                            </li>
-
-                                            <li>
-                                                <a class="dropdown-item disabled"
-                                                href="#">
-
-                                                    <i class="bi bi-arrow-repeat me-2 text-warning"></i>
-                                                    Refinanciar
-
-                                                </a>
-                                            </li>
-
-                                        </ul>
-
-                                    </div>
-
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="8" class="text-center text-muted">No existen préstamos registrados.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-            {{ $prestamos->links() }}
+                    @empty
+                        <tr>
+                            <td colspan="8" class="text-center text-muted">No existen préstamos registrados.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        {{ $prestamos->links() }}
         </div>
     </div>
 </x-app-layout>

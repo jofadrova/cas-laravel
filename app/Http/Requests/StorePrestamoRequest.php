@@ -113,6 +113,7 @@ class StorePrestamoRequest extends FormRequest
 
             'motivo.required'              => 'El motivo no puede exceder los 255 caracteres.',
             'tipo_cambio.required'        => 'Debe introducir el Tipo de Cambio del Comprobante.',
+            'tipo_cambio.gt'       => 'El tipo de cambio debe ser mayor a cero.',
 
         ];
     }

@@ -144,4 +144,10 @@ class ExchangeRateService
             ->sortBy('rate_date')
             ->values();
     }
+
+    public function getByDate(string $fecha): ?ExchangeRate
+    {
+        return ExchangeRate::whereDate('rate_date', $fecha)
+            ->first();
+    }
 }

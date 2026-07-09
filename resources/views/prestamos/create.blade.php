@@ -69,10 +69,19 @@
                 <small id="maxMonto" class="text-muted d-block mt-2"></small>
                 @error('monto')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
-             <div class="col-lg-3">
+             <div class="col-md-3">
                 <label class="form-label">Tipo de Cambio</label>
-                <input  type="number" step="0.00001" class="form-control @error('tipo_cambio') is-invalid @enderror" id="tipo_cambio" name="tipo_cambio" value="{{ old('tipo_cambio') }}">
-                @error('tipo_cambio')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                <div class="input-group">
+                    <input type="number" step="0.00001" min="0" class="form-control @error('tipo_cambio') is-invalid @enderror"
+                        id="tipo_cambio"
+                        name="tipo_cambio"
+                        value="{{ old('tipo_cambio') }}">
+                    <button type="button" class="btn btn-outline-secondary" id="btnActualizarTipoCambio" title="Consultar cotización oficial">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                    @error('tipo_cambio') <div class="invalid-feedback"> {{ $message }} </div>@enderror
+                </div>
+                <small id="mensajeTipoCambio" class="form-text text-muted"> Seleccione una fecha para obtener la cotización oficial.</small>
             </div>
             <div class="col-lg-3">
                 <label class="form-label">Plazo (meses)</label>
@@ -303,11 +312,83 @@
     </div>
 </div>
 <script>
-    document.getElementById('btnConfirmarConsolidacion')
-    .addEventListener('click', function () {
+document.getElementById('btnConfirmarConsolidacion').addEventListener('click', function () {
+    document.getElementById('frmPrestamo').submit();
+});
+const rutaTipoCambio = "{{ route('prestamos.tipo-cambio', ['fecha' => '__FECHA__']) }}";
+const fechaPrestamo = document.getElementById('fechaPrestamo');
+const tipoCambio = document.getElementById('tipo_cambio');
+const mensaje = document.getElementById('mensajeTipoCambio');
+const btnActualizar = document.getElementById('btnActualizarTipoCambio');
 
-        document.getElementById('frmPrestamo').submit();
+async function cargarTipoCambio() {
 
-    });
+    const fecha = fechaPrestamo.value;
 
+    if (!fecha) {
+        return;
+    }
+
+    btnActualizar.disabled = true;
+
+    try {
+
+        const url = rutaTipoCambio.replace('__FECHA__', fecha);
+
+        const response = await fetch(url);
+
+        const data = await response.json();
+
+        if (data.ok) {
+
+            tipoCambio.value = Number(data.tipo_cambio).toFixed(2);
+            tipoCambio.classList.remove('is-invalid');
+            tipoCambio.classList.add('is-valid');
+            mensaje.className = 'form-text text-success';
+
+            mensaje.innerHTML =
+                '<i class="bi bi-check-circle-fill me-1"></i>' +
+                'Cotización oficial cargada correctamente.';
+
+        } else {
+            tipoCambio.value = "";
+            tipoCambio.classList.remove('is-valid');
+            tipoCambio.classList.remove('is-invalid');
+            tipoCambio.setCustomValidity('');
+            mensaje.className = 'form-text text-warning';
+            mensaje.innerHTML =
+                '<i class="bi bi-exclamation-triangle-fill me-1"></i>' +
+                'No existe una cotización registrada para la fecha seleccionada. Puede ingresar el tipo de cambio manualmente.';
+
+        }
+
+    } catch (e) {
+
+        mensaje.className = 'form-text text-danger';
+
+        mensaje.innerHTML =
+            '<i class="bi bi-x-circle-fill me-1"></i>' +
+            'No fue posible obtener la cotización.';
+
+    } finally {
+
+        btnActualizar.disabled = false;
+
+    }
+
+}
+fechaPrestamo.addEventListener('change', cargarTipoCambio);
+btnActualizar.addEventListener('click', cargarTipoCambio);
+tipoCambio.addEventListener('input', function () {
+
+    tipoCambio.classList.remove('is-valid');
+    tipoCambio.classList.remove('is-invalid');
+
+    mensaje.className = 'form-text text-primary';
+
+    mensaje.innerHTML =
+        '<i class="bi bi-pencil-square me-1"></i>' +
+        'Tipo de cambio modificado manualmente.';
+
+});
 </script>
