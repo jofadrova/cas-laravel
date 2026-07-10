@@ -7,6 +7,7 @@ use App\Traits\HasTable;
 use App\Support\ScasTable;
 use App\Models\Prestamo;
 use App\Models\Tasa;
+
 use App\Services\Prestamos\CalculadoraPrestamo;
 
 use App\Http\Requests\StorePrestamoRequest;
@@ -199,6 +200,13 @@ class PrestamoController extends Controller
             'tipo_cambio' => $cotizacion->usd_bob,
             'fecha' => $cotizacion->rate_date,
         ]);
+    }
+
+    public function edit(Prestamo $prestamo)
+    {
+         $tipos = Tasa::where('estado', 'AC')
+        ->orderBy('descripcion_tasa')->get();
+        return view('prestamos.edit', compact('prestamo','tipos'));
     }
     public function show()
     {

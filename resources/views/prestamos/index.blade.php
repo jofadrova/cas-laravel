@@ -150,7 +150,7 @@
                                             <h6 class="dropdown-header">MANTENIMIENTO</h6>
                                         </li>
                                         <li>
-                                            <a class="dropdown-item disabled" href="#">
+                                            <a class="dropdown-item" href="{{ route('prestamos.edit',$prestamo) }}">
                                                 <i class="bi bi-pencil-square me-2 text-warning"></i>
                                                 Editar préstamo
                                             </a>

@@ -1,14 +1,8 @@
-@props(['name', 'label','required' => false])
+@props(['name', 'label', 'value' => null, 'required' => false,])
 
 <div class="mb-3 position-relative scas-papeleta">
-
-    <label class="form-label">
-
-        {{ $label }}
-
-    </label>
-
-     <input type="hidden" name="{{ $name }}" class="scas-id" value="{{ old($name) }}">
+    <label class="form-label">{{ $label }}</label>
+     <input type="hidden" name="{{ $name }}" class="scas-id" value="{{ old($name, $value) }}">
 <small class="text-danger">
 </small>
     <input
@@ -31,6 +25,6 @@
     <div class="form-text scas-nombre fw-semibold text-primary mt-1">
 
     </div>
-     
+
 
 </div>
