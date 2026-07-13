@@ -19,6 +19,11 @@ import "./scas/notifier";
 
 import { initDashboard } from "./dashboard";
 
+import PrestamoGarantes from './prestamos/PrestamoGarantes';
+if (document.getElementById('cardNuevosGarantes')) {
+    new PrestamoGarantes();
+}
+
 window.initDashboard = initDashboard;
 window.Alpine = Alpine;
 

@@ -5,6 +5,7 @@ class PrestamoForm {
         this.garantesContainer = document.getElementById('garantesContainer');
         this.solicitante = null;
         this.garantes = [];
+       // this.garantesManager = new GarantesManager();
         this.monto = document.getElementById('monto');
         this.plazo = document.getElementById('plazo');
 
@@ -31,6 +32,11 @@ class PrestamoForm {
         this.cronogramaBody = document.getElementById('cronogramaBody');
         this.rTotalPagado = document.getElementById('rTotalPagado');
         this.validacionOK = true;
+        this.modoEdicion = document.getElementById('modoEdicion') !== null;
+        this.tipoOriginal = null;
+        this.garante1Original = document.getElementById('garante1Original')?.value || '';
+        this.garante2Original = document.getElementById('garante2Original')?.value || '';
+       
 
         this.urlSimular = document.getElementById('urlSimular').value; 
         this.timerSimulacion = null;
@@ -38,13 +44,20 @@ class PrestamoForm {
         this.configPrestamo = {};
         this.init();
         
+        
         // Restaurar el tipo de préstamo después de una validación
         if (this.tipo && this.tipo.value !== '') {
             this.cargarTipo();
         }
+
+        if (this.modoEdicion && this.tipo) {
+            this.tipoOriginal = this.tipo.value;
+        }
+       
                 
     }
 
+  
     init() {
        
         if (this.tipo) {
@@ -109,7 +122,6 @@ class PrestamoForm {
 
     cargarTipo() {
         const opcion = this.tipo.options[this.tipo.selectedIndex];
-
         if (!opcion.value) {
 
             this.cardGarantes.classList.add('d-none');
@@ -121,7 +133,7 @@ class PrestamoForm {
         const cantidad = parseInt(opcion.dataset.garante);
 
         this.crearGarantes(cantidad);
-
+        this.restaurarGarantes();
         this.configPrestamo = {
             id: parseInt(opcion.value),
             montoMax: parseFloat(opcion.dataset.monto),
@@ -133,13 +145,7 @@ class PrestamoForm {
             minDefensa: parseFloat(opcion.dataset.mindefensa || 0)
         };
         this.actualizarResumen();
-
-         if(this.solicitante){
-            this.validarSolicitud();
-        }
-
         if (this.maxMonto) {
-
             this.maxMonto.innerHTML =
                 'Máximo permitido: ' +
                 this.formatearMoneda(
@@ -154,7 +160,38 @@ class PrestamoForm {
                 ' meses';
         } 
         this.programarSimulacion();
+        this.validarPrestamoActual();
     }
+
+    ////////////////////////////////////////FUNCION PARA EDICION
+    esTipoOriginal() {
+        if (!this.modoEdicion) {
+            return false;
+        }
+        return this.tipo.value == this.tipoOriginal;
+    }
+
+    validarPrestamoActual() {
+        if (!this.solicitante || !this.configPrestamo.id) {
+            return;
+        }
+
+        if (this.esTipoOriginal()) {
+            this.habilitarFormulario(true);
+            return;
+        }
+        this.validarSolicitud();
+    }
+
+    inicializarEdicion() {
+        if (!this.modoEdicion) {
+            return;
+        }
+        this.actualizarFinanciero();
+        this.programarSimulacion();
+    }
+
+
 
     crearGarantes(cantidad) {
         this.garantesContainer.innerHTML = '';
@@ -196,22 +233,24 @@ class PrestamoForm {
         const nombreCampo = hidden.getAttribute('name');
 
         if (nombreCampo === 'id_socio') {
-            this.solicitante = socio;
+
+           this.solicitante = socio;
             this.actualizarSolicitante();
+
         } else {
             this.garantes = this.garantes.filter(
-                g => g.campo !== nombreCampo
-            );
-            this.garantes.push({
-                campo: nombreCampo,
-                socio: socio
-            });
+                    g => g.campo !== nombreCampo
+                );
+
+                this.garantes.push({
+                    campo: nombreCampo,
+                    socio: socio
+                });
         }
         this.validarGarantes();
         this.actualizarGarantes();
-        if(nombreCampo==='id_socio' && this.configPrestamo.id){
-            this.validarSolicitud();
-        }
+        this.validarPrestamoActual();
+        this.inicializarEdicion();
     }
 
     validarGarantes() {
@@ -510,11 +549,15 @@ class PrestamoForm {
         this.monto.disabled = !habilitar;
         this.plazo.disabled = !habilitar;
         this.asiento.disabled = !habilitar;
+        this.btnGuardar = document.getElementById('btnGuardarPrestamo');
 
         document.querySelectorAll('#garantesContainer input')
             .forEach(i=>{
                 i.disabled = !habilitar;
             });
+        if (this.btnGuardar) {
+            this.btnGuardar.disabled = !habilitar;
+        }
     }
 
     programarSimulacion(){
@@ -562,7 +605,7 @@ class PrestamoForm {
 
         this.cronograma = datos.cronograma;
         document.getElementById('cronograma').value = JSON.stringify(this.cronograma);
-       console.log(datos.cronograma[0]);
+       //console.log(datos.cronograma[0]);
        
         this.mostrarCronograma(datos);
         this.actualizarResumen(datos);
@@ -591,6 +634,32 @@ class PrestamoForm {
         });
     }
 
+    restaurarGarantes() {
+        if (!this.modoEdicion) {
+            return;
+        }
+
+        const ids = [
+            this.garante1Original,
+            this.garante2Original
+        ];
+
+        ids.forEach((id, index) => {
+
+            if (!id) return;
+            const hidden = document.querySelector(
+                `input[name="id_garante${index + 1}"]`
+            );
+
+            if (!hidden) return;
+            hidden.value = id;
+            const contenedor = hidden.closest('.scas-papeleta');
+            if (contenedor) {
+                new PapeletaSearch(contenedor).restaurar();
+            }
+        });
+    }
+
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -600,7 +669,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!formulario) {
         return;
     }
-
     new PrestamoForm();
-
 });
+

@@ -12,17 +12,20 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('solicitudes', function (Blueprint $table) {
-            $table->decimal('tipo_cambio', 10, 5)->nullable();
+
+            $table->boolean('editable')
+                ->default(true)
+                ->after('estado');
+
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('solicitudes', function (Blueprint $table) {
-            //
+
+            $table->dropColumn('editable');
+
         });
     }
 };

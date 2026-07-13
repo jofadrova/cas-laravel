@@ -28,6 +28,7 @@ class Prestamo extends Model
         'periodo_gadm',
         'fecha_deposito',
         'tipo_cambio',
+        'editable'
     ];
 
     public function socio()
@@ -63,5 +64,14 @@ class Prestamo extends Model
             'id_garante2',
             'id'
         );
+    }
+
+    public function historialGarantes()
+    {
+        return $this->hasMany(
+            HistorialGarante::class,
+            'id_solicitud',
+            'id_solicitud'
+        )->latest('fecha');
     }
 }

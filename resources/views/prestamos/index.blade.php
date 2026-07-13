@@ -149,17 +149,62 @@
                                         <li>
                                             <h6 class="dropdown-header">MANTENIMIENTO</h6>
                                         </li>
+                                        @if($prestamo->editable)
                                         <li>
-                                            <a class="dropdown-item" href="{{ route('prestamos.edit',$prestamo) }}">
+                                            <a class="dropdown-item"
+                                            href="{{ route('prestamos.edit',$prestamo) }}">
                                                 <i class="bi bi-pencil-square me-2 text-warning"></i>
                                                 Editar préstamo
                                             </a>
                                         </li>
+                                        @else
                                         <li>
-                                            <a class="dropdown-item disabled" href="#">
-                                                <i class="bi bi-people me-2 text-secondary"></i>
-                                                Cambiar garante
+                                            <a class="dropdown-item disabled"
+                                            href="#">
+                                                <i class="bi bi-lock-fill me-2 text-secondary"></i>
+                                                Editar préstamo
                                             </a>
+                                        </li>
+                                        @endif
+                                        @if($prestamo->editable)
+                                        <li>
+                                            <form method="POST"
+                                                action="{{ route('prestamos.bloquear-edicion', $prestamo) }}">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" class="dropdown-item">
+                                                    <i class="bi bi-lock-fill me-2 text-danger"></i>
+                                                    Bloquear edición
+                                                </button>
+                                            </form>
+                                        </li>
+                                        @else
+                                        <li>
+                                            <form method="POST"
+                                                action="{{ route('prestamos.habilitar-edicion', $prestamo) }}">
+                                                @csrf
+                                                @method('PATCH')
+
+                                                <button type="submit" class="dropdown-item">
+                                                    <i class="bi bi-unlock-fill me-2 text-success"></i>
+                                                    Habilitar edición
+                                                </button>
+                                            </form>
+                                        </li>
+                                        @endif
+                                        <li>
+                                            @if($prestamo->tipo->id_tasa == 1)
+                                                <a class="dropdown-item"
+                                                href="{{ route('prestamos.garantes', $prestamo) }}">
+                                                    <i class="bi bi-people me-2"></i>
+                                                    Cambio de garantes
+                                                </a>
+                                            @else
+                                                <span class="dropdown-item disabled text-muted">
+                                                    <i class="bi bi-people me-2"></i>
+                                                    Cambio de garantes
+                                                </span>
+                                            @endif
                                         </li>
                                         <li><hr class="dropdown-divider"></li>
                                         <li>

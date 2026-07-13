@@ -11,10 +11,14 @@ use App\Models\Tasa;
 use App\Services\Prestamos\CalculadoraPrestamo;
 
 use App\Http\Requests\StorePrestamoRequest;
+use App\Http\Requests\UpdatePrestamoRequest;
 use App\Services\PrestamoService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use App\Services\ExchangeRateService;
+use App\Http\Requests\UpdateGarantesRequest;
+use App\Models\HistorialGarante;
+
 class PrestamoController extends Controller
 {
 
@@ -204,10 +208,112 @@ class PrestamoController extends Controller
 
     public function edit(Prestamo $prestamo)
     {
+        if (!$prestamo->editable) {
+            return redirect()
+                ->route('prestamos.index')
+                ->with(
+                    'error',
+                    'La edición de este préstamo se encuentra bloqueada.'
+                );
+        }
          $tipos = Tasa::where('estado', 'AC')
         ->orderBy('descripcion_tasa')->get();
         return view('prestamos.edit', compact('prestamo','tipos'));
     }
+
+    public function update(UpdatePrestamoRequest $request, Prestamo $prestamo, PrestamoService $service)
+    {
+        if (!$prestamo->editable) {
+            abort(403, 'La edición de este préstamo está bloqueada.');
+        }
+
+        $service->actualizar($prestamo, $request->validated());
+
+        return redirect()
+            ->route('prestamos.index')
+            ->with(
+                'success',
+                'Préstamo actualizado correctamente.'
+            );
+    }  
+    
+    public function bloquearEdicion(Prestamo $prestamo)
+    {
+        $prestamo->update([
+            'editable' => false
+        ]);
+
+        return back()->with(
+            'success',
+            'La edición del préstamo fue bloqueada correctamente.'
+        );
+    }
+
+    public function habilitarEdicion(Prestamo $prestamo)
+    {
+        $prestamo->update([
+            'editable' => true
+        ]);
+
+        return back()->with(
+            'success',
+            'La edición del préstamo fue habilitada nuevamente.'
+        );
+    }
+
+    public function garantes(Prestamo $prestamo)
+    {
+        $prestamo->load([
+            'garante1.institucion',
+            'garante2.institucion',
+            'historialGarantes.usuario',
+            'historialGarantes.garante1Old',
+            'historialGarantes.garante2Old',
+            'historialGarantes.garante1New',
+            'historialGarantes.garante2New',
+        ]);
+        return view('prestamos.garantes', compact('prestamo'));
+    }
+
+    public function actualizarGarantes(UpdateGarantesRequest $request, Prestamo $prestamo, PrestamoService $service)
+    {
+        $service->actualizarGarantes(
+            $prestamo,
+            $request->validated()
+        );
+
+        return redirect()
+            ->route('prestamos.index')
+            ->with('success', 'El cambio de garantes fue registrado correctamente.');
+
+    }
+
+    public function pdfCambioGarantes(HistorialGarante $historial)
+    {
+        $historial->load([
+            'prestamo.socio.institucion',
+            'prestamo.tipo',
+
+            'usuario',
+
+            'garante1Old.institucion',
+            'garante2Old.institucion',
+
+            'garante1New.institucion',
+            'garante2New.institucion',
+        ]);
+
+        $pdf = Pdf::loadView(
+            'prestamos.pdf.cambio-garantes',
+            compact('historial')
+        );
+
+        return $pdf->stream(
+            'Cambio_Garantes_'.$historial->id.'.pdf'
+        );
+
+    }
+
     public function show()
     {
 

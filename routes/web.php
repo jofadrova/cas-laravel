@@ -129,6 +129,11 @@ Route::prefix('prestamos')->name('prestamos.')->group(function () {
         Route::get('/{prestamo}/reporte', [PrestamoController::class, 'reporte'])->name('reporte');
 
         Route::get('/{prestamo}/detalle', [PrestamoController::class, 'detalle'])->name('detalle');
+        Route::patch('/{prestamo}/bloquear-edicion',[PrestamoController::class, 'bloquearEdicion'])->name('bloquear-edicion');
+        Route::patch('/{prestamo}/habilitar-edicion',[PrestamoController::class, 'habilitarEdicion'])->name('habilitar-edicion');
+        Route::get('/{prestamo}/garantes', [PrestamoController::class, 'garantes'])->name('garantes');
+        Route::patch('/{prestamo}/garantes',[PrestamoController::class, 'actualizarGarantes'])->name('garantes.update');
+        Route::get('garantes/{historial}/pdf', [PrestamoController::class, 'pdfCambioGarantes'])->name('garantes.pdf');
 
     });
 });

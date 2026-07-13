@@ -66,7 +66,7 @@
         <div class="row g-4">
             <div class="col-lg-3">
                 <label class="form-label">Monto</label>
-                <input id="monto" name="monto" type="number" step="0.01" class="form-control @error('monto') is-invalid @enderror" value="{{ old('monto') }}">
+                <input id="monto" name="monto" type="number" step="0.01" class="form-control @error('monto') is-invalid @enderror" value="{{ old('monto', $prestamo->monto ?? '') }}">
                 <small id="maxMonto" class="text-muted d-block mt-2"></small>
                 @error('monto')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
@@ -76,7 +76,7 @@
                     <input type="number" step="0.00001" min="0" class="form-control @error('tipo_cambio') is-invalid @enderror"
                         id="tipo_cambio"
                         name="tipo_cambio"
-                        value="{{ old('tipo_cambio') }}">
+                        value="{{ old('tipo_cambio', $prestamo->tipo_cambio ?? '') }}">
                     <button type="button" class="btn btn-outline-secondary" id="btnActualizarTipoCambio" title="Consultar cotización oficial">
                         <i class="bi bi-arrow-clockwise"></i>
                     </button>
@@ -86,7 +86,7 @@
             </div>
             <div class="col-lg-3">
                 <label class="form-label">Plazo (meses)</label>
-                <input id="plazo" name="plazo" type="number" class="form-control @error('plazo') is-invalid @enderror" value="{{ old('plazo') }}">
+                <input id="plazo" name="plazo" type="number" class="form-control @error('plazo') is-invalid @enderror" value="{{ old('periodo', $prestamo->periodo ?? '') }}">
                 <small id="maxPlazo" class="text-muted d-block mt-2"></small>
                 @error('plazo') <div class="invalid-feedback"> {{ $message }}</div>@enderror
             </div>
@@ -96,14 +96,13 @@
                     <span class="input-group-text">
                         EG-
                     </span>
-                    <input id="asiento" name="asiento" class="form-control @error('asiento') is-invalid @enderror" value="{{ old('asiento') }}">
+                    <input id="asiento" name="asiento" class="form-control @error('asiento') is-invalid @enderror" value="{{ old('asiento', $prestamo->asiento ?? '') }}">
                     @error('asiento') <div class="invalid-feedback"> {{ $message }}</div>@enderror
                 </div>
             </div>
-
             <div class="col-12">
                 <label class="form-label">Motivo</label>
-                <textarea name="motivo" rows="3" class="form-control @error('motivo') is-invalid @enderror" style="resize:none" maxlength="200" >{{ old('motivo') }}</textarea>
+                <textarea name="motivo" rows="3" class="form-control @error('motivo') is-invalid @enderror" style="resize:none" maxlength="200" >{{ old('motivo', $prestamo->motivo ?? '') }}</textarea>
                  @error('motivo') <div class="invalid-feedback"> {{ $message }}</div>@enderror
             </div>
         </div>
@@ -136,14 +135,17 @@
     </div>
 </div><br>
   <div class="d-flex gap-2">
-    <button
-        type="button"
-        class="btn btn-success"
-        data-bs-toggle="modal"
-        data-bs-target="#modalConfirmarConsolidacion">
+    @if(isset($prestamo))
+    <button type="button" id="btnGuardarPrestamo" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalConfirmarConsolidacion">
         <i class="bi bi-check-circle"></i>
-        Consolidar y Guardar Prestamo
+        Actualizar Préstamo
     </button>
+    @else
+    <button type="button" id="btnGuardarPrestamo" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalConfirmarConsolidacion"> 
+        <i class="bi bi-check-circle"></i>
+        Guardar Préstamo
+    </button>
+    @endif
     <a href="{{ route('prestamos.index') }}" class="btn btn-secondary">
         <i class="fas fa-arrow-left me-1"></i>
         Cancelar
@@ -277,38 +279,30 @@
             </div>
 
             <div class="modal-body">
-
                 <p class="mb-3">
-                    ¿Desea consolidar y guardar este préstamo?
+                    @if(isset($prestamo))
+                        ¿Desea actualizar este préstamo?
+                    @else
+                        ¿Desea guardar este préstamo?
+                    @endif
                 </p>
-
                 <div class="alert alert-warning mb-0">
                     <i class="bi bi-exclamation-triangle-fill me-2"></i>
-
-                    El préstamo será registrado de forma definitiva y se
-                    generará el cronograma de pagos correspondiente.
-                    <strong>Esta acción no puede deshacerse.</strong>
+                    @if(isset($prestamo))
+                        Se actualizarán los datos del préstamo y, si corresponde, se regenerará el cronograma de pagos.
+                    @else
+                        El préstamo será registrado en el sistema y se generará el cronograma de pagos correspondiente.
+                    @endif
+                    <strong>Posteriormente podrá bloquear la edición desde el menú de acciones cuando verifique que la información es correcta.</strong>
                 </div>
-
             </div>
-
             <div class="modal-footer">
-
-                <button type="button"
-                        class="btn btn-secondary"
-                        data-bs-dismiss="modal">
-                    Cancelar
-                </button>
-
-                <button type="button"
-                        class="btn btn-success"
-                        id="btnConfirmarConsolidacion">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success"  id="btnConfirmarConsolidacion"> 
                     <i class="bi bi-check-circle me-1"></i>
-                    Consolidar
+                    Continuar
                 </button>
-
             </div>
-
         </div>
     </div>
 </div>
