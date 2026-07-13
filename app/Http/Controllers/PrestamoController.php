@@ -263,6 +263,9 @@ class PrestamoController extends Controller
 
     public function garantes(Prestamo $prestamo)
     {
+        if ($prestamo->tipo->id_tasa != 1) {
+            abort(403, 'El cambio de garantes solo está permitido para préstamos REGULARES.');
+        }
         $prestamo->load([
             'garante1.institucion',
             'garante2.institucion',
@@ -277,6 +280,11 @@ class PrestamoController extends Controller
 
     public function actualizarGarantes(UpdateGarantesRequest $request, Prestamo $prestamo, PrestamoService $service)
     {
+        if ($prestamo->tipo->id_tasa != 1) {
+
+            abort(403, 'El cambio de garantes solo está permitido para préstamos REGULARES.');
+
+        }
         $service->actualizarGarantes(
             $prestamo,
             $request->validated()

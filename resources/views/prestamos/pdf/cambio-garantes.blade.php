@@ -145,10 +145,9 @@ table{
                 </td>
             </tr>
         </table>
-
-<div class="section-title">
-DATOS DEL PRÉSTAMO
-</div>
+        <div class="section-title">
+             DATOS DEL PRÉSTAMO
+        </div>
 
 <table class="info">
 
