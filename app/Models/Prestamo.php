@@ -4,7 +4,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 class Prestamo extends Model
 {
-    protected $table = 'solicitudes';
+        protected $table = 'solicitudes';
     protected $primaryKey = 'id_solicitud';
     public $timestamps = false;
     protected $fillable = [
@@ -39,7 +39,6 @@ class Prestamo extends Model
             'id'
         );
     }
-
     public function tipo()
     {
         return $this->belongsTo(
@@ -73,5 +72,22 @@ class Prestamo extends Model
             'id_solicitud',
             'id_solicitud'
         )->latest('fecha');
+    }
+
+    public function getEstadoTextoAttribute()
+    {
+        return $this->estado == 1 ? 'ACTIVO' : 'CANCELADO';
+    }
+    public function getMontoFormateadoAttribute()
+    {
+        return number_format($this->monto, 2, '.', ',');
+    }
+    public function getSaldoActualFormateadoAttribute()
+    {
+        return number_format($this->saldo_actual, 2, '.', ',');
+    }
+    public function getInteresFormateadoAttribute()
+    {
+        return number_format($this->interes, 2);
     }
 }

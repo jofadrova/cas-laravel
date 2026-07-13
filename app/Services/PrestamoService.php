@@ -39,7 +39,7 @@ class PrestamoService
         }
 
         $prestamo->fill([
-             
+
             'ide_per'        => $datos['id_socio'],
             'tipo_prestamo'  => $tasa->id_tasa,
 
@@ -67,6 +67,7 @@ class PrestamoService
             'periodo_gadm'   => 0,
             'fecha_deposito' => $datos['fechaPrestamo'],
             'tipo_cambio' => $datos['tipo_cambio'],
+            'editable' => false
 
         ]);
         $prestamo->save();

@@ -39,8 +39,8 @@ class PrestamoController extends Controller
                     $query->where('nro_solicitud','like',"%{$buscar}%");
                     break;
                 case 'papeleta':
-                    $query->whereHas('socio', function ($q) use ($buscar) {
-                        $q->where('nro_papeleta', 'like', "%{$buscar}%");
+                    $query->whereHas('socio.institucion', function ($q) use ($buscar) {
+                        $q->where('papeleta', 'like', "%{$buscar}%");
                     });
                     break;
                 case 'asociado':
@@ -226,7 +226,6 @@ class PrestamoController extends Controller
         if (!$prestamo->editable) {
             abort(403, 'La edición de este préstamo está bloqueada.');
         }
-
         $service->actualizar($prestamo, $request->validated());
 
         return redirect()
@@ -235,8 +234,8 @@ class PrestamoController extends Controller
                 'success',
                 'Préstamo actualizado correctamente.'
             );
-    }  
-    
+    }
+
     public function bloquearEdicion(Prestamo $prestamo)
     {
         $prestamo->update([
@@ -301,12 +300,9 @@ class PrestamoController extends Controller
         $historial->load([
             'prestamo.socio.institucion',
             'prestamo.tipo',
-
             'usuario',
-
             'garante1Old.institucion',
             'garante2Old.institucion',
-
             'garante1New.institucion',
             'garante2New.institucion',
         ]);
@@ -322,8 +318,33 @@ class PrestamoController extends Controller
 
     }
 
+    public function detalle(Prestamo $prestamo)
+    {
+        try {
+            $prestamo->load([
+                'socio',
+                'tipo',
+                'garante1',
+                'garante2',
+            ]);
+            return view('prestamos.partials.detalle', compact('prestamo'));
+
+        } catch (\Throwable $e) {
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No fue posible obtener la información del préstamo.',
+                ], 500);
+            }
+            throw $e;
+        }
+    }
+
     public function show()
     {
 
     }
+
+    //////////////////////////////////////
+
 }

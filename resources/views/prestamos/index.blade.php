@@ -133,9 +133,9 @@
                                         <li>
                                             <h6 class="dropdown-header text-uppercase text-muted fw-bold">Consulta</h6>
                                         </li>
-                                            <li>
-                                            <a class="dropdown-item" href="{{ route('prestamos.show',$prestamo) }}">
-                                                <i class="bi bi-eye me-2 text-primary"></i>
+                                        <li>
+                                            <a href="{{ route('prestamos.detalle', $prestamo) }}" class="dropdown-item btn-detalle">
+                                                <i class="bi bi-eye me-2"></i>
                                                 Ver detalle
                                             </a>
                                         </li>
@@ -252,6 +252,7 @@
         </div>
     </div>
 </x-app-layout>
+<div id="contenedorDetallePrestamo"></div>
     @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -279,6 +280,50 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     actualizarPlaceholder();
     campo.addEventListener('change', actualizarPlaceholder);
+
+});
+
+document.addEventListener('click', async function (e) {
+
+    const boton = e.target.closest('.btn-detalle');
+
+    if (!boton) return;
+
+    e.preventDefault();
+
+    const id = boton.dataset.id;
+
+    try {
+
+        const response = await fetch(boton.href, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        if (!response.ok)
+            throw new Error();
+
+        const html = await response.text();
+
+// Aquí va
+const contenedor = document.getElementById('contenedorDetallePrestamo');
+
+contenedor.innerHTML = '';
+contenedor.innerHTML = html;
+
+// Ahora el modal ya existe en el DOM
+const modal = new bootstrap.Modal(
+    document.getElementById('modalDetallePrestamo')
+);
+
+modal.show();
+
+    } catch (error) {
+
+        console.error(error);
+
+    }
 
 });
 </script>

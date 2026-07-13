@@ -123,8 +123,9 @@ Route::prefix('prestamos')->name('prestamos.')->group(function () {
         | Rutas con parámetros (SIEMPRE AL FINAL)
         |--------------------------------------------------------------------------
         */
-        Route::get('/{prestamo}', [PrestamoController::class, 'show'])->name('show');
+
         Route::get('/{prestamo}/edit', [PrestamoController::class, 'edit'])->name('edit');
+
         Route::put('/{prestamo}', [PrestamoController::class, 'update'])->name('update');
         Route::get('/{prestamo}/reporte', [PrestamoController::class, 'reporte'])->name('reporte');
 
@@ -134,6 +135,9 @@ Route::prefix('prestamos')->name('prestamos.')->group(function () {
         Route::get('/{prestamo}/garantes', [PrestamoController::class, 'garantes'])->name('garantes');
         Route::patch('/{prestamo}/garantes',[PrestamoController::class, 'actualizarGarantes'])->name('garantes.update');
         Route::get('garantes/{historial}/pdf', [PrestamoController::class, 'pdfCambioGarantes'])->name('garantes.pdf');
+
+        Route::get('/{prestamo}', [PrestamoController::class, 'show'])->name('show');
+
 
     });
 });
