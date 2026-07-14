@@ -22,6 +22,8 @@
                     </li>
                     <li class="nav-item">
                         <button class="nav-link" data-bs-toggle="tab" data-bs-target="#documentacion" type="button">Documentación</button>
+                    </li><li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#dependientes" type="button">Beneficiarios</button>
                     </li>
                     <li class="nav-item">
                         <button class="nav-link" data-bs-toggle="tab" data-bs-target="#fotografia" type="button">Fotografía</button>
@@ -305,6 +307,45 @@
                             </div>
                         </div>
                     </div>
+                    {{-- BENEFICIARIOS --}}
+                    <div class="tab-pane fade" id="dependientes">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0">
+                                <i class="fas fa-users text-primary"></i>
+                                Beneficiarios Registrados
+                            </h5>
+                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalDependiente">
+                                <i class="fas fa-plus-circle"></i>
+                                Agregar Beneficiario
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover align-middle" id="tablaDependientes">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th width="30%">Nombre Completo</th>
+                                        <th width="15%">CI</th>
+                                        <th width="15%">Exp.</th>
+                                        <th width="20%">Parentesco</th>
+                                        <th width="10%">%</th>
+                                        <th width="10%" class="text-center">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodyDependientes">
+                                    <tr id="filaSinDependientes">
+                                        <td colspan="6" class="text-center text-muted py-4">No existen beneficiarios registrados.</td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th colspan="4" class="text-end">Total Asignado</th>
+                                        <th id="totalPorcentaje">0 %</th>
+                                        <th></th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
                     {{-- FOTOGRAFIA --}}
                     <div class="tab-pane fade" id="fotografia">
                         <div class="text-center">
@@ -322,83 +363,274 @@
             </form>
         </div>
     </div>
-    <script>
-        function previewFoto(event)
-        {
-            const reader = new FileReader();
-            reader.onload = function()
-            {
-                document.getElementById('preview').src = reader.result;
+    <!-- MODAL PARA BENEFICIARIOS -->
+    <div class="modal fade" id="modalDependiente" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-user-plus"></i>
+                            Agregar Beneficiario
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="mensajeDependiente" class="d-none mb-3"></div>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Nombres</label>
+                                <input type="text" class="form-control" id="dep_nombres">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Paterno</label>
+                            <input type="text" class="form-control" id="dep_paterno">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Materno</label>
+                            <input type="text" class="form-control" id="dep_materno">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">CI</label>
+                            <input type="text" class="form-control" id="dep_ci">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Expedido</label>
+                            <select class="form-select" id="dep_expedido">
+                                <option value="">--</option>
+                                <option>LP</option>
+                                <option>CB</option>
+                                <option>SC</option>
+                                <option>OR</option>
+                                <option>PT</option>
+                                <option>CH</option>
+                                <option>TJ</option>
+                                <option>BE</option>
+                                <option>PD</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Parentesco</label>
+                            <select class="form-select" id="dep_parentesco">
+                                <option value="">- Seleccione -</option>
+                                @foreach($parentescos as $parentesco)
+                                    <option value="{{ $parentesco->abrev }}">
+                                        {{ $parentesco->Descripcion }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Porcentaje</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="dep_porcentaje">
+                                <span class="input-group-text">
+                                    %
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="button" class="btn btn-success" id="btnAgregarDependiente">
+                        <i class="fas fa-plus-circle"></i>
+                        Agregar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+<script>
+function previewFoto(event)
+{
+    const reader = new FileReader();
+    reader.onload = function()
+    {
+        document.getElementById('preview').src = reader.result;
+    }
+    reader.readAsDataURL(event.target.files[0]);
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.letters-only').forEach(function (input) {
+        input.addEventListener('keydown', function (event) {
+            const allowedKeys = [
+                'Backspace', 'Tab', 'Enter', 'Escape', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
+                'Home', 'End', 'Delete', 'Shift', 'Control', 'Alt', 'Meta'
+            ];
+
+            if (allowedKeys.includes(event.key)) {
+                return;
             }
-            reader.readAsDataURL(event.target.files[0]);
+
+            const letterRegex = /^[A-Za-z\s]$/;
+            if (!letterRegex.test(event.key)) {
+                event.preventDefault();
+            }
+        });
+
+        input.addEventListener('input', function () {
+            this.value = this.value.replace(/[^A-Za-z\s]/g, '');
+        });
+    });
+
+    document.querySelectorAll('.numbers-only').forEach(function (input) {
+        input.addEventListener('keydown', function (event) {
+            const allowedKeys = [
+                'Backspace', 'Tab', 'Enter', 'Escape', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
+                'Home', 'End', 'Delete', 'Shift', 'Control', 'Alt', 'Meta'
+            ];
+
+            if (allowedKeys.includes(event.key)) {
+                return;
+            }
+
+            const numberRegex = /^[0-9]$/;
+            if (!numberRegex.test(event.key)) {
+                event.preventDefault();
+            }
+        });
+
+        input.addEventListener('input', function () {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+    });
+
+    document.querySelectorAll('.alphanumeric-only').forEach(function (input) {
+        input.addEventListener('keydown', function (event) {
+            const allowedKeys = [
+                'Backspace', 'Tab', 'Enter', 'Escape', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
+                'Home', 'End', 'Delete', 'Shift', 'Control', 'Alt', 'Meta'
+            ];
+
+            if (allowedKeys.includes(event.key)) {
+                return;
+            }
+
+            const alphanumericRegex = /^[A-Za-z0-9\s]$/;
+            if (!alphanumericRegex.test(event.key)) {
+                event.preventDefault();
+            }
+        });
+
+        input.addEventListener('input', function () {
+            this.value = this.value.replace(/[^A-Za-z0-9\s]/g, '');
+        });
+    });
+});
+document.getElementById('btnAgregarDependiente').addEventListener('click', function () {
+    let indiceDependiente = 0;
+
+    document.getElementById('btnAgregarDependiente').addEventListener('click', function () {
+
+        const nombres = document.getElementById('dep_nombres').value.trim();
+        const paterno = document.getElementById('dep_paterno').value.trim();
+        const materno = document.getElementById('dep_materno').value.trim();
+        const ci = document.getElementById('dep_ci').value.trim();
+        const expedido = document.getElementById('dep_expedido').value;
+        const selectParentesco = document.getElementById('dep_parentesco');
+        const parentesco = selectParentesco.value;
+        const parentescoTexto = selectParentesco.options[selectParentesco.selectedIndex].text;
+        const porcentaje = document.getElementById('dep_porcentaje').value.trim();
+
+        if (!nombres || !ci || !parentesco || !porcentaje) {
+            mostrarMensajeDependiente('Debe completar todos los campos obligatorios.', 'danger');
+            return;
         }
 
-        document.addEventListener('DOMContentLoaded', function () {
-            document.querySelectorAll('.letters-only').forEach(function (input) {
-                input.addEventListener('keydown', function (event) {
-                    const allowedKeys = [
-                        'Backspace', 'Tab', 'Enter', 'Escape', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
-                        'Home', 'End', 'Delete', 'Shift', 'Control', 'Alt', 'Meta'
-                    ];
+        const tbody = document.querySelector('#tablaDependientes tbody');
 
-                    if (allowedKeys.includes(event.key)) {
-                        return;
-                    }
+        const filaVacia = document.getElementById('filaSinDependientes');
 
-                    const letterRegex = /^[A-Za-z\s]$/;
-                    if (!letterRegex.test(event.key)) {
-                        event.preventDefault();
-                    }
-                });
+        if (filaVacia) {
+            filaVacia.remove();
+        }
 
-                input.addEventListener('input', function () {
-                    this.value = this.value.replace(/[^A-Za-z\s]/g, '');
-                });
-            });
+        const fila = document.createElement('tr');
 
-            document.querySelectorAll('.numbers-only').forEach(function (input) {
-                input.addEventListener('keydown', function (event) {
-                    const allowedKeys = [
-                        'Backspace', 'Tab', 'Enter', 'Escape', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
-                        'Home', 'End', 'Delete', 'Shift', 'Control', 'Alt', 'Meta'
-                    ];
+        fila.innerHTML = `
+            <td>
+                ${nombres} ${paterno} ${materno}
+                <input type="hidden" name="dependientes[${indiceDependiente}][nombres]" value="${nombres}">
+                <input type="hidden" name="dependientes[${indiceDependiente}][paterno]" value="${paterno}">
+                <input type="hidden" name="dependientes[${indiceDependiente}][materno]" value="${materno}">
+            </td>
+            <td>
+                ${ci}
+                <input type="hidden" name="dependientes[${indiceDependiente}][ci]" value="${ci}">
+            </td>
+            <td>
+                ${expedido}
+                <input type="hidden" name="dependientes[${indiceDependiente}][exp]" value="${expedido}">
+            </td>
+            <td>
+                ${parentescoTexto}
+                <input type="hidden" name="dependientes[${indiceDependiente}][parentesco]" value="${parentesco}">
+            </td>
+            <td>
+                ${porcentaje} %
+                <input type="hidden" name="dependientes[${indiceDependiente}][porcentaje]" value="${porcentaje}">
+            </td>
+            <td class="text-center">
+                <button type="button" class="btn btn-outline-danger btn-sm btnEliminarDependiente">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>`;
+        tbody.appendChild(fila);
+        indiceDependiente++;
+        actualizarTotal();
+        document.getElementById('mensajeDependiente').classList.add('d-none');
+        bootstrap.Modal.getInstance(document.getElementById('modalDependiente')).hide();
+        limpiarFormularioDependiente();
+    });
+});
 
-                    if (allowedKeys.includes(event.key)) {
-                        return;
-                    }
+function limpiarFormularioDependiente() {
 
-                    const numberRegex = /^[0-9]$/;
-                    if (!numberRegex.test(event.key)) {
-                        event.preventDefault();
-                    }
-                });
+document.getElementById('dep_nombres').value = '';
+document.getElementById('dep_paterno').value = '';
+document.getElementById('dep_materno').value = '';
+document.getElementById('dep_ci').value = '';
+document.getElementById('dep_expedido').value = '';
+document.getElementById('dep_parentesco').value = '';
+document.getElementById('dep_porcentaje').value = '';
 
-                input.addEventListener('input', function () {
-                    this.value = this.value.replace(/[^0-9]/g, '');
-                });
-            });
+}
 
-            document.querySelectorAll('.alphanumeric-only').forEach(function (input) {
-                input.addEventListener('keydown', function (event) {
-                    const allowedKeys = [
-                        'Backspace', 'Tab', 'Enter', 'Escape', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
-                        'Home', 'End', 'Delete', 'Shift', 'Control', 'Alt', 'Meta'
-                    ];
+function actualizarTotal() {
+    let total = 0;
+    document.querySelectorAll('input[name$="[porcentaje]"]').forEach(function(input){
+        total += parseFloat(input.value) || 0;
+    });
+    document.getElementById('totalPorcentaje').textContent = total + ' %';
+}
 
-                    if (allowedKeys.includes(event.key)) {
-                        return;
-                    }
+document.addEventListener('click', function(e){
+    const boton = e.target.closest('.btnEliminarDependiente');
+    if(!boton) return;
+    boton.closest('tr').remove();
+    actualizarTotal();
+    const tbody = document.querySelector('#tablaDependientes tbody');
+    if(tbody.children.length === 0){
+    tbody.innerHTML = `
+        <tr id="filaSinDependientes">
+            <td colspan="6" class="text-center text-muted py-4">
+                No existen beneficiarios registrados.
+            </td>
+        </tr>`;
+    }
+});
 
-                    const alphanumericRegex = /^[A-Za-z0-9\s]$/;
-                    if (!alphanumericRegex.test(event.key)) {
-                        event.preventDefault();
-                    }
-                });
+document.getElementById('modalDependiente').addEventListener('show.bs.modal', function () {
+    document.getElementById('mensajeDependiente').classList.add('d-none');
+});
 
-                input.addEventListener('input', function () {
-                    this.value = this.value.replace(/[^A-Za-z0-9\s]/g, '');
-                });
-            });
-        });
-    </script>
+function mostrarMensajeDependiente(mensaje, tipo = 'danger'){
+    const contenedor = document.getElementById('mensajeDependiente');
+    contenedor.className = `alert alert-${tipo} mb-3`;
+    contenedor.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i>${mensaje}`;
+}
+</script>
 </x-app-layout>

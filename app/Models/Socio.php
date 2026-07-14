@@ -49,4 +49,9 @@ class Socio extends Model
             'id'
         );
     }
+
+    public function dependientes()
+    {
+        return $this->hasMany(SocioDependiente::class, 'id_socio');
+    }
 }

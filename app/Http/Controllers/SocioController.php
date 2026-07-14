@@ -19,6 +19,7 @@ use App\Models\Socio;
 use App\Models\Residencia;
 use App\Models\SocioInstitucion;
 use App\Models\ContaSubcuenta;
+use App\Models\SocioDependiente;
 use App\Http\Requests\UpdateSocioRequest;
 use Barryvdh\DomPDF\Facade\Pdf;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
@@ -103,6 +104,7 @@ class SocioController extends Controller
             'meses' => Dominio::where('dominio','MESES')->orderBy('id')->get(),
             'juridicas' => Dominio::where('dominio','JURIDICA')->orderBy('Descripcion')->get(),
             'resoluciones' => ResolucionesJuridica::where('tipo', 59) ->where('estado', 'AC')->orderByDesc('gestion')->orderByDesc('num')->get(),
+            'parentescos' => Dominio::where('dominio', 'PARENTESCO')->orderBy('Descripcion')->get(),
         ]);
     }
         /**
@@ -136,41 +138,41 @@ class SocioController extends Controller
                 'estado_civil' => $request->estado_civil,
 
                 'foto' => $foto,
-
                 'estado' => 'AC',
-
                 'num_correlativo' => 0,
-
                 'estado_kardex' => 'AC',
-
                 'mindef' => 'NO',
-
                 'es_revinculacion' => 0,
                 'cantidad_revinculaciones' => 0,
-
                 'vinculacion_actual' => 1,
             ]);
+
+            // Registrar beneficiarios
+            foreach ($request->dependientes ?? [] as $dependiente) {
+                $socio->dependientes()->create([
+                'nombres' => strtoupper($dependiente['nombres']),
+                'paterno' => strtoupper($dependiente['paterno'] ?? ''),
+                'materno' => strtoupper($dependiente['materno'] ?? ''),
+                'ci' => $dependiente['ci'],
+                'exp' => $dependiente['exp'],
+                'parentesco' => $dependiente['parentesco'],
+                'porcentaje' => $dependiente['porcentaje'],
+                'estado' => 'AC',
+            ]);
+            }
 
             Residencia::create([
 
                 'id_socio' => $socio->id,
-
                 'departamento' => $request->departamento,
                 'ciudad' => $request->ciudad,
-
                 'radicatoria' => $request->radicatoria,
-
                 'zona' => $request->zona,
                 'calle' => $request->calle,
-
                 'nro' => $request->nro,
-
                 'telefono' => $request->telefono,
-
                 'correo' => $request->correo,
-
                 'formularioSolicitud' => $request->solicitud,
-
                 'afiliacionAfcoop' =>
                     $request->boolean('afiliacion_afcoop')
                         ? 'CA'
@@ -180,9 +182,7 @@ class SocioController extends Controller
                     $request->boolean('fotocopia_ci')
                         ? 'FC'
                         : 'NO',
-
                 'resolucion' => $request->resolucion,
-
                 'estado' => 'AC',
             ]);
 

@@ -211,7 +211,7 @@
                             </a>
                         </th>
                         <th class="text-center">
-                            Opciones
+                            Acciones
                         </th>
                     </tr>
                 </thead>
@@ -241,32 +241,71 @@
                             @endif
                         </td>
                         <td>
-                            <a href="{{ route('socios.edit', $socio->id) }}"
-                            class="btn btn-warning btn-sm" title="Editar"><i class="fas fa-edit"></i></a>
+                            <div class="dropdown">
+                                <button class="btn btn-outline-primary btn-sm dropdown-toggle w-100" type="button" data-bs-toggle="dropdown"
+                                        aria-expanded="false">
+                                        <i class="bi bi-gear-fill me-1"></i>
+                                    Acciones
+                                </button>
 
-                            <a href="{{ route('socios.show', $socio->id) }}"
-                            class="btn btn-info btn-sm" title="Información del Socio"><i class="fas fa-eye"></i></a>
-                            @if($socio->estado == 'AC')
-                                <button class="btn btn-sm btn-danger btnCambiarEstadoSocio" title="Dar de Baja"
-                                    data-id="{{ $socio->id }}"
-                                    data-socio="{{ $socio->paterno }} {{ $socio->materno }} {{ $socio->nombres }}"
-                                    data-estado="BA">
-                                    <i class="fas fa-user-slash"></i>
-                                </button>
-                            @else
-                                <button class="btn btn-sm btn-success btnCambiarEstadoSocio" title="Reactivar Asociado"
-                                    data-id="{{ $socio->id }}"
-                                    data-socio="{{ $socio->paterno }} {{ $socio->materno }} {{ $socio->nombres }}"
-                                    data-estado="AC">
-                                    <i class="fas fa-user-check"></i>
-                                </button>
-                            @endif
-                            <a href="{{ route('socios.kardex', $socio->id) }}" class="btn btn-secondary btn-sm" title="Kardex" target="_blank"><i class="fas fa-file-pdf"></i></a>
-                            @if($socio->estado == 'BA')
-                                <a href="{{ route('socios.revincular', $socio->id) }}" class="btn btn-primary btn-sm"
-                                title="Revincular Asociado"><i class="fas fa-rotate-right"></i></a>
-                            @endif
+                                <ul class="dropdown-menu dropdown-menu-end">
+
+                                    <li>
+                                        <a class="dropdown-item"
+                                        href="{{ route('socios.edit', $socio->id) }}">
+                                            <i class="fas fa-edit me-2 text-warning"></i>
+                                            Editar
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <a class="dropdown-item"
+                                        href="{{ route('socios.show', $socio->id) }}">
+                                            <i class="fas fa-eye me-2 text-info"></i>
+                                            Información del Socio
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <button class="dropdown-item btnCambiarEstadoSocio"
+                                                data-id="{{ $socio->id }}"
+                                                data-socio="{{ $socio->paterno }} {{ $socio->materno }} {{ $socio->nombres }}"
+                                                data-estado="{{ $socio->estado == 'AC' ? 'BA' : 'AC' }}">
+                                            @if($socio->estado == 'AC')
+                                                <i class="fas fa-user-slash me-2 text-danger"></i>
+                                                Dar de Baja
+                                            @else
+                                                <i class="fas fa-user-check me-2 text-success"></i>
+                                                Reactivar Asociado
+                                            @endif
+                                        </button>
+                                    </li>
+
+                                    <li>
+                                        <a class="dropdown-item"
+                                        href="{{ route('socios.kardex', $socio->id) }}"
+                                        target="_blank">
+                                            <i class="fas fa-file-pdf me-2 text-secondary"></i>
+                                            Kardex
+                                        </a>
+                                    </li>
+
+                                    @if($socio->estado == 'BA')
+                                        <li><hr class="dropdown-divider"></li>
+
+                                        <li>
+                                            <a class="dropdown-item"
+                                            href="{{ route('socios.revincular', $socio->id) }}">
+                                                <i class="fas fa-rotate-right me-2 text-primary"></i>
+                                                Revincular Asociado
+                                            </a>
+                                        </li>
+                                    @endif
+
+                                </ul>
+                            </div>
                         </td>
+
                     </tr>
                     @empty
                     <tr>
