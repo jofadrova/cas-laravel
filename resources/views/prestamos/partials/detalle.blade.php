@@ -23,15 +23,19 @@
                                 <table class="table table-sm mb-0">
                                     <tr>
                                         <th width="40%">Socio</th>
-                                        <td>{{ $prestamo->socio->nombre_completo }}</td>
+                                        <td>{{ trim($prestamo->socio->nombres.' '.$prestamo->socio->paterno.' '.$prestamo->socio->materno) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>C.I.</th>
+                                        <td>{{ $prestamo->socio->nro_doc }} {{ $prestamo->socio->expedido }}</td>
                                     </tr>
                                     <tr>
                                         <th>Papeleta</th>
-                                        <td>{{ $prestamo->socio->papeleta }}</td>
+                                        <td>{{ $prestamo->socio->institucion->papeleta }}</td>
                                     </tr>
                                     <tr>
                                         <th>Tipo</th>
-                                        <td>{{ $prestamo->tipo->descripcion }}</td>
+                                        <td>{{ $prestamo->tipo->descripcion_tasa }}</td>
                                     </tr>
                                     <tr>
                                         <th>Estado</th>
@@ -76,113 +80,64 @@
                                             {{ $prestamo->interes }} %
                                         </td>
                                     </tr>
-
                                     <tr>
                                         <th>Periodo</th>
                                         <td>
                                             {{ $prestamo->periodo }}
                                         </td>
                                     </tr>
-
                                     <tr>
                                         <th>Tipo cambio</th>
                                         <td>
                                             {{ $prestamo->tipo_cambio }}
                                         </td>
                                     </tr>
-
                                 </table>
-
                             </div>
-
                         </div>
-
                     </div>
                     <div class="col-12">
-
                         <div class="card">
-
                             <div class="card-header bg-light fw-semibold">
-
                                 Garantes
-
                             </div>
-
                             <div class="card-body">
-
                                 <div class="row">
-
                                     <div class="col-md-6">
-
                                         <strong>Primer garante</strong>
-
                                         <hr>
-
                                         @if($prestamo->garante1)
-
-                                            {{ $prestamo->garante1->nombre_completo }}
-
+                                            {{ trim($prestamo->garante1->nombres.' '.$prestamo->garante1->paterno.' '.$prestamo->garante1->materno) }}
                                         @else
-
                                             <span class="text-muted">
                                                 No registrado
                                             </span>
-
                                         @endif
-
                                     </div>
-
                                     <div class="col-md-6">
-
                                         <strong>Segundo garante</strong>
-
                                         <hr>
-
                                         @if($prestamo->garante2)
-
-                                            {{ $prestamo->garante2->nombre_completo }}
-
+                                            {{ trim($prestamo->garante2->nombres.' '.$prestamo->garante2->paterno.' '.$prestamo->garante2->materno) }}
                                         @else
-
-                                            <span class="text-muted">
-                                                No registrado
-                                            </span>
-
+                                        <span class="text-muted">
+                                            No registrado
+                                        </span>
                                         @endif
-
                                     </div>
-
                                 </div>
-
                             </div>
-
                         </div>
-
                     </div>
                     <div class="modal-footer">
-
-                    <button
-                        type="button"
-                        class="btn btn-outline-primary">
-
-                        <i class="bi bi-printer"></i>
-
-                        Imprimir préstamo
-
-                    </button>
-
-                    <button
-                        type="button"
-                        class="btn btn-secondary"
-                        data-bs-dismiss="modal">
-
-                        Cerrar
-
-                    </button>
-
-                </div>
-
-
+                        <button type="button" class="btn btn-outline-primary">
+                            <i class="bi bi-printer"></i>
+                            Imprimir préstamo
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            Cerrar
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

@@ -2,24 +2,19 @@
     <html lang="es">
     <head>
     <meta charset="UTF-8">
-
 <style>
-
 @page{
     margin:20px;
 }
-
 body{
     font-family: DejaVu Sans, sans-serif;
     font-size:10px;
     color:#1f2937;
 }
-
 table{
     width:100%;
     border-collapse:collapse;
 }
-
 .header td{
     vertical-align:top;
 }
@@ -118,9 +113,7 @@ table{
     color:#666;
 
 }
-
 </style>
-
     </head>
     <body>
         <table class="header">
@@ -148,243 +141,114 @@ table{
         <div class="section-title">
              DATOS DEL PRÉSTAMO
         </div>
-
-<table class="info">
-
-<tr>
-
-<td width="18%"><strong>Solicitud</strong></td>
-<td width="32%">{{ $historial->prestamo->nro_solicitud }}</td>
-
-<td width="18%"><strong>Papeleta</strong></td>
-<td>
-
-{{ $historial->prestamo->socio->institucion->papeleta }}
-
-</td>
-
-</tr>
-
-<tr>
-
-<td><strong>Asociado</strong></td>
-
-<td colspan="3">
-
-{{ $historial->prestamo->socio->paterno }}
-{{ $historial->prestamo->socio->materno }}
-{{ $historial->prestamo->socio->nombres }}
-
-</td>
-
-</tr>
-
-<tr>
-
-<td><strong>Tipo préstamo</strong></td>
-<td>{{ $historial->prestamo->tipo->descripcion_tasa }}</td>
-
-<td><strong>Estado</strong></td>
-<td>{{ $historial->prestamo->estado }}</td>
-
-</tr>
-
-<tr>
-
-<td><strong>Monto</strong></td>
-
-<td>
-
-{{ number_format($historial->prestamo->monto,2,',','.') }}
-
-</td>
-
-<td><strong>Saldo</strong></td>
-
-<td>
-
-{{ number_format($historial->prestamo->saldo_actual,2,',','.') }}
-
-</td>
-
-</tr>
-
-</table>
-
-<div class="section-title">
-CAMBIO DE GARANTES
-</div>
-
-<table class="historial">
-
-<thead>
-
-<tr>
-
-<th width="20%">Concepto</th>
-<th width="40%">Anterior</th>
-<th width="40%">Nuevo</th>
-
-</tr>
-
-</thead>
-
-<tbody>
-
-<tr>
-
-<td><strong>Garante 1</strong></td>
-
-<td>
-
-{{ optional($historial->garante1Old)->paterno }}
-{{ optional($historial->garante1Old)->materno }}
-{{ optional($historial->garante1Old)->nombres }}
-
-<br>
-
-<small>
-
-{{ optional($historial->garante1Old->institucion)->papeleta }}
-
-</small>
-
-</td>
-
-<td>
-
-{{ optional($historial->garante1New)->paterno }}
-{{ optional($historial->garante1New)->materno }}
-{{ optional($historial->garante1New)->nombres }}
-
-<br>
-
-<small>
-
-{{ optional($historial->garante1New->institucion)->papeleta }}
-
-</small>
-
-</td>
-
-</tr>
-
-<tr>
-
-<td><strong>Garante 2</strong></td>
-
-<td>
-
-{{ optional($historial->garante2Old)->paterno }}
-{{ optional($historial->garante2Old)->materno }}
-{{ optional($historial->garante2Old)->nombres }}
-
-<br>
-
-<small>
-
-{{ optional($historial->garante2Old->institucion)->papeleta }}
-
-</small>
-
-</td>
-
-<td>
-
-{{ optional($historial->garante2New)->paterno }}
-{{ optional($historial->garante2New)->materno }}
-{{ optional($historial->garante2New)->nombres }}
-
-<br>
-
-<small>
-
-{{ optional($historial->garante2New->institucion)->papeleta }}
-
-</small>
-
-</td>
-
-</tr>
-
-</tbody>
-
-</table>
-
-<div class="section-title">
-JUSTIFICACIÓN DEL CAMBIO
-</div>
-
-<div class="justificacion">
-
-{{ $historial->observaciones }}
-
-</div>
-
-<div class="section-title">
-AUDITORÍA
-</div>
-
-<table class="info">
-
-<tr>
-
-<td width="20%"><strong>Usuario</strong></td>
-
-<td width="30%">
-
-{{ $historial->usuario->name }}
-
-</td>
-
-<td width="20%"><strong>Fecha</strong></td>
-
-<td>
-
-{{ \Carbon\Carbon::parse($historial->fecha)->format('d/m/Y H:i') }}
-
-</td>
-
-</tr>
-
-<tr>
-
-<td><strong>Tipo</strong></td>
-
-<td colspan="3">
-
-{{ $historial->tipo_cambio }}
-
-</td>
-
-</tr>
-
-</table>
-
-<table class="firmas">
-
-<tr>
-
-
-<td>
-
-<div class="linea">
-
-Vo.Bo.
-
-</div>
-
-</td>
-
-</tr>
-
-</table>
-
-<div class="footer">
-
-Este documento forma parte del historial de modificaciones del préstamo y fue generado automáticamente por el Sistema SCAS.
-
-</div>
-
-</body>
+        <table class="info">
+
+            <tr>
+                <td width="18%"><strong>Solicitud</strong></td>
+                <td width="32%">{{ $historial->prestamo->nro_solicitud }}</td>
+                <td width="18%"><strong>Papeleta</strong></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><strong>Asociado</strong></td>
+                <td colspan="3">
+                    {{ $historial->prestamo->socio->paterno }}
+                    {{ $historial->prestamo->socio->materno }}
+                    {{ $historial->prestamo->socio->nombres }}
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Tipo préstamo</strong></td>
+                <td>{{ $historial->prestamo->tipo->descripcion_tasa }}</td>
+                <td><strong>Estado</strong></td>
+                <td>{{ $historial->prestamo->estado }}</td>
+            </tr>
+            <tr>
+                <td><strong>Monto</strong></td>
+                <td>{{ number_format($historial->prestamo->monto,2,',','.') }}</td>
+                <td><strong>Saldo</strong></td>
+                <td>{{ number_format($historial->prestamo->saldo_actual,2,',','.') }}</td>
+            </tr>
+        </table>
+        <div class="section-title">
+            CAMBIO DE GARANTES
+        </div>
+        <table class="historial">
+            <thead>
+                <tr>
+                    <th width="20%">Concepto</th>
+                    <th width="40%">Anterior</th>
+                    <th width="40%">Nuevo</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Garante 1</strong></td>
+                    <td>{{ optional($historial->garante1Old)->paterno }}
+                        {{ optional($historial->garante1Old)->materno }}
+                        {{ optional($historial->garante1Old)->nombres }}
+                        <br>
+                        <small>
+                            {{ optional($historial->garante1Old->institucion)->papeleta }}
+                        </small>
+                    </td>
+                    <td>
+                        {{ optional($historial->garante1New)->paterno }}
+                        {{ optional($historial->garante1New)->materno }}
+                        {{ optional($historial->garante1New)->nombres }}
+                        <br>
+                        <small>
+                            {{ optional($historial->garante1New->institucion)->papeleta }}
+                        </small>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Garante 2</strong></td>
+                    <td>
+                        {{ optional($historial->garante2Old)->paterno }}
+                        {{ optional($historial->garante2Old)->materno }}
+                        {{ optional($historial->garante2Old)->nombres }}
+                        <br>
+                        <small>
+                            {{ optional($historial->garante2Old->institucion)->papeleta }}
+                        </small>
+                    </td>
+                    <td>
+                        {{ optional($historial->garante2New)->paterno }}
+                        {{ optional($historial->garante2New)->materno }}
+                        {{ optional($historial->garante2New)->nombres }}
+                        <br>
+                        <small>
+                            {{ optional($historial->garante2New->institucion)->papeleta }}
+                        </small>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="section-title">JUSTIFICACIÓN DEL CAMBIO</div>
+        <div class="justificacion">{{ $historial->observaciones }}</div>
+        <div class="section-title">AUDITORÍA</div>
+        <table class="info">
+            <tr>
+                <td width="20%"><strong>Usuario</strong></td>
+                <td width="30%">{{ $historial->usuario->name }}</td>
+                <td width="20%"><strong>Fecha</strong></td>
+                <td>{{ \Carbon\Carbon::parse($historial->fecha)->format('d/m/Y H:i') }}</td>
+            </tr>
+            <tr>
+                <td><strong>Tipo</strong></td>
+                <td colspan="3">{{ $historial->tipo_cambio }}</td>
+            </tr>
+        </table>
+        <table class="firmas">
+            <tr>
+                <td>
+                    <div class="linea">Vo.Bo.</div>
+                </td>
+            </tr>
+        </table>
+        <div class="footer">
+            Este documento forma parte del historial de modificaciones del préstamo y fue generado automáticamente por el Sistema SCAS.
+        </div>
+    </body>
 </html>
