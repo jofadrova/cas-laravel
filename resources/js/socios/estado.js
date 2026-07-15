@@ -1,10 +1,16 @@
 import * as bootstrap from "bootstrap";
 
-const modalEstadoSocioElement =
-    document.getElementById("modalEstadoSocio");
+export function iniciarEstadoSocio() {
 
+    const modalEstadoSocioElement =
+        document.getElementById("modalEstadoSocio");
 
-if (modalEstadoSocioElement) {
+    if (!modalEstadoSocioElement) return;
+
+    const modalEstadoSocio =
+        new bootstrap.Modal(modalEstadoSocioElement);
+
+    if (modalEstadoSocioElement) {
      const modalEstadoSocio =
         new bootstrap.Modal(modalEstadoSocioElement);
 
@@ -37,3 +43,10 @@ if (modalEstadoSocioElement) {
             });
         });
 }
+
+
+}
+
+
+
+

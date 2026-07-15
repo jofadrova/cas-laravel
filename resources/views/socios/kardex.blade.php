@@ -118,15 +118,11 @@
     Fecha emisión:
     {{ now()->format('d/m/Y H:i') }}
 </div>
-
 <div class="header">
     @if(file_exists($logo))
         <img src="{{ $logo }}" class="logo">
     @endif
-    <div class="titulo">
-        KARDEX DE ASOCIADO
-    </div>
-
+    <div class="titulo">KARDEX DE ASOCIADO</div>
     <div class="subtitulo">
         COOPERATIVA DE AHORRO Y CRÉDITO DE VÍNCULO LABORAL
     </div>
@@ -284,6 +280,65 @@
         </td>
     </tr>
 </table>
+<div class="seccion">
+    BENEFICIARIOS
+</div>
+
+<table>
+    <thead>
+        <tr style="background:#f4f4f4; font-weight:bold;">
+            <td style="width:35%;">Nombre Completo</td>
+            <td style="width:18%;">Documento</td>
+            <td style="width:12%;">Exp.</td>
+            <td style="width:20%;">Parentesco</td>
+            <td style="width:15%; text-align:right;">%</td>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        @forelse($socio->dependientes as $dependiente)
+
+            <tr>
+
+                <td>
+                    {{ $dependiente->paterno }}
+                    {{ $dependiente->materno }}
+                    {{ $dependiente->nombres }}
+                </td>
+
+                <td>
+                    {{ $dependiente->ci }}
+                </td>
+
+                <td>
+                    {{ $dependiente->exp }}
+                </td>
+
+                <td>
+                    {{ $dependiente->parentescoDominio->Descripcion ?? $dependiente->parentesco }}
+                </td>
+
+                <td style="text-align:right;">
+                    {{ number_format($dependiente->porcentaje,2) }} %
+                </td>
+
+            </tr>
+
+        @empty
+
+            <tr>
+                <td colspan="5" style="text-align:center; color:#777;">
+                    No existen beneficiarios registrados.
+                </td>
+            </tr>
+
+        @endforelse
+
+    </tbody>
+
+</table>
+
 <div class="footer">Sistema Cooperativa Apóstol Santiago - SCAS</div>
 <script type="text/php">
 if (isset($pdf)) {

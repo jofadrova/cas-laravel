@@ -38,49 +38,75 @@ class SocioController extends Controller
         if ($request->filled('estado')) {
             $query->where('estado', $request->estado);
         }
+
         if ($request->filled('valor')) {
 
             switch ($request->buscar_por) {
+
                 case 'papeleta':
                     $query->whereHas('institucion', function ($q) use ($request) {
-                        $q->where('papeleta','like','%' . $request->valor . '%');
+                        $q->where('papeleta', 'like', '%' . $request->valor . '%');
                     });
-
                     break;
 
                 case 'ci':
-                    $query->where('nro_doc','like','%' . $request->valor . '%');
+                    $query->where('nro_doc', 'like', '%' . $request->valor . '%');
                     break;
+
                 case 'apellido':
                     $query->where(function ($q) use ($request) {
-                        $q->where('paterno','like','%' . $request->valor . '%')
-                        ->orWhere('materno','like','%' . $request->valor . '%');
+                        $q->where('paterno', 'like', '%' . $request->valor . '%')
+                        ->orWhere('materno', 'like', '%' . $request->valor . '%');
                     });
                     break;
+
                 case 'nombre':
-                    $query->where('nombres','like','%' . $request->valor . '%');
+                    $query->where('nombres', 'like', '%' . $request->valor . '%');
                     break;
             }
         }
 
-        $sort = $request->input('sort', 'paterno');
+        $sort = $request->input('sort');
         $direction = $request->input('direction', 'asc');
 
-        $allowedSorts = [
-            'paterno',
-            'nro_doc',
-            'estado'
-        ];
+        switch ($sort) {
 
-        if (!in_array($sort, $allowedSorts)) {
-            $sort = 'paterno';
+            case 'papeleta':
+
+                $query->join('socio_institucion', 'socios.id', '=', 'socio_institucion.id_socio')
+                    ->orderBy('socio_institucion.papeleta', $direction)
+                    ->select('socios.*');
+
+                break;
+
+            case 'grado':
+
+                $query->join('socio_institucion', 'socios.id', '=', 'socio_institucion.id_socio')
+                    ->join('grados', 'socio_institucion.id_grado', '=', 'grados.id_grado')
+                    ->orderBy('grados.grado', $direction)
+                    ->select('socios.*');
+
+                break;
+
+            case 'paterno':
+            case 'nro_doc':
+            case 'estado':
+
+                $query->orderBy($sort, $direction);
+
+                break;
+
+            default:
+
+                // Primera carga: mostrar los más recientes
+                $query->orderByDesc('socios.id');
+
+                break;
         }
-
 
         $perPage = $request->per_page ?? 10;
 
         $socios = $query
-            ->orderBy($sort, $direction)
             ->paginate($perPage)
             ->withQueryString();
 
@@ -266,6 +292,7 @@ class SocioController extends Controller
         $armas = Arma::orderBy('descripcion_arma')->get();
         $escalafones = Escalafon::orderBy('descripcion')->get();
         $diplomados = Diplomado::orderBy('descripcion')->get();
+        $parentescos = Dominio::where('dominio', 'PARENTESCO')->orderBy('Descripcion')->get();
 
         $resoluciones = ResolucionesJuridica::where('estado', 'AC')->get();
 
@@ -280,7 +307,9 @@ class SocioController extends Controller
             'armas',
             'escalafones',
             'diplomados',
-            'resoluciones'
+            'resoluciones',
+            'parentescos'
+            
         ));
     }
 
@@ -369,6 +398,32 @@ class SocioController extends Controller
                 'devolCapitalizacion' => '',
             ]);
 
+            // Actualizar beneficiarios
+            SocioDependiente::where('id_socio', $socio->id)->delete();
+
+            foreach ($request->dependientes ?? [] as $dependiente) {
+
+                SocioDependiente::create([
+
+                    'id_socio'    => $socio->id,
+
+                    'nombres'     => strtoupper($dependiente['nombres']),
+                    'paterno'     => strtoupper($dependiente['paterno']),
+                    'materno'     => strtoupper($dependiente['materno']),
+
+                    'ci'          => $dependiente['ci'],
+                    'exp'         => $dependiente['exp'],
+
+                    'parentesco'  => $dependiente['parentesco'],
+
+                    'porcentaje'  => $dependiente['porcentaje'],
+
+                    'estado'      => 'AC',
+
+                ]);
+
+            }
+
             $subcuenta = ContaSubcuenta::where('id_socio', $socio->id)->first();
             if ($subcuenta) {
                 $subcuenta->descripcion = trim(
@@ -438,6 +493,7 @@ class SocioController extends Controller
             'institucion.arma',
             'institucion.diplomado',
             'residencia',
+            'dependientes.parentescoDominio'
         ]);
 
          $contenidoQR = "SCAS

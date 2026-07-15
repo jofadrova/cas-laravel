@@ -8,7 +8,7 @@
             </h5>
         </div>
         <div class="card-body">
-            <form action="{{ route('socios.store') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('socios.store') }}" method="POST" enctype="multipart/form-data" novalidate>
                 @csrf
                 <ul class="nav nav-tabs" id="socioTabs" role="tablist">
                     <li class="nav-item">
@@ -350,7 +350,7 @@
                     <div class="tab-pane fade" id="fotografia">
                         <div class="text-center">
                             <img id="preview" src="https://placehold.co/200x250?text=FOTO" class="img-thumbnail mb-3" width="200">
-                            <input type="file" name="foto" class="form-control" accept=".jpg,.jpeg,.png" onchange="previewFoto(event)">
+                            <input type="file" name="foto" class="form-control" accept=".jpg,.jpeg,.png" >
                         </div>
                     </div>
                 </div>
@@ -361,6 +361,9 @@
                     <button type="submit" class="btn btn-success"> Guardar Socio</button>
                 </div>
             </form>
+            <script>
+                window.oldDependientes = @json(old('dependientes', []));
+            </script>
         </div>
     </div>
     <!-- MODAL PARA BENEFICIARIOS -->
@@ -442,195 +445,4 @@
             </div>
         </div>
     </div>
-<script>
-function previewFoto(event)
-{
-    const reader = new FileReader();
-    reader.onload = function()
-    {
-        document.getElementById('preview').src = reader.result;
-    }
-    reader.readAsDataURL(event.target.files[0]);
-}
-
-document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.letters-only').forEach(function (input) {
-        input.addEventListener('keydown', function (event) {
-            const allowedKeys = [
-                'Backspace', 'Tab', 'Enter', 'Escape', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
-                'Home', 'End', 'Delete', 'Shift', 'Control', 'Alt', 'Meta'
-            ];
-
-            if (allowedKeys.includes(event.key)) {
-                return;
-            }
-
-            const letterRegex = /^[A-Za-z\s]$/;
-            if (!letterRegex.test(event.key)) {
-                event.preventDefault();
-            }
-        });
-
-        input.addEventListener('input', function () {
-            this.value = this.value.replace(/[^A-Za-z\s]/g, '');
-        });
-    });
-
-    document.querySelectorAll('.numbers-only').forEach(function (input) {
-        input.addEventListener('keydown', function (event) {
-            const allowedKeys = [
-                'Backspace', 'Tab', 'Enter', 'Escape', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
-                'Home', 'End', 'Delete', 'Shift', 'Control', 'Alt', 'Meta'
-            ];
-
-            if (allowedKeys.includes(event.key)) {
-                return;
-            }
-
-            const numberRegex = /^[0-9]$/;
-            if (!numberRegex.test(event.key)) {
-                event.preventDefault();
-            }
-        });
-
-        input.addEventListener('input', function () {
-            this.value = this.value.replace(/[^0-9]/g, '');
-        });
-    });
-
-    document.querySelectorAll('.alphanumeric-only').forEach(function (input) {
-        input.addEventListener('keydown', function (event) {
-            const allowedKeys = [
-                'Backspace', 'Tab', 'Enter', 'Escape', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
-                'Home', 'End', 'Delete', 'Shift', 'Control', 'Alt', 'Meta'
-            ];
-
-            if (allowedKeys.includes(event.key)) {
-                return;
-            }
-
-            const alphanumericRegex = /^[A-Za-z0-9\s]$/;
-            if (!alphanumericRegex.test(event.key)) {
-                event.preventDefault();
-            }
-        });
-
-        input.addEventListener('input', function () {
-            this.value = this.value.replace(/[^A-Za-z0-9\s]/g, '');
-        });
-    });
-});
-document.getElementById('btnAgregarDependiente').addEventListener('click', function () {
-    let indiceDependiente = 0;
-
-    document.getElementById('btnAgregarDependiente').addEventListener('click', function () {
-
-        const nombres = document.getElementById('dep_nombres').value.trim();
-        const paterno = document.getElementById('dep_paterno').value.trim();
-        const materno = document.getElementById('dep_materno').value.trim();
-        const ci = document.getElementById('dep_ci').value.trim();
-        const expedido = document.getElementById('dep_expedido').value;
-        const selectParentesco = document.getElementById('dep_parentesco');
-        const parentesco = selectParentesco.value;
-        const parentescoTexto = selectParentesco.options[selectParentesco.selectedIndex].text;
-        const porcentaje = document.getElementById('dep_porcentaje').value.trim();
-
-        if (!nombres || !ci || !parentesco || !porcentaje) {
-            mostrarMensajeDependiente('Debe completar todos los campos obligatorios.', 'danger');
-            return;
-        }
-
-        const tbody = document.querySelector('#tablaDependientes tbody');
-
-        const filaVacia = document.getElementById('filaSinDependientes');
-
-        if (filaVacia) {
-            filaVacia.remove();
-        }
-
-        const fila = document.createElement('tr');
-
-        fila.innerHTML = `
-            <td>
-                ${nombres} ${paterno} ${materno}
-                <input type="hidden" name="dependientes[${indiceDependiente}][nombres]" value="${nombres}">
-                <input type="hidden" name="dependientes[${indiceDependiente}][paterno]" value="${paterno}">
-                <input type="hidden" name="dependientes[${indiceDependiente}][materno]" value="${materno}">
-            </td>
-            <td>
-                ${ci}
-                <input type="hidden" name="dependientes[${indiceDependiente}][ci]" value="${ci}">
-            </td>
-            <td>
-                ${expedido}
-                <input type="hidden" name="dependientes[${indiceDependiente}][exp]" value="${expedido}">
-            </td>
-            <td>
-                ${parentescoTexto}
-                <input type="hidden" name="dependientes[${indiceDependiente}][parentesco]" value="${parentesco}">
-            </td>
-            <td>
-                ${porcentaje} %
-                <input type="hidden" name="dependientes[${indiceDependiente}][porcentaje]" value="${porcentaje}">
-            </td>
-            <td class="text-center">
-                <button type="button" class="btn btn-outline-danger btn-sm btnEliminarDependiente">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </td>`;
-        tbody.appendChild(fila);
-        indiceDependiente++;
-        actualizarTotal();
-        document.getElementById('mensajeDependiente').classList.add('d-none');
-        bootstrap.Modal.getInstance(document.getElementById('modalDependiente')).hide();
-        limpiarFormularioDependiente();
-    });
-});
-
-function limpiarFormularioDependiente() {
-
-document.getElementById('dep_nombres').value = '';
-document.getElementById('dep_paterno').value = '';
-document.getElementById('dep_materno').value = '';
-document.getElementById('dep_ci').value = '';
-document.getElementById('dep_expedido').value = '';
-document.getElementById('dep_parentesco').value = '';
-document.getElementById('dep_porcentaje').value = '';
-
-}
-
-function actualizarTotal() {
-    let total = 0;
-    document.querySelectorAll('input[name$="[porcentaje]"]').forEach(function(input){
-        total += parseFloat(input.value) || 0;
-    });
-    document.getElementById('totalPorcentaje').textContent = total + ' %';
-}
-
-document.addEventListener('click', function(e){
-    const boton = e.target.closest('.btnEliminarDependiente');
-    if(!boton) return;
-    boton.closest('tr').remove();
-    actualizarTotal();
-    const tbody = document.querySelector('#tablaDependientes tbody');
-    if(tbody.children.length === 0){
-    tbody.innerHTML = `
-        <tr id="filaSinDependientes">
-            <td colspan="6" class="text-center text-muted py-4">
-                No existen beneficiarios registrados.
-            </td>
-        </tr>`;
-    }
-});
-
-document.getElementById('modalDependiente').addEventListener('show.bs.modal', function () {
-    document.getElementById('mensajeDependiente').classList.add('d-none');
-});
-
-function mostrarMensajeDependiente(mensaje, tipo = 'danger'){
-    const contenedor = document.getElementById('mensajeDependiente');
-    contenedor.className = `alert alert-${tipo} mb-3`;
-    contenedor.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i>${mensaje}`;
-}
-</script>
 </x-app-layout>

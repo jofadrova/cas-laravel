@@ -26,4 +26,13 @@ class SocioDependiente extends Model
     {
         return $this->belongsTo(Socio::class, 'id_socio');
     }
+
+    public function parentescoDominio()
+    {
+        return $this->belongsTo(
+            Dominio::class,
+            'parentesco',
+            'abrev'
+        )->where('dominio', 'PARENTESCO');
+    }
 }
