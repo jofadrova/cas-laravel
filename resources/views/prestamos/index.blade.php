@@ -211,8 +211,8 @@
                                             <h6 class="dropdown-header">OPERACIONES</h6>
                                         </li>
                                         <li>
-                                            <a class="dropdown-item disabled"href="#">
-                                                <i class="bi bi-cash-coin me-2 text-success"></i>
+                                            <a href="{{ route('prestamos.pagos', $prestamo) }}" class="dropdown-item">
+                                                <i class="bi bi-cash-coin me-2"></i>
                                                 Registrar pago
                                             </a>
                                         </li>

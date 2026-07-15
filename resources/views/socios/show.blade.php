@@ -1,79 +1,58 @@
 <x-app-layout>
+    <x-slot name="header">Información del Socio</x-slot>
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-info text-white">
+            <i class="fas fa-eye me-2"></i>
+            Información del Socio
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {{-- FOTO --}}
+                <div class="col-md-3 text-center">
 
-<x-slot name="header">
-    Información del Socio
-</x-slot>
-
-<div class="card shadow-sm mb-4">
-
-    <div class="card-header bg-info text-white">
-        <i class="fas fa-eye me-2"></i>
-        Información del Socio
-    </div>
-
-    <div class="card-body">
-
-        <div class="row">
-
-            {{-- FOTO --}}
-            <div class="col-md-3 text-center">
-
-                @if($socio->foto)
-                    <img src="{{ asset('storage/socios/'.$socio->foto) }}"
-                         class="img-thumbnail"
-                         style="max-height:220px;">
-                @else
-                    <img src="{{ asset('images/user-default.png') }}"
-                         class="img-thumbnail"
-                         style="max-height:220px;">
-                @endif
-
-            </div>
-
-            {{-- DATOS --}}
-            <div class="col-md-9">
-
-                <h3 class="fw-bold">
-                    {{ $socio->paterno }}
-                    {{ $socio->materno }}
-                    {{ $socio->nombres }}
-                </h3>
-
-                <hr>
-
-                <div class="row">
-
-                    <div class="col-md-6 mb-2">
-                        <strong>Nro Papeleta:</strong>
-                        {{ $socio->institucion?->papeleta }}
-                    </div>
-
-                    <div class="col-md-6 mb-2">
-                        <strong>Documento:</strong>
-                        {{ $socio->nro_doc }}
-                        {{ $socio->expedido }}
-                    </div>
-
-                    <div class="col-md-6 mb-2">
-                        <strong>Fecha Nacimiento:</strong>
-                        {{ \Carbon\Carbon::parse($socio->fecha_nac)->format('d/m/Y') }}
-                    </div>
-
-                    <div class="col-md-6 mb-2">
-                        <strong>Edad:</strong>
-                        {{ \Carbon\Carbon::parse($socio->fecha_nac)->age }}
-                        años
-                    </div>
+                    @if($socio->foto)
+                        <img src="{{ asset('storage/socios/'.$socio->foto) }}"
+                            class="img-thumbnail"
+                            style="max-height:220px;">
+                    @else
+                        <img src="{{ asset('images/user-default.png') }}"
+                            class="img-thumbnail"
+                            style="max-height:220px;">
+                    @endif
 
                 </div>
-
+            {{-- DATOS --}}
+                <div class="col-md-9">
+                    <h3 class="fw-bold">
+                        {{ $socio->paterno }}
+                        {{ $socio->materno }}
+                        {{ $socio->nombres }}
+                    </h3>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <strong>Nro Papeleta:</strong>
+                            {{ $socio->institucion?->papeleta }}
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <strong>Documento:</strong>
+                            {{ $socio->nro_doc }}
+                            {{ $socio->expedido }}
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <strong>Fecha Nacimiento:</strong>
+                            {{ \Carbon\Carbon::parse($socio->fecha_nac)->format('d/m/Y') }}
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <strong>Edad:</strong>
+                            {{ \Carbon\Carbon::parse($socio->fecha_nac)->age }}
+                            años
+                        </div>
+                    </div>
+                </div>
             </div>
-
         </div>
-
     </div>
-
-</div>
 
 <div class="card shadow-sm">
 

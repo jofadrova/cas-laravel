@@ -29,4 +29,22 @@ class CuotaSolicitud extends Model
         'comision_mindef',
         'rep_formulario',
     ];
+
+    public function solicitud()
+    {
+        return $this->belongsTo(
+            Prestamo::class,
+            'id_solicitud',
+            'id_solicitud'
+        );
+    }
+
+    public function pagos()
+    {
+        return $this->hasMany(
+            PagoCuota::class,
+            'id_cuota_solicitud',
+            'id'
+        );
+    }
 }

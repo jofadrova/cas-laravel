@@ -53,8 +53,9 @@
 
                             <div class="col-md-4">
                                 <label class="form-label">CI</label>
-                                <input type="text" class="form-control numbers-only" name="nro_doc" maxlength="15" value="{{ old('nro_doc') }}">
+                                <input type="text" class="form-control numbers-only" name="nro_doc" maxlength="15" value="{{ old('nro_doc') }}" data-duplicate-validation-url="{{ route('socios.validar-ci') }}" data-duplicate-min-length="5" data-duplicate-message="El número de CI ya está registrado.">
                                 @error('nro_doc')<small class="text-danger">{{ $message }}</small>@enderror
+                                <small class="invalid-feedback" data-duplicate-feedback></small>
                             </div>
 
                             <div class="col-md-2">
@@ -108,8 +109,9 @@
                         <div class="row g-3">
                             <div class="col-md-4">
                                 <label class="form-label">Papeleta</label>
-                                <input type="text" class="form-control numbers-only" maxlength="8" name="papeleta" value="{{ old('papeleta') }}">
+                                <input type="text" class="form-control numbers-only" maxlength="8" name="papeleta" value="{{ old('papeleta') }}" data-duplicate-validation-url="{{ route('socios.validar-papeleta') }}" data-duplicate-min-length="4" data-duplicate-message="El número de papeleta ya está registrado.">
                                 @error('papeleta')<small class="text-danger">{{ $message }}</small>@enderror
+                                <small class="invalid-feedback" data-duplicate-feedback></small>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Carnet Militar</label>
@@ -118,7 +120,7 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">COSSMIL</label>
-                                <input type="text" class="form-control numbers-only" maxlength="15" name="cossmil" value="{{ old('cossmil') }}">
+                                <input type="text" class="form-control" maxlength="15" name="cossmil" value="{{ old('cossmil') }}">
                                 @error('cossmil')<small class="text-danger">{{ $message }}</small>@enderror
                             </div>
                             {{-- AFILIACION --}}

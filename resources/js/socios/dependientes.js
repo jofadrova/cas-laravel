@@ -7,81 +7,86 @@ export function iniciarDependientes() {
 
     let indiceDependiente = 0;
 
-     document.getElementById('btnAgregarDependiente').addEventListener('click', function (e) {
+    document
+        .getElementById("btnAgregarDependiente")
+        .addEventListener("click", function (e) {
+            e.preventDefault();
+            const nombres = document.getElementById("dep_nombres").value.trim();
+            const paterno = document.getElementById("dep_paterno").value.trim();
+            const materno = document.getElementById("dep_materno").value.trim();
+            const ci = document.getElementById("dep_ci").value.trim();
+            const expedido = document.getElementById("dep_expedido").value;
+            const selectParentesco = document.getElementById("dep_parentesco");
+            const parentesco = selectParentesco.value;
+            const parentescoTexto =
+                selectParentesco.options[selectParentesco.selectedIndex].text;
+            const porcentaje = document
+                .getElementById("dep_porcentaje")
+                .value.trim();
 
-        e.preventDefault();
-        const nombres = document.getElementById('dep_nombres').value.trim();
-        const paterno = document.getElementById('dep_paterno').value.trim();
-        const materno = document.getElementById('dep_materno').value.trim();
-        const ci = document.getElementById('dep_ci').value.trim();
-        const expedido = document.getElementById('dep_expedido').value;
-        const selectParentesco = document.getElementById('dep_parentesco');
-        const parentesco = selectParentesco.value;
-        const parentescoTexto = selectParentesco.options[selectParentesco.selectedIndex].text;
-        const porcentaje = document.getElementById('dep_porcentaje').value.trim();
+            if (!nombres || !ci || !parentesco || !porcentaje) {
+                mostrarMensajeDependiente(
+                    "Debe completar todos los campos obligatorios.",
+                    "danger",
+                );
+                return;
+            }
 
-        if (!nombres || !ci || !parentesco || !porcentaje) {
-            mostrarMensajeDependiente('Debe completar todos los campos obligatorios.', 'danger');
-            return;
-        }
+            agregarFilaDependiente({
+                nombres,
+                paterno,
+                materno,
 
-        agregarFilaDependiente({
+                ci,
 
-    nombres,
-    paterno,
-    materno,
+                exp: expedido,
 
-    ci,
+                parentesco,
+                parentescoTexto,
 
-    exp: expedido,
+                porcentaje,
+            });
 
-    parentesco,
-    parentescoTexto,
+            document
+                .getElementById("mensajeDependiente")
+                .classList.add("d-none");
+            bootstrap.Modal.getInstance(
+                document.getElementById("modalDependiente"),
+            ).hide();
+            limpiarFormularioDependiente();
+        });
 
-    porcentaje
-
-});
-
-      
-        document.getElementById('mensajeDependiente').classList.add('d-none');
-        bootstrap.Modal.getInstance(document.getElementById('modalDependiente')).hide();
-        limpiarFormularioDependiente();
-    });
-
-function limpiarFormularioDependiente() {
-
-document.getElementById('dep_nombres').value = '';
-document.getElementById('dep_paterno').value = '';
-document.getElementById('dep_materno').value = '';
-document.getElementById('dep_ci').value = '';
-document.getElementById('dep_expedido').value = '';
-document.getElementById('dep_parentesco').value = '';
-document.getElementById('dep_porcentaje').value = '';
-
-}
-
-function agregarFilaDependiente(datos) {
-
-    const tbody = document.querySelector('#tablaDependientes tbody');
-
-    const filaVacia = document.getElementById('filaSinDependientes');
-
-    if (filaVacia) {
-        filaVacia.remove();
+    function limpiarFormularioDependiente() {
+        document.getElementById("dep_nombres").value = "";
+        document.getElementById("dep_paterno").value = "";
+        document.getElementById("dep_materno").value = "";
+        document.getElementById("dep_ci").value = "";
+        document.getElementById("dep_expedido").value = "";
+        document.getElementById("dep_parentesco").value = "";
+        document.getElementById("dep_porcentaje").value = "";
     }
 
-    const fila = document.createElement('tr');
+    function agregarFilaDependiente(datos) {
+        const tbody = document.querySelector("#tablaDependientes tbody");
 
-    fila.dataset.nombres = datos.nombres;
-    fila.dataset.paterno = datos.paterno;
-    fila.dataset.materno = datos.materno;
-    fila.dataset.ci = datos.ci;
-    fila.dataset.exp = datos.exp;
-    fila.dataset.parentesco = datos.parentesco;
-    fila.dataset.parentescoTexto = datos.parentescoTexto;
-    fila.dataset.porcentaje = datos.porcentaje;
+        const filaVacia = document.getElementById("filaSinDependientes");
 
-    fila.innerHTML = `
+        if (filaVacia) {
+            filaVacia.remove();
+        }
+
+        const fila = document.createElement("tr");
+
+        fila.dataset.nombres = datos.nombres;
+        fila.dataset.paterno = datos.paterno;
+        fila.dataset.materno = datos.materno;
+        fila.dataset.ci = datos.ci;
+        fila.dataset.exp = datos.exp;
+        fila.dataset.parentesco = datos.parentesco;
+        fila.dataset.parentescoTexto = datos.parentescoTexto;
+        fila.dataset.porcentaje = datos.porcentaje;
+
+        fila.innerHTML = `
         <td>
             ${datos.nombres} ${datos.paterno} ${datos.materno}
 
@@ -123,62 +128,71 @@ function agregarFilaDependiente(datos) {
         </td>
     `;
 
-    tbody.appendChild(fila);
+        tbody.appendChild(fila);
 
-    indiceDependiente++;
+        indiceDependiente++;
 
-    actualizarTotal();
+        actualizarTotal();
+    }
 
-}
+    function actualizarTotal() {
+        let total = 0;
+        document
+            .querySelectorAll('input[name$="[porcentaje]"]')
+            .forEach(function (input) {
+                total += parseFloat(input.value) || 0;
+            });
+        document.getElementById("totalPorcentaje").textContent = total + " %";
+    }
 
-function actualizarTotal() {
-    let total = 0;
-    document.querySelectorAll('input[name$="[porcentaje]"]').forEach(function(input){
-        total += parseFloat(input.value) || 0;
-    });
-    document.getElementById('totalPorcentaje').textContent = total + ' %';
-}
-
-document.addEventListener('click', function(e){
-    const boton = e.target.closest('.btnEliminarDependiente');
-    if(!boton) return;
-    boton.closest('tr').remove();
-    actualizarTotal();
-    const tbody = document.querySelector('#tablaDependientes tbody');
-    if(tbody.children.length === 0){
-    tbody.innerHTML = `
+    document.addEventListener("click", function (e) {
+        const boton = e.target.closest(".btnEliminarDependiente");
+        if (!boton) return;
+        boton.closest("tr").remove();
+        actualizarTotal();
+        const tbody = document.querySelector("#tablaDependientes tbody");
+        if (tbody.children.length === 0) {
+            tbody.innerHTML = `
         <tr id="filaSinDependientes">
             <td colspan="6" class="text-center text-muted py-4">
                 No existen beneficiarios registrados.
             </td>
         </tr>`;
+        }
+    });
+
+    document
+        .getElementById("modalDependiente")
+        .addEventListener("show.bs.modal", function () {
+            document
+                .getElementById("mensajeDependiente")
+                .classList.add("d-none");
+        });
+
+    function mostrarMensajeDependiente(mensaje, tipo = "danger") {
+        const contenedor = document.getElementById("mensajeDependiente");
+        contenedor.className = `alert alert-${tipo} mb-3`;
+        contenedor.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i>${mensaje}`;
     }
-});
 
-document.getElementById('modalDependiente').addEventListener('show.bs.modal', function () {
-    document.getElementById('mensajeDependiente').classList.add('d-none');
-});
+    // Reconstruir beneficiarios
+    let dependientesIniciales = [];
 
-function mostrarMensajeDependiente(mensaje, tipo = 'danger'){
-    const contenedor = document.getElementById('mensajeDependiente');
-    contenedor.className = `alert alert-${tipo} mb-3`;
-    contenedor.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i>${mensaje}`;
-}
+    if (
+        Array.isArray(window.oldDependientes) &&
+        window.oldDependientes.length > 0
+    ) {
+        dependientesIniciales = window.oldDependientes;
+    } else if (Array.isArray(window.dependientes)) {
+        dependientesIniciales = window.dependientes;
+    }
 
-// Reconstruir beneficiarios cuando hay errores de validación
-const dependientesIniciales =
-    window.oldDependientes?.length > 0
-        ? window.oldDependientes
-        : (window.dependientes ?? []);
+    dependientesIniciales.forEach((dep) => {
+        const opcion = document.querySelector(
+            `#dep_parentesco option[value="${dep.parentesco}"]`,
+        );
 
-dependientesIniciales.forEach(dep => {
-
-    const opcion = document.querySelector(
-        `#dep_parentesco option[value="${dep.parentesco}"]`
-    );
-
-    agregarFilaDependiente({
-
+        agregarFilaDependiente({
             nombres: dep.nombres,
             paterno: dep.paterno,
             materno: dep.materno,
@@ -189,13 +203,9 @@ dependientesIniciales.forEach(dep => {
 
             parentesco: dep.parentesco,
 
-            parentescoTexto: opcion
-                ? opcion.textContent
-                : dep.parentesco,
+            parentescoTexto: opcion ? opcion.textContent : dep.parentesco,
 
-            porcentaje: dep.porcentaje
-
+            porcentaje: dep.porcentaje,
         });
-
     });
 }

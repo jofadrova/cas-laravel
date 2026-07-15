@@ -12,6 +12,7 @@ use App\Http\Controllers\SocioReporteController;
 use App\Http\Controllers\PrestamoController;
 use App\Http\Controllers\TipoPrestamoController;
 use App\Services\ExchangeRateService;
+use App\Http\Controllers\PagoController;
 
 
 Route::get('/', function () {
@@ -58,6 +59,8 @@ Route::middleware('auth')->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::get('/socios/buscar', [SocioController::class, 'buscar'])->name('socios.buscar');
+    Route::get('/socios/validar-ci', [SocioController::class, 'validarCi'])->name('socios.validar-ci')->middleware('permission:socios.ver');
+    Route::get('/socios/validar-papeleta', [SocioController::class, 'validarPapeleta'])->name('socios.validar-papeleta')->middleware('permission:socios.ver');
     Route::resource('socios', SocioController::class)->middleware('permission:socios.ver');
     Route::get('/socios-informacion',[SocioInformacionController::class, 'index'])->name('socios.informacion')->middleware('permission:socios.informacion');
     Route::get('/socios-reportes',[SocioReporteController::class, 'index'])->name('socios.reportes')->middleware('permission:socios.reportes');
@@ -137,6 +140,8 @@ Route::prefix('prestamos')->name('prestamos.')->group(function () {
         Route::get('garantes/{historial}/pdf', [PrestamoController::class, 'pdfCambioGarantes'])->name('garantes.pdf');
 
         Route::get('/{prestamo}', [PrestamoController::class, 'show'])->name('show');
+
+        Route::get('{prestamo}/pagos', [PagoController::class, 'index'])->name('pagos');
 
 
     });

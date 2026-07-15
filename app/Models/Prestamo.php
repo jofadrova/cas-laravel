@@ -90,4 +90,13 @@ class Prestamo extends Model
     {
         return number_format($this->interes, 2);
     }
+
+    public function cuotas()
+    {
+        return $this->hasMany(
+            CuotaSolicitud::class,
+            'id_solicitud',
+            'id_solicitud'
+        );
+    }
 }

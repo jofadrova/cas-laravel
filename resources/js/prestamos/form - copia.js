@@ -395,22 +395,6 @@ class PrestamoForm {
                     this.formatearMoneda(datos.totalPagado);
             }
 
-            if(this.rItf){
-                this.rItf.textContent =
-                    this.formatearMoneda(datos.itfTotal);
-            }
-
-            if(this.rPapeleria){
-                this.rPapeleria.textContent = this.formatearMoneda(
-                    datos.interesDiasTotal + datos.reposicionTotal
-                );
-            }
-
-            if(this.rLiquido){
-                // En el legacy los cargos se cobran en las cuotas, no se descuentan del desembolso.
-                this.rLiquido.textContent = this.formatearMoneda(datos.capital);
-            }
-
         }
 
     }
@@ -480,14 +464,41 @@ class PrestamoForm {
 
         }
 
-        // El cronograma se calcula en el servidor con la fórmula legacy. Evitar
-        // mostrar estimaciones simples que difieran de sus redondeos por cuota.
-        this.rInteresCalculado.textContent = '-';
-        this.rItf.textContent = '-';
-        this.rPapeleria.textContent = '-';
-        this.rLiquido.textContent = '-';
-        this.rCuota.textContent = '-';
-        this.rTotalPagado.textContent = '-';
+        const interes =
+            monto *
+            (this.configPrestamo.interes/100);
+
+        const itf =
+            monto *
+            (this.configPrestamo.itf/100);
+
+        const papeleria =
+            monto *
+            (this.configPrestamo.papeleria/100);
+
+        const liquido =
+            monto -
+            itf -
+            papeleria;
+
+        const cuota =
+            (monto + interes) /
+            plazo;
+
+        this.rInteresCalculado.textContent =
+            this.formatearMoneda(interes);
+
+        this.rItf.textContent =
+            this.formatearMoneda(itf);
+
+        this.rPapeleria.textContent =
+            this.formatearMoneda(papeleria);
+
+        this.rLiquido.textContent =
+            this.formatearMoneda(liquido);
+
+        this.rCuota.textContent =
+            this.formatearMoneda(cuota);
     }
 
     async validarSolicitud(){
@@ -613,18 +624,6 @@ class PrestamoForm {
                 <td class="text-end">
                     ${Number(cuota.interes).toFixed(2)}
                 </td>
-                <td class="text-end">
-                    ${Number(cuota.min_defensa).toFixed(2)}
-                </td>
-                <td class="text-end">
-                    ${Number(cuota.itf).toFixed(2)}
-                </td>
-                <td class="text-end">
-                    ${Number(cuota.interes_dias).toFixed(2)}
-                </td>
-                <td class="text-end">
-                    ${Number(cuota.reposicion).toFixed(2)}
-                </td>
                 <td class="text-end fw-bold">
                     ${Number(cuota.cuota).toFixed(2)}
                 </td>
@@ -672,3 +671,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     new PrestamoForm();
 });
+

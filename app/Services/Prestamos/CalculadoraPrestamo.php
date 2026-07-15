@@ -26,17 +26,17 @@ class CalculadoraPrestamo
         );
 
         return [
-
-            'capital'       => $datos['monto'],
+            'capital' => $datos['monto'],
             'cuota_base' => $cuotaBase,
             'cuota' => $cronograma[0]['cuota'],
-            //'cuota_base' => round($cuotaBase,2),
-            //'cuota' => round($cronograma[0]['cuota'],2),
-            'cronograma'    => $cronograma,
-            'interesTotal'  => collect($cronograma)->sum('interes'),
-            'capitalTotal'  => collect($cronograma)->sum('capital'),
-            'totalPagado'   => collect($cronograma)->sum('cuota'),
-
+            'cronograma' => $cronograma,
+            // Los totales se acumulan sin redondear cada componente, igual que calcula.php.
+            'interesTotal' => $this->redondear(array_sum(array_column($cronograma, 'interes'))),
+            'capitalTotal' => $this->redondear(array_sum(array_column($cronograma, 'capital'))),
+            'itfTotal' => $this->redondear(array_sum(array_column($cronograma, 'itf'))),
+            'interesDiasTotal' => $this->redondear(array_sum(array_column($cronograma, 'interes_dias'))),
+            'reposicionTotal' => $this->redondear(array_sum(array_column($cronograma, 'reposicion'))),
+            'totalPagado' => $this->redondear(array_sum(array_column($cronograma, 'cuota_legacy'))),
         ];
     }
 
@@ -58,13 +58,13 @@ class CalculadoraPrestamo
      */
     protected function generarCronograma(array $datos, float $cuotaBase): array
     {
-        $saldo = $datos['monto'];
-        //$saldo = round($datos['monto'],2);
+        $saldo = (float) $datos['monto'];
         $fechaPrestamo = Carbon::parse($datos['fecha']);
         $plazo = (int)$datos['plazo'];
         $tasa = $datos['porcentaje'] / 100;
         $cronograma = [];
-        $diasMes = $fechaPrestamo->daysInMonth;
+        // El legacy consideraba febrero siempre de 28 días, incluso en años bisiestos.
+        $diasMes = $fechaPrestamo->month === 2 ? 28 : $fechaPrestamo->daysInMonth;
         $fecha2 = $diasMes - $fechaPrestamo->day;
         /*
         |--------------------------------------------------------------------------
@@ -82,18 +82,8 @@ class CalculadoraPrestamo
         */
 
         $itfTotal = ($datos['monto'] / 1000) * ($datos['itf'] ?? 0);
-        //$itfTotal = round(($datos['monto'] / 1000) * ($datos['itf'] ?? 0),2);
-
-        $itfCuota = 0;
-        if ($itfTotal > 0) {
-            if ($plazo >= 24) {
-                $itfCuota = $itfTotal / 24;
-                //$itfCuota = round($itfTotal / 24,2);
-            } else {
-                $itfCuota = $itfTotal / $plazo;
-                //$itfCuota = round($itfTotal / $plazo,2);
-            }
-        }
+        $periodoItf = $plazo >= 24 && (int) ($datos['tipo'] ?? 0) !== 8 ? 24 : $plazo;
+        $itfAcumulado = 0;
 
         /*
         |--------------------------------------------------------------------------
@@ -122,8 +112,6 @@ class CalculadoraPrestamo
             $capitalReal = $cuotaBase - $interesReal;
 
             $interes = $interesReal;
-            //$interes = round($interesReal,2);
-          //  $capital = round($capitalReal,2);
             $capital = $capitalReal;
 
             /*
@@ -147,42 +135,21 @@ class CalculadoraPrestamo
             }           
             /*
             |--------------------------------------------------------------------------
-            | ÚLTIMA CUOTA
-            |--------------------------------------------------------------------------
-            */
-            $cuotaMostrar = $cuotaBase;
-            if ($n == $plazo) {
-                $capital = $saldo;
-                $cuotaMostrar = $capital + $interes;
-                //$cuotaBase = $capital + $interes;
-                //$cuotaBase = round($capital + $interes, 2);
-            }
-            $saldo -= $capitalReal;
-            if ($saldo < 0) {
-                $saldo = 0;
-            }
-            /*
-            |--------------------------------------------------------------------------
             | ITF (solo primeras 24 cuotas)
             |--------------------------------------------------------------------------
             */
 
             $itf = 0;
-            if ($plazo >= 24) {
-                if ($n <= 24) {
-                    $itf = $itfCuota;
-                    if ($n == 24) {
-                        $itf = $itfTotal - ($itfCuota * 23);
-                        //$itf = round($itfTotal - ($itfCuota * 23),2);
-                    }
+            if ($n <= $periodoItf) {
+                $itf = $this->redondear($itfTotal / $periodoItf);
+                if ($n === $periodoItf) {
+                    $itf = $this->redondear($itfTotal) - $itfAcumulado;
                 }
-            } else {
-                $itf = $itfCuota;
-                if ($n == $plazo) {
-                    $itf = $itfTotal - ($itfCuota * ($plazo - 1));
-                    //$itf = round($itfTotal - ($itfCuota * ($plazo - 1)),2);
-                }
-            }   
+            }
+
+            if ((int) ($datos['tipo'] ?? 0) === 8 && ($datos['periodo_gadm'] ?? 0) > 0 && $n <= $datos['periodo_gadm']) {
+                $itf = $this->redondear(($datos['gadm'] ?? 0) / $datos['periodo_gadm']);
+            }
 
             /*
             |--------------------------------------------------------------------------
@@ -200,9 +167,9 @@ class CalculadoraPrestamo
             |--------------------------------------------------------------------------
             */
 
-            $cuotaFinal = $cuotaMostrar + $itf + $minDefensa + $papel + $cargoReposicion;
-
-            //$cuotaFinal = $cuotaBase + $itf + $minDefensa + $papel + $cargoReposicion;
+            $cuotaFinal = $this->redondear($cuotaBase + $itf + $minDefensa + $papel + $cargoReposicion);
+            $saldo -= $capitalReal;
+            $itfAcumulado = $this->redondear($itfAcumulado + $itf);
 
             $cronograma[] = [
 
@@ -228,20 +195,11 @@ class CalculadoraPrestamo
                 'cuota_base' => $cuotaBase,
 
                 'cuota' => $cuotaFinal,
-                /*
-                'min_defensa' => round($minDefensa,2),
 
-                'itf' => round($itf,2),
+                // Legacy acumula el importe sin redondear antes de mostrar el total.
+                'cuota_legacy' => $cuotaBase + $itf + $minDefensa + $papel + $cargoReposicion,
 
-                'interes_dias' => round($papel,2),
-
-                'reposicion' => round($cargoReposicion,2),
-
-                'cuota_base' => round($cuotaBase,2),
-
-                'cuota' => round($cuotaFinal,2), */
-
-                'saldo' => $saldo,
+                'saldo' => abs($saldo),
 
             ];
 
@@ -250,6 +208,11 @@ class CalculadoraPrestamo
 // dd($cronograma[0], $cronograma[1]);
         return $cronograma;
     }
-    
+
+    /** Equivalente a redondeado($numero, 2) del sistema legacy. */
+    private function redondear(float $numero, int $decimales = 2): float
+    {
+        return round($numero, $decimales, PHP_ROUND_HALF_UP);
+    }
 
 }

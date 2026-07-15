@@ -133,6 +133,37 @@ class SocioController extends Controller
             'parentescos' => Dominio::where('dominio', 'PARENTESCO')->orderBy('Descripcion')->get(),
         ]);
     }
+
+    /** Comprueba si un CI ya pertenece a otro socio. */
+    public function validarCi(Request $request)
+    {
+        $datos = $request->validate([
+            'nro_doc' => ['nullable', 'string', 'max:15'],
+            'socio_id' => ['nullable', 'integer'],
+        ]);
+
+        $existe = Socio::where('nro_doc', $datos['nro_doc'] ?? '')
+            ->when($datos['socio_id'] ?? null, fn ($query, $socioId) => $query->where('id', '!=', $socioId))
+            ->exists();
+
+        return response()->json(['disponible' => ! $existe]);
+    }
+
+    /** Comprueba si una papeleta ya pertenece a otro socio. */
+    public function validarPapeleta(Request $request)
+    {
+        $datos = $request->validate([
+            'papeleta' => ['nullable', 'string', 'max:8'],
+            'socio_id' => ['nullable', 'integer'],
+        ]);
+
+        $existe = SocioInstitucion::where('papeleta', $datos['papeleta'] ?? '')
+            ->when($datos['socio_id'] ?? null, fn ($query, $socioId) => $query->where('id_socio', '!=', $socioId))
+            ->exists();
+
+        return response()->json(['disponible' => ! $existe]);
+    }
+
         /**
      * Store a newly created resource in storage.
      */

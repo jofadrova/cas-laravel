@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreSocioRequest extends FormRequest
 {
@@ -20,7 +21,7 @@ class StoreSocioRequest extends FormRequest
             'paterno'       => 'required|string|min:3',
             'materno'       => 'nullable|string|min:3',
 
-            'nro_doc'       => 'required|string|min:5',
+            'nro_doc'       => ['required', 'string', 'min:5', Rule::unique('socios', 'nro_doc')],
             'expedido'      => 'required|string|max:2',
 
             'sexo'          => 'required|string|max:1',
@@ -29,7 +30,7 @@ class StoreSocioRequest extends FormRequest
             'fecha_nac'     => 'required|date|before:today',
 
             // DATOS INSTITUCIONALES
-            'papeleta'      => 'required|string|min:4|max:8',
+            'papeleta'      => ['required', 'string', 'min:4', 'max:8', Rule::unique('socio_institucion', 'papeleta')],
             'carnet_mil'    => 'required|string|min:4|max:15',
             'cossmil'       => 'required|string|min:4|max:15',
 
@@ -81,6 +82,7 @@ class StoreSocioRequest extends FormRequest
             'materno.min'           => 'El apellido materno debe tener al menos 3 caracteres.',
             'nro_doc.required'      => 'Debe ingresar el número de CI.',
             'nro_doc.min'           => 'El número de CI debe tener al menos 5 caracteres.',
+            'nro_doc.unique'        => 'El número de CI ya está registrado.',
             'expedido.required'     => 'Seleccione el departamento de expedición.',
             'sexo.required'         => 'Seleccione el sexo.',
             'estado_civil.required' => 'Seleccione el estado civil.',
@@ -90,6 +92,7 @@ class StoreSocioRequest extends FormRequest
             'papeleta.required'     => 'Debe ingresar el número de papeleta.',
             'papeleta.min'          => 'El número de papeleta debe tener al menos 4 caracteres.',
             'papeleta.max'          => 'El número de papeleta no puede superar 8 caracteres.',
+            'papeleta.unique'       => 'El número de papeleta ya está registrado.',
             'carnet_mil.required'   => 'Debe ingresar el carnet militar.',
             'carnet_mil.min'        => 'El carnet militar debe tener al menos 4 caracteres.',
             'carnet_mil.max'        => 'El carnet militar no puede superar 15 caracteres.',

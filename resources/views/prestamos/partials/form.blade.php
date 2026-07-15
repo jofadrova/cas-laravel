@@ -119,13 +119,17 @@
                         <th>Fecha</th>
                         <th class="text-end">Capital</th>
                         <th class="text-end">Interés</th>
+                        <th class="text-end">Min. Defensa</th>
+                        <th class="text-end">ITF</th>
+                        <th class="text-end">Interés días</th>
+                        <th class="text-end">Reposición</th>
                         <th class="text-end">Cuota</th>
                         <th class="text-end">Saldo</th>
                     </tr>
                 </thead>
                 <tbody id="cronogramaBody">
                     <tr>
-                        <td colspan="6" class="text-center text-muted py-4">
+                        <td colspan="10" class="text-center text-muted py-4">
                             Complete los datos del préstamo...
                         </td>
                     </tr>
