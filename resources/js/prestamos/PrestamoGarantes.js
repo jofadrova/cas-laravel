@@ -1,3 +1,5 @@
+import { confirmarOperacion } from '../scas/confirmacion';
+
 export default class PrestamoGarantes {
     constructor() {
 
@@ -19,8 +21,41 @@ export default class PrestamoGarantes {
 
         this.actualizarVista();
 
-        this.form.addEventListener('submit', e => {
-            if (!this.validarFormulario()) {e.preventDefault(); }});
+        this.form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!this.validarFormulario()) {
+                return;
+            }
+
+            const cambios = [];
+
+            if (this.chkGarante1.checked) {
+                cambios.push({
+                    etiqueta: 'Nuevo garante 1',
+                    valor: this.nombreGarante('id_garante1'),
+                });
+            }
+
+            if (this.chkGarante2.checked) {
+                cambios.push({
+                    etiqueta: 'Nuevo garante 2',
+                    valor: this.nombreGarante('id_garante2'),
+                });
+            }
+
+            const confirmado = await confirmarOperacion({
+                titulo: 'Confirmar Cambio de Garantes',
+                mensaje:
+                    'Se actualizarán los garantes seleccionados y se registrará el cambio en el historial del préstamo.',
+                detalles: cambios,
+                textoConfirmar: 'Actualizar garantes',
+            });
+
+            if (confirmado) {
+                this.form.submit();
+            }
+        });
 
         this.modal = new bootstrap.Modal(
             document.getElementById('modalValidacion')
@@ -69,6 +104,13 @@ export default class PrestamoGarantes {
         this.lblMensaje.textContent = mensaje;
         this.modal.show();
 
+    }
+
+    nombreGarante(nombreCampo) {
+        return document.querySelector(`input[name="${nombreCampo}"]`)
+            ?.closest('.scas-papeleta')
+            ?.querySelector('.scas-nombre')
+            ?.textContent.trim() || 'Sin seleccionar';
     }
 
     validarFormulario() {

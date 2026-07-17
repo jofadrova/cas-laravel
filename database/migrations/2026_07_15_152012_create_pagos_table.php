@@ -19,7 +19,7 @@ return new class extends Migration
             $table->date('fecha');
 
             $table->char('tipo_pago', 2)
-                  ->comment('PC=Pago Cuota, PT=Pago Total');
+                  ->comment('PC=Pago Cuota, PT=Pago Total, AM=Amortización');
 
             $table->text('anexo')->nullable();
 

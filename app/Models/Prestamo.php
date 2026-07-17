@@ -28,7 +28,17 @@ class Prestamo extends Model
         'periodo_gadm',
         'fecha_deposito',
         'tipo_cambio',
-        'editable'
+        'editable',
+        'refinanciado',
+        'id_solicitud_origen',
+        'saldo_refinanciado',
+        'monto_desembolso_refinanciamiento',
+    ];
+
+    protected $casts = [
+        'refinanciado' => 'boolean',
+        'saldo_refinanciado' => 'decimal:2',
+        'monto_desembolso_refinanciamiento' => 'decimal:2',
     ];
 
     public function socio()
@@ -76,7 +86,12 @@ class Prestamo extends Model
 
     public function getEstadoTextoAttribute()
     {
-        return $this->estado == 1 ? 'ACTIVO' : 'CANCELADO';
+        return match ($this->estado) {
+            'AC' => 'ACTIVO',
+            'PA' => 'CANCELADO',
+            'CE' => 'CERRADO POR REFINANCIAMIENTO',
+            default => $this->estado,
+        };
     }
     public function getMontoFormateadoAttribute()
     {
@@ -96,6 +111,33 @@ class Prestamo extends Model
         return $this->hasMany(
             CuotaSolicitud::class,
             'id_solicitud',
+            'id_solicitud'
+        );
+    }
+
+    public function amortizacionesCapital()
+    {
+        return $this->hasMany(
+            AmortizacionCapital::class,
+            'id_solicitud',
+            'id_solicitud'
+        );
+    }
+
+    public function prestamoOrigen()
+    {
+        return $this->belongsTo(
+            self::class,
+            'id_solicitud_origen',
+            'id_solicitud'
+        );
+    }
+
+    public function refinanciamientos()
+    {
+        return $this->hasMany(
+            self::class,
+            'id_solicitud_origen',
             'id_solicitud'
         );
     }

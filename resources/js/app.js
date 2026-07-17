@@ -16,9 +16,12 @@ import "./socios/index";
 import "./scas/papeleta-search.js";
 import "./prestamos/form";
 import "./scas/notifier";
+import "./scas/confirmacion";
 
 import { initDashboard } from "./dashboard";
 import { iniciarPagos } from './pagos/index';
+import { iniciarAmortizacionCapital } from './prestamos/amortizacion-capital';
+import { iniciarRefinanciamiento } from './prestamos/refinanciamiento';
 import { iniciarSidebar } from './sidebar';
 
 import PrestamoGarantes from './prestamos/PrestamoGarantes';
@@ -28,6 +31,8 @@ if (document.getElementById('cardNuevosGarantes')) {
 
 document.addEventListener('DOMContentLoaded', () => {
     iniciarPagos();
+    iniciarAmortizacionCapital();
+    iniciarRefinanciamiento();
     iniciarSidebar();
 });
 

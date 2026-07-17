@@ -13,6 +13,8 @@ use App\Http\Controllers\PrestamoController;
 use App\Http\Controllers\TipoPrestamoController;
 use App\Services\ExchangeRateService;
 use App\Http\Controllers\PagoController;
+use App\Http\Controllers\AmortizacionCapitalController;
+use App\Http\Controllers\RefinanciamientoController;
 
 
 Route::get('/', function () {
@@ -133,6 +135,7 @@ Route::prefix('prestamos')->name('prestamos.')->group(function () {
         Route::get('/{prestamo}/reporte', [PrestamoController::class, 'reporte'])->name('reporte');
 
         Route::get('/{prestamo}/detalle', [PrestamoController::class, 'detalle'])->name('detalle');
+        Route::get('/{prestamo}/detalle/pdf', [PrestamoController::class, 'detallePdf'])->name('detalle.pdf');
         Route::patch('/{prestamo}/bloquear-edicion',[PrestamoController::class, 'bloquearEdicion'])->name('bloquear-edicion');
         Route::patch('/{prestamo}/habilitar-edicion',[PrestamoController::class, 'habilitarEdicion'])->name('habilitar-edicion');
         Route::get('/{prestamo}/garantes', [PrestamoController::class, 'garantes'])->name('garantes');
@@ -143,6 +146,17 @@ Route::prefix('prestamos')->name('prestamos.')->group(function () {
 
         Route::get('{prestamo}/pagos', [PagoController::class, 'index'])->name('pagos');
         Route::post('{prestamo}/pagos', [PagoController::class, 'store'])->name('pagos.store');
+        Route::post('{prestamo}/pagos/total', [PagoController::class, 'storeTotal'])->name('pagos.total.store');
+        Route::get('{prestamo}/pagos/reporte', [PagoController::class, 'reporte'])->name('pagos.reporte');
+        Route::get('{prestamo}/pagos/reporte/pdf', [PagoController::class, 'reportePdf'])->name('pagos.reporte.pdf');
+        Route::get('{prestamo}/amortizacion-capital', [AmortizacionCapitalController::class, 'create'])
+            ->name('amortizacion-capital');
+        Route::post('{prestamo}/amortizacion-capital', [AmortizacionCapitalController::class, 'store'])
+            ->name('amortizacion-capital.store');
+        Route::get('{prestamo}/refinanciamiento', [RefinanciamientoController::class, 'create'])
+            ->name('refinanciamiento');
+        Route::post('{prestamo}/refinanciamiento', [RefinanciamientoController::class, 'store'])
+            ->name('refinanciamiento.store');
 
 
     });

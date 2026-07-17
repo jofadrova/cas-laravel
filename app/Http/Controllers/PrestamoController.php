@@ -208,6 +208,8 @@ class PrestamoController extends Controller
 
     public function edit(Prestamo $prestamo)
     {
+        abort_if($prestamo->estado !== 'AC', 403, 'El préstamo cerrado no admite operaciones.');
+
         if (!$prestamo->editable) {
             return redirect()
                 ->route('prestamos.index')
@@ -223,6 +225,8 @@ class PrestamoController extends Controller
 
     public function update(UpdatePrestamoRequest $request, Prestamo $prestamo, PrestamoService $service)
     {
+        abort_if($prestamo->estado !== 'AC', 403, 'El préstamo cerrado no admite operaciones.');
+
         if (!$prestamo->editable) {
             abort(403, 'La edición de este préstamo está bloqueada.');
         }
@@ -238,6 +242,8 @@ class PrestamoController extends Controller
 
     public function bloquearEdicion(Prestamo $prestamo)
     {
+        abort_if($prestamo->estado !== 'AC', 403, 'El préstamo cerrado no admite operaciones.');
+
         $prestamo->update([
             'editable' => false
         ]);
@@ -250,6 +256,8 @@ class PrestamoController extends Controller
 
     public function habilitarEdicion(Prestamo $prestamo)
     {
+        abort_if($prestamo->estado !== 'AC', 403, 'El préstamo cerrado no admite operaciones.');
+
         $prestamo->update([
             'editable' => true
         ]);
@@ -262,6 +270,8 @@ class PrestamoController extends Controller
 
     public function garantes(Prestamo $prestamo)
     {
+        abort_if($prestamo->estado !== 'AC', 403, 'El préstamo cerrado no admite operaciones.');
+
         if ($prestamo->tipo->id_tasa != 1) {
             abort(403, 'El cambio de garantes solo está permitido para préstamos REGULARES.');
         }
@@ -279,6 +289,8 @@ class PrestamoController extends Controller
 
     public function actualizarGarantes(UpdateGarantesRequest $request, Prestamo $prestamo, PrestamoService $service)
     {
+        abort_if($prestamo->estado !== 'AC', 403, 'El préstamo cerrado no admite operaciones.');
+
         if ($prestamo->tipo->id_tasa != 1) {
 
             abort(403, 'El cambio de garantes solo está permitido para préstamos REGULARES.');
@@ -321,13 +333,10 @@ class PrestamoController extends Controller
     public function detalle(Prestamo $prestamo)
     {
         try {
-            $prestamo->load([
-                'socio',
-                'tipo',
-                'garante1',
-                'garante2',
-            ]);
-            return view('prestamos.partials.detalle', compact('prestamo'));
+            return view(
+                'prestamos.partials.detalle',
+                $this->datosDetallePrestamo($prestamo)
+            );
 
         } catch (\Throwable $e) {
             if (request()->ajax()) {
@@ -338,6 +347,57 @@ class PrestamoController extends Controller
             }
             throw $e;
         }
+    }
+
+    public function detallePdf(Prestamo $prestamo)
+    {
+        $pdf = Pdf::loadView(
+            'prestamos.pdf.detalle',
+            $this->datosDetallePrestamo($prestamo)
+        )
+            ->setPaper('letter', 'landscape');
+
+        $dompdf = $pdf->getDomPDF();
+        $dompdf->render();
+        $dompdf->getCanvas()->page_text(
+            650,
+            585,
+            'Página {PAGE_NUM} de {PAGE_COUNT}',
+            null,
+            8,
+            [0.12, 0.16, 0.22]
+        );
+
+        return $pdf->stream('Detalle_Prestamo_'.$prestamo->nro_solicitud.'.pdf');
+    }
+
+    private function datosDetallePrestamo(Prestamo $prestamo): array
+    {
+        $prestamo->load([
+            'socio.institucion.grado',
+            'tipo',
+            'garante1',
+            'garante2',
+            'prestamoOrigen',
+            'refinanciamientos',
+            'cuotas' => fn ($query) => $query->orderBy('nro_cuota'),
+            'amortizacionesCapital' => fn ($query) => $query
+                ->where('estado', 'AC')
+                ->orderBy('fecha')
+                ->orderBy('id'),
+        ]);
+
+        return [
+            'prestamo' => $prestamo,
+            'cuotasPagadas' => $prestamo->cuotas
+                ->where('estado', 'AC')
+                ->values(),
+            'cuotasPendientes' => $prestamo->cuotas
+                ->where('estado', 'PE')
+                ->values(),
+            'amortizaciones' => $prestamo->amortizacionesCapital,
+            'esPrestamoDolares' => $prestamo->tipo->tipo_moneda === 'SU',
+        ];
     }
 
     public function show()

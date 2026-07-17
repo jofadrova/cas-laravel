@@ -100,7 +100,7 @@
                 <strong>Últimas cotizaciones</strong>
             </div>
             <div class="table-responsive">
-                <table class="table table-sm align-middle mb-0">
+                <table class="table table-sm align-middle mb-0 cotizaciones-scroll">
                     <tbody>
                     @foreach($history->sortByDesc('rate_date') as $item)
                         <tr>

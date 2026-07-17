@@ -13,6 +13,7 @@ class Pago extends Model
         'monto',
         'diferencia',
         'tipo_moneda',
+        'tipo_cambio',
         'fecha',
         'tipo_pago',
         'anexo',
@@ -24,7 +25,8 @@ class Pago extends Model
 
         'fecha' => 'date',
         'monto' => 'decimal:2',
-        'difrencia' => 'decimal:2'
+        'diferencia' => 'decimal:2',
+        'tipo_cambio' => 'decimal:5'
     ];
 
     public function pagosCuotas()
@@ -34,5 +36,10 @@ class Pago extends Model
             'id_pago',
             'id'
         );
+    }
+
+    public function amortizacionCapital()
+    {
+        return $this->hasOne(AmortizacionCapital::class, 'id_pago');
     }
 }

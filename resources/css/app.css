@@ -26,7 +26,9 @@
 .app-sidebar {
     flex: 0 0 250px;
     width: 250px;
-    transition: flex-basis 0.25s ease, width 0.25s ease;
+    transition:
+        flex-basis 0.25s ease,
+        width 0.25s ease;
 }
 
 .app-content {
@@ -131,4 +133,17 @@ body.sidebar-collapsed .sidebar-menu .nav-item.mt-3 {
     .sidebar-toggle {
         display: none;
     }
+}
+
+.cotizaciones-scroll {
+    height: 350px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.cotizaciones-scroll thead {
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 2;
 }

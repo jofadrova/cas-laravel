@@ -35,5 +35,32 @@
                 </div>
             </div>
         </div>
+
+        <div class="modal fade" id="modalConfirmarOperacion" tabindex="-1"
+            aria-labelledby="tituloConfirmarOperacion" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content shadow">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title" id="tituloConfirmarOperacion">
+                            <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                            <span id="textoTituloConfirmarOperacion">Confirmar Acción</span>
+                        </h5>
+                    </div>
+                    <div class="modal-body">
+                        <p id="mensajeConfirmarOperacion" class="mb-3"></p>
+                        <div id="detallesConfirmarOperacion"
+                            class="border rounded bg-light px-3 py-2 d-none"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+                        <button type="button" class="btn btn-danger" id="btnConfirmarOperacion">
+                            Confirmar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </body>
 </html>

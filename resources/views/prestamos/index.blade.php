@@ -47,6 +47,14 @@
                     {{ request('estado') == 'IN' ? 'selected' : '' }}>
                     Inactivo
                 </option>
+                <option value="PA"
+                    {{ request('estado') == 'PA' ? 'selected' : '' }}>
+                    Cancelado
+                </option>
+                <option value="CE"
+                    {{ request('estado') == 'CE' ? 'selected' : '' }}>
+                    Cerrado por refinanciamiento
+                </option>
             </select>
         </div>
         {{-- Tipo --}}
@@ -102,6 +110,11 @@
                 </thead>
                 <tbody>
                     @forelse($prestamos as $prestamo)
+                        @php
+                            $prestamoCerrado = in_array($prestamo->estado, ['PA', 'CE'], true);
+                            $puedeRefinanciar = $prestamo->estado === 'AC'
+                                && (int) optional($prestamo->tipo)->id_tasa === 1;
+                        @endphp
                         <tr>
                             <td>{{ $prestamo->nro_solicitud }}</td>
                             <td class="text-center">{{ $prestamo->socio->institucion->papeleta ?? '-' }}</td>
@@ -118,6 +131,10 @@
                             <td class="text-center">
                                 @if($prestamo->estado=='AC')
                                     <span class="badge bg-success">ACTIVO</span>
+                                @elseif($prestamo->estado === 'PA')
+                                    <span class="badge bg-info">CANCELADO</span>
+                                @elseif($prestamo->estado === 'CE')
+                                    <span class="badge bg-dark">CERRADO - REFINANCIADO</span>
                                 @else
                                     <span class="badge bg-secondary">{{ $prestamo->estado }}</span>
                                 @endif
@@ -149,7 +166,7 @@
                                         <li>
                                             <h6 class="dropdown-header">MANTENIMIENTO</h6>
                                         </li>
-                                        @if($prestamo->editable)
+                                        @if(!$prestamoCerrado && $prestamo->editable)
                                         <li>
                                             <a class="dropdown-item"
                                             href="{{ route('prestamos.edit',$prestamo) }}">
@@ -169,10 +186,14 @@
                                         @if($prestamo->editable)
                                         <li>
                                             <form method="POST"
-                                                action="{{ route('prestamos.bloquear-edicion', $prestamo) }}">
+                                                action="{{ route('prestamos.bloquear-edicion', $prestamo) }}"
+                                                data-confirm-title="Confirmar bloqueo de edición"
+                                                data-confirm-message="Se bloqueará la edición del préstamo N.º {{ $prestamo->nro_solicitud }}."
+                                                data-confirm-button="Bloquear edición">
                                                 @csrf
                                                 @method('PATCH')
-                                                <button type="submit" class="dropdown-item">
+                                                <button type="submit" class="dropdown-item {{ $prestamoCerrado ? 'disabled' : '' }}"
+                                                    @disabled($prestamoCerrado)>
                                                     <i class="bi bi-lock-fill me-2 text-danger"></i>
                                                     Bloquear edición
                                                 </button>
@@ -181,11 +202,15 @@
                                         @else
                                         <li>
                                             <form method="POST"
-                                                action="{{ route('prestamos.habilitar-edicion', $prestamo) }}">
+                                                action="{{ route('prestamos.habilitar-edicion', $prestamo) }}"
+                                                data-confirm-title="Confirmar habilitación de edición"
+                                                data-confirm-message="Se habilitará nuevamente la edición del préstamo N.º {{ $prestamo->nro_solicitud }}."
+                                                data-confirm-button="Habilitar edición">
                                                 @csrf
                                                 @method('PATCH')
 
-                                                <button type="submit" class="dropdown-item">
+                                                <button type="submit" class="dropdown-item {{ $prestamoCerrado ? 'disabled' : '' }}"
+                                                    @disabled($prestamoCerrado)>
                                                     <i class="bi bi-unlock-fill me-2 text-success"></i>
                                                     Habilitar edición
                                                 </button>
@@ -193,7 +218,7 @@
                                         </li>
                                         @endif
                                         <li>
-                                            @if($prestamo->tipo->id_tasa == 1)
+                                            @if(!$prestamoCerrado && $prestamo->tipo->id_tasa == 1)
                                                 <a class="dropdown-item"
                                                 href="{{ route('prestamos.garantes', $prestamo) }}">
                                                     <i class="bi bi-people me-2"></i>
@@ -211,31 +236,52 @@
                                             <h6 class="dropdown-header">OPERACIONES</h6>
                                         </li>
                                         <li>
-                                            <a href="{{ route('prestamos.pagos', $prestamo) }}" class="dropdown-item">
-                                                <i class="bi bi-cash-coin me-2"></i>
-                                                Registrar pago
-                                            </a>
+                                            @if($prestamoCerrado)
+                                                <span class="dropdown-item disabled text-muted">
+                                                    <i class="bi bi-cash-coin me-2"></i>
+                                                    Registrar pago
+                                                </span>
+                                            @else
+                                                <a href="{{ route('prestamos.pagos', $prestamo) }}" class="dropdown-item">
+                                                    <i class="bi bi-cash-coin me-2"></i>
+                                                    Registrar pago
+                                                </a>
+                                            @endif
                                         </li>
                                         <li>
-                                            <a class="dropdown-item disabled"
-                                            href="#">
+                                            <a class="dropdown-item"
+                                            href="{{ route('prestamos.pagos.reporte', $prestamo) }}">
                                                 <i class="bi bi-receipt me-2 text-info"></i>
                                                 Reporte de pagos
                                             </a>
                                         </li>
                                         <li>
-                                            <a class="dropdown-item disabled"
-                                            href="#">
-                                                <i class="bi bi-arrow-down-circle me-2 text-warning"></i>
-                                                Amortización de capital
-                                            </a>
+                                            @if($prestamoCerrado)
+                                                <span class="dropdown-item disabled text-muted">
+                                                    <i class="bi bi-arrow-down-circle me-2 text-warning"></i>
+                                                    Amortización de capital
+                                                </span>
+                                            @else
+                                                <a class="dropdown-item"
+                                                    href="{{ route('prestamos.amortizacion-capital', $prestamo) }}">
+                                                    <i class="bi bi-arrow-down-circle me-2 text-warning"></i>
+                                                    Amortización de capital
+                                                </a>
+                                            @endif
                                         </li>
                                         <li>
-                                            <a class="dropdown-item disabled"
-                                            href="#">
-                                                <i class="bi bi-arrow-repeat me-2 text-warning"></i>
-                                                Refinanciar
-                                            </a>
+                                            @if($puedeRefinanciar)
+                                                <a class="dropdown-item"
+                                                    href="{{ route('prestamos.refinanciamiento', $prestamo) }}">
+                                                    <i class="bi bi-arrow-repeat me-2 text-warning"></i>
+                                                    Refinanciar
+                                                </a>
+                                            @else
+                                                <span class="dropdown-item disabled text-muted">
+                                                    <i class="bi bi-arrow-repeat me-2 text-warning"></i>
+                                                    Refinanciar
+                                                </span>
+                                            @endif
                                         </li>
                                     </ul>
                                 </div>

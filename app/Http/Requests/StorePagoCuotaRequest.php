@@ -18,6 +18,7 @@ class StorePagoCuotaRequest extends FormRequest
             'cuotas' => ['required', 'array', 'min:1'],
             'cuotas.*' => ['required', 'integer', 'distinct'],
             'monto_efectivo' => ['required', 'numeric', 'decimal:0,2', 'gt:0'],
+            'tipo_cambio' => ['nullable', 'numeric', 'decimal:0,5', 'gt:0'],
             'glosa' => ['required', 'string', 'max:500'],
         ];
     }
@@ -35,6 +36,9 @@ class StorePagoCuotaRequest extends FormRequest
             'monto_efectivo.numeric' => 'El pago efectivo debe ser un monto válido.',
             'monto_efectivo.decimal' => 'El pago efectivo debe tener como máximo dos decimales.',
             'monto_efectivo.gt' => 'El pago efectivo debe ser mayor a cero.',
+            'tipo_cambio.numeric' => 'El tipo de cambio debe ser un valor válido.',
+            'tipo_cambio.decimal' => 'El tipo de cambio debe tener como máximo cinco decimales.',
+            'tipo_cambio.gt' => 'El tipo de cambio debe ser mayor a cero.',
             'glosa.required' => 'La glosa es obligatoria.',
             'glosa.string' => 'La glosa debe ser un texto válido.',
             'glosa.max' => 'La glosa no puede superar los 500 caracteres.',
@@ -74,10 +78,28 @@ class StorePagoCuotaRequest extends FormRequest
                 $totalCuotas = round((float) $cuotas->sum('cuota_fija'), 2);
                 $montoEfectivo = round((float) $this->input('monto_efectivo'), 2);
 
-                if ($montoEfectivo < $totalCuotas) {
+                $esDolares = $prestamo->tipo->tipo_moneda === 'SU';
+                $tipoCambio = (float) $this->input('tipo_cambio');
+
+                if ($esDolares && $tipoCambio <= 0) {
                     $validator->errors()->add(
                         'monto_efectivo',
-                        'El pago efectivo no puede ser menor al total de las cuotas seleccionadas.'
+                        'El préstamo en dólares no tiene un tipo de cambio válido registrado.'
+                    );
+
+                    return;
+                }
+
+                $totalExigidoEnBolivianos = $esDolares
+                    ? round($totalCuotas * $tipoCambio, 2)
+                    : $totalCuotas;
+
+                if ($montoEfectivo < $totalExigidoEnBolivianos) {
+                    $validator->errors()->add(
+                        'monto_efectivo',
+                        $esDolares
+                            ? 'El pago efectivo en bolivianos no cubre el equivalente de las cuotas seleccionadas en dólares.'
+                            : 'El pago efectivo no puede ser menor al total de las cuotas seleccionadas.'
                     );
                 }
             },
