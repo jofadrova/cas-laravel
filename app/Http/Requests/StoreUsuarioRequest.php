@@ -25,13 +25,9 @@ class StoreUsuarioRequest extends FormRequest
         return [
 
             'username' => 'required|min:4|max:30|unique:users,username',
-
             'name' => 'required|min:5|max:255',
-
             'email' => 'required|email|unique:users,email',
-
             'estado' => 'required|in:ACTIVO,INACTIVO',
-
             'password' => 'required|min:8|confirmed',
 
         ];

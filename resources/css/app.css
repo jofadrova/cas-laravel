@@ -17,3 +17,118 @@
 .nav-link.active-menu span {
     color: #ffffff !important;
 }
+
+.app-shell {
+    display: flex;
+    min-height: 100vh;
+}
+
+.app-sidebar {
+    flex: 0 0 250px;
+    width: 250px;
+    transition: flex-basis 0.25s ease, width 0.25s ease;
+}
+
+.app-content {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.sidebar-menu {
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.sidebar-header {
+    position: relative;
+}
+
+.sidebar-logo {
+    max-height: 120px;
+    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
+    transition: opacity 0.15s ease;
+}
+
+.sidebar-toggle {
+    position: absolute;
+    top: 0;
+    right: -8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    color: var(--bs-success);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    z-index: 2;
+}
+
+.sidebar-menu .nav-link {
+    white-space: nowrap;
+}
+
+.sidebar-menu .nav-link i {
+    width: 20px;
+    text-align: center;
+}
+
+body.sidebar-collapsed .app-sidebar {
+    flex-basis: 76px;
+    width: 76px;
+}
+
+body.sidebar-collapsed .sidebar-menu {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+}
+
+body.sidebar-collapsed .sidebar-logo,
+body.sidebar-collapsed .sidebar-menu hr,
+body.sidebar-collapsed .sidebar-menu h6 {
+    display: none !important;
+}
+
+body.sidebar-collapsed .sidebar-header {
+    height: 38px;
+}
+
+body.sidebar-collapsed .sidebar-toggle {
+    right: 12px;
+}
+
+body.sidebar-collapsed .sidebar-menu .nav-link {
+    overflow: hidden;
+    height: 44px;
+    padding: 10px 12px;
+    font-size: 0;
+    text-align: center;
+}
+
+body.sidebar-collapsed .sidebar-menu .nav-link i {
+    width: auto;
+    margin-right: 0 !important;
+    font-size: 1.25rem;
+}
+
+body.sidebar-collapsed .sidebar-menu .nav-item.mt-3 {
+    margin-top: 0 !important;
+}
+
+@media (max-width: 767.98px) {
+    .app-shell {
+        display: block;
+    }
+
+    .app-sidebar {
+        width: 100%;
+    }
+
+    .sidebar-menu {
+        min-height: auto;
+    }
+
+    .sidebar-toggle {
+        display: none;
+    }
+}

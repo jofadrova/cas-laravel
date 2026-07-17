@@ -16,12 +16,12 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body>
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-md-2 p-0">
+        <div class="container-fluid p-0">
+            <div class="app-shell">
+                <aside class="app-sidebar">
                     @include('layouts.sidebar')
-                </div>
-                <div class="col-md-10 p-0">
+                </aside>
+                <div class="app-content">
                     @include('layouts.topbar')
                     <main class="p-4">
                         @if (isset($header))

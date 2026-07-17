@@ -1,5 +1,11 @@
 <x-app-layout>
     <div class="container-fluid">
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+            </div>
+        @endif
         <h1 class="h2 mb-4">Registro de Pago de Préstamo</h1>
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-success text-white">
@@ -105,6 +111,61 @@
                     </ul>
                     <div class="tab-content border border-top-0 p-3">
                         <div class="tab-pane fade show active" id="cuotas" role="tabpanel">
+                            <form id="formPagoCuotas" method="POST" action="{{ route('prestamos.pagos.store', $prestamo) }}" novalidate>
+                                @csrf
+                            <div class="card border-success mb-3">
+                                <div class="card-header bg-light fw-bold">
+                                    <i class="bi bi-calculator me-2 text-success"></i>
+                                    Resumen del Pago
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-3 align-items-end">
+                                        <div class="col-md-3">
+                                            <label class="form-label text-muted">Cuotas seleccionadas</label>
+                                            <div class="fs-5 fw-bold" id="cantidadCuotasSeleccionadas">
+                                                0
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label text-muted">Total seleccionado</label>
+                                            <div class="fs-5 fw-bold text-primary">
+                                                Bs <span id="totalCuotasSeleccionadas">0.00</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label for="montoEfectivo" class="form-label">Pago efectivo</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text">Bs</span>
+                                                <input type="number" class="form-control text-end @error('monto_efectivo') is-invalid @enderror" id="montoEfectivo" name="monto_efectivo" value="{{ old('monto_efectivo') }}" placeholder="0.00">
+                                                @error('monto_efectivo')
+                                                    <small class="text-danger">
+                                                        {{ $message }}
+                                                    </small>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label text-muted">Diferencia</label>
+                                            <div class="fs-5 fw-bold" id="contenedorDiferenciaPago">
+                                                Bs <span id="diferenciaPago">0.00</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="mensajeResumenPago" class="d-none mt-3"></div>
+                                     <hr>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <label for="glosaPago" class="form-label">Glosa</label>
+                                            <textarea class="form-control @error('glosa') is-invalid @enderror" id="glosaPago" name="glosa" rows="2" placeholder="Detalle u observaciones del pago...">{{ old('glosa') }}</textarea>
+                                            @error('glosa')
+                                                <small class="text-danger">
+                                                    {{ $message }}
+                                                </small>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="table-responsive">
                                 <table class="table table-hover table-bordered align-middle">
                                     <thead class="table-light">
@@ -121,7 +182,7 @@
                                         @forelse($cuotasPendientes as $cuota)
                                             <tr>
                                                 <td>
-                                                    <input type="checkbox" class="form-check-input">
+                                                    <input type="checkbox" class="form-check-input cuota-pendiente" name="cuotas[]" value="{{ $cuota->id }}" data-total="{{ $cuota->cuota_fija }}" @checked(in_array($cuota->id, old('cuotas', [])))>
                                                 </td>
                                                 <td>{{ $cuota->nro_cuota }}</td>
                                                 <td>{{ sprintf('%02d', $cuota->mes) }}/{{ $cuota->gestion }}</td>
@@ -138,7 +199,23 @@
                                         @endforelse
                                     </tbody>
                                 </table>
+                                @error('cuotas')
+                                <div class="mt-2">
+                                    <small class="text-danger">
+                                        {{ $message }}
+                                    </small>
+                                </div>
+                            @enderror
                             </div>
+                            <div class="d-flex justify-content-end gap-2 mt-3">
+                                <a href="{{ route('prestamos.index') }}" class="btn btn-secondary">
+                                    <i class="bi bi-x-circle me-1"></i>Cancelar
+                                </a>
+                                <button type="submit" class="btn btn-success" @disabled($cuotasPendientes->isEmpty())>
+                                    <i class="bi bi-save me-1"></i>Guardar Pago
+                                </button>
+                            </div>
+                            </form>
                             {{-- Aquí irá la tabla de cuotas --}}
 
                         </div>

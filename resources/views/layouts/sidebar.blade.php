@@ -1,6 +1,10 @@
-<div class="bg-success text-white h-100 p-3" style="min-height:100vh;">
-        <img src="{{ asset('images/cas_sidebar.png') }}" alt="CAS" class="d-block mx-auto mb-3" style="max-height: 120px;  filter: drop-shadow(0px 8px 16px rgba(0, 0, 0, 0.3));">
-
+<div id="sidebarMenu" class="sidebar-menu bg-success text-white h-100 p-3">
+    <div class="sidebar-header">
+        <img src="{{ asset('images/cas_sidebar.png') }}" alt="CAS" class="sidebar-logo d-block mx-auto mb-3">
+        <button type="button" id="sidebarToggle" class="sidebar-toggle btn btn-light btn-sm" aria-label="Contraer menú lateral" aria-controls="sidebarMenu" aria-expanded="true" title="Contraer menú">
+            <i class="bi bi-chevron-left" aria-hidden="true"></i>
+        </button>
+    </div>
     <hr>
     <ul class="nav flex-column">
         <li class="nav-item">
@@ -82,18 +86,31 @@
                 Prestamos
             </h6>
         </li>
+       <li class="nav-item">
+            <a href="{{ route('prestamos.index') }}"
+            class="nav-link text-white
+            {{ request()->routeIs('prestamos.index',
+                                    'prestamos.create',
+                                    'prestamos.store',
+                                    'prestamos.edit',
+                                    'prestamos.update',
+                                    'prestamos.detalle',
+                                    'prestamos.pagos',
+                                    'prestamos.pagos.*')
+                    ? 'active-menu'
+                    : '' }}">
 
-        <li class="nav-item">
-            <a href="{{ route('prestamos.index') }}" class="nav-link text-white
-            {{ request()->routeIs('prestamos.index') ? 'active:menu' : '' }}">
                 <i class="bi bi-cash-coin me-2"></i>
                 Gestión de Préstamos
             </a>
         </li>
-
         <li class="nav-item">
-            <a href="{{ route('prestamos.tipos.index') }}" class="nav-link text-white
-            {{ request()->routeIs('prestamos.tipos.*') ? 'active-menu' : '' }}">
+            <a href="{{ route('prestamos.tipos.index') }}"
+            class="nav-link text-white
+            {{ request()->routeIs('prestamos.tipos.*')
+                    ? 'active-menu'
+                    : '' }}">
+
                 <i class="bi bi-tags me-2"></i>
                 Tipo de Préstamos
             </a>

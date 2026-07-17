@@ -142,6 +142,7 @@ Route::prefix('prestamos')->name('prestamos.')->group(function () {
         Route::get('/{prestamo}', [PrestamoController::class, 'show'])->name('show');
 
         Route::get('{prestamo}/pagos', [PagoController::class, 'index'])->name('pagos');
+        Route::post('{prestamo}/pagos', [PagoController::class, 'store'])->name('pagos.store');
 
 
     });

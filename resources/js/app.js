@@ -18,11 +18,18 @@ import "./prestamos/form";
 import "./scas/notifier";
 
 import { initDashboard } from "./dashboard";
+import { iniciarPagos } from './pagos/index';
+import { iniciarSidebar } from './sidebar';
 
 import PrestamoGarantes from './prestamos/PrestamoGarantes';
 if (document.getElementById('cardNuevosGarantes')) {
     new PrestamoGarantes();
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    iniciarPagos();
+    iniciarSidebar();
+});
 
 window.initDashboard = initDashboard;
 window.Alpine = Alpine;

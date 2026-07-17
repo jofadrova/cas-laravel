@@ -11,6 +11,7 @@ class Pago extends Model
     protected $fillable = [
 
         'monto',
+        'diferencia',
         'tipo_moneda',
         'fecha',
         'tipo_pago',
@@ -23,7 +24,7 @@ class Pago extends Model
 
         'fecha' => 'date',
         'monto' => 'decimal:2',
-
+        'difrencia' => 'decimal:2'
     ];
 
     public function pagosCuotas()
