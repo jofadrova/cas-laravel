@@ -15,6 +15,8 @@ class Pago extends Model
         'tipo_moneda',
         'tipo_cambio',
         'fecha',
+        'fecha_deposito',
+        'nop',
         'tipo_pago',
         'anexo',
         'estado',
@@ -24,6 +26,7 @@ class Pago extends Model
     protected $casts = [
 
         'fecha' => 'date',
+        'fecha_deposito' => 'date',
         'monto' => 'decimal:2',
         'diferencia' => 'decimal:2',
         'tipo_cambio' => 'decimal:5'

@@ -54,7 +54,16 @@
                             </div>
                             <div class="col-md-4 text-center">
                                 <small class="text-muted">Pendientes</small>
-                                <div class="fw-bold text-warning">{{ $prestamo->cuotas_pendientes_count }}</div>
+                                <div class="d-flex align-items-center justify-content-center gap-2">
+                                    <span class="fw-bold text-warning">{{ $prestamo->cuotas_pendientes_count }}</span>
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-outline-primary btn-ver-cuotas"
+                                        data-url="{{ route('prestamos.detalle', $prestamo) }}"
+                                    >
+                                        <i class="bi bi-eye me-1"></i>Ver Cuotas
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -246,4 +255,6 @@
             </div>
         </div>
     </form>
+
+    <div id="contenedorDetallePrestamo"></div>
 </x-app-layout>

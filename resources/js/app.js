@@ -1,7 +1,9 @@
 import "./bootstrap";
 import * as bootstrap from "bootstrap";
+import Chart from "chart.js/auto";
 
 window.bootstrap = bootstrap;
+window.Chart = Chart;
 
 import Alpine from "alpinejs";
 
@@ -23,6 +25,7 @@ import { iniciarPagos } from './pagos/index';
 import { iniciarAmortizacionCapital } from './prestamos/amortizacion-capital';
 import { iniciarRefinanciamiento } from './prestamos/refinanciamiento';
 import { iniciarSidebar } from './sidebar';
+import { iniciarDetallePrestamo } from './prestamos/detalleModal';
 
 import PrestamoGarantes from './prestamos/PrestamoGarantes';
 if (document.getElementById('cardNuevosGarantes')) {
@@ -34,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
     iniciarAmortizacionCapital();
     iniciarRefinanciamiento();
     iniciarSidebar();
+    iniciarDetallePrestamo();
 });
 
 window.initDashboard = initDashboard;

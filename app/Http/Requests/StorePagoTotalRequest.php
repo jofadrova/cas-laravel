@@ -18,6 +18,8 @@ class StorePagoTotalRequest extends FormRequest
     {
         return [
             'monto_efectivo_total' => ['required', 'numeric', 'decimal:0,2', 'gt:0'],
+            'fecha_deposito_total' => ['required', 'date', 'before_or_equal:today'],
+            'nop_total' => ['required', 'string', 'max:15', 'regex:/^[0-9]+$/'],
             'tipo_cambio_total' => ['nullable', 'numeric', 'decimal:0,5', 'gt:0'],
             'glosa_total' => ['required', 'string', 'max:500'],
         ];
@@ -30,6 +32,12 @@ class StorePagoTotalRequest extends FormRequest
             'monto_efectivo_total.numeric' => 'El pago efectivo debe ser un monto válido.',
             'monto_efectivo_total.decimal' => 'El pago efectivo debe tener como máximo dos decimales.',
             'monto_efectivo_total.gt' => 'El pago efectivo debe ser mayor a cero.',
+            'fecha_deposito_total.required' => 'La fecha de depósito es obligatoria.',
+            'fecha_deposito_total.date' => 'La fecha de depósito no es válida.',
+            'fecha_deposito_total.before_or_equal' => 'La fecha de depósito no puede ser posterior a la fecha actual.',
+            'nop_total.required' => 'El NOP es obligatorio.',
+            'nop_total.max' => 'El NOP no puede superar los 15 caracteres.',
+            'nop_total.regex' => 'El NOP solamente puede contener números.',
             'tipo_cambio_total.numeric' => 'El tipo de cambio debe ser un valor válido.',
             'tipo_cambio_total.decimal' => 'El tipo de cambio debe tener como máximo cinco decimales.',
             'tipo_cambio_total.gt' => 'El tipo de cambio debe ser mayor a cero.',

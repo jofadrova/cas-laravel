@@ -20,7 +20,9 @@ class PagoController extends Controller
         $prestamo->load([
             'socio.institucion.grado',
             'tipo',
-            'cuotas',
+            'cuotas' => fn ($query) => $query
+                ->with('pagosCuotas.pago')
+                ->orderBy('nro_cuota'),
         ]);
 
         $cuotasPagadas = $prestamo->cuotas
@@ -65,7 +67,7 @@ class PagoController extends Controller
     {
         $datos = $request->validated();
 
-        DB::transaction(function () use ($datos, $prestamo) {
+        $prestamoCerrado = DB::transaction(function () use ($datos, $prestamo) {
             $prestamoBloqueado = Prestamo::query()
                 ->with('tipo')
                 ->whereKey($prestamo->getKey())
@@ -127,6 +129,8 @@ class PagoController extends Controller
                 'tipo_moneda' => 'B',
                 'tipo_cambio' => $esDolares ? round($tipoCambio, 5) : null,
                 'fecha' => now()->toDateString(),
+                'fecha_deposito' => $datos['fecha_deposito'],
+                'nop' => $datos['nop'],
                 'tipo_pago' => 'PC',
                 'anexo' => trim($datos['glosa']),
                 'estado' => 'AC',
@@ -153,10 +157,15 @@ class PagoController extends Controller
                 'ultima_cuota' => max((int) $prestamoBloqueado->ultima_cuota, (int) $cuotas->max('nro_cuota')),
                 'estado' => $quedanCuotas ? $prestamoBloqueado->estado : 'PA',
             ]);
+
+            return ! $quedanCuotas;
         });
 
         return redirect()
-            ->route('prestamos.pagos', $prestamo)
+            ->route(
+                $prestamoCerrado ? 'prestamos.pagos.reporte' : 'prestamos.pagos',
+                $prestamo
+            )
             ->with('success', 'El pago de las cuotas fue guardado correctamente.');
     }
 
@@ -216,6 +225,8 @@ class PagoController extends Controller
                 'tipo_moneda' => 'B',
                 'tipo_cambio' => $esDolares ? round($tipoCambio, 5) : null,
                 'fecha' => now()->toDateString(),
+                'fecha_deposito' => $datos['fecha_deposito_total'],
+                'nop' => $datos['nop_total'],
                 'tipo_pago' => 'PT',
                 'anexo' => trim($datos['glosa_total']),
                 'estado' => 'AC',
@@ -244,7 +255,7 @@ class PagoController extends Controller
         });
 
         return redirect()
-            ->route('prestamos.pagos', $prestamo)
+            ->route('prestamos.pagos.reporte', $prestamo)
             ->with('success', 'El pago total del préstamo fue guardado correctamente.');
     }
 
@@ -259,7 +270,7 @@ class PagoController extends Controller
 
         return Pdf::loadView('pagos.pdf.reporte', $datos)
             ->setOption('isPhpEnabled', true)
-            ->setPaper('letter', 'landscape')
+            ->setPaper('letter', 'portrait')
             ->stream('Reporte_Pagos_'.$prestamo->nro_solicitud.'.pdf');
     }
 
@@ -270,7 +281,6 @@ class PagoController extends Controller
             'tipo',
             'cuotas',
         ]);
-
         $idsCuotas = $prestamo->cuotas->pluck('id');
         $idsPagosCuotas = PagoCuota::query()
             ->whereIn('id_cuota_solicitud', $idsCuotas)
@@ -295,14 +305,101 @@ class PagoController extends Controller
             ->orderBy('id')
             ->get();
 
+        $pagos->each(function (Pago $pago): void {
+            $esAmortizacion = $pago->tipo_pago === 'AM'
+                && $pago->amortizacionCapital !== null;
+
+            $pago->setAttribute('es_amortizacion_reporte', $esAmortizacion);
+            $pago->setAttribute(
+                'tipo_reporte',
+                match ($pago->tipo_pago) {
+                    'AM' => 'AMORTIZACIÓN',
+                    'PT' => 'PAGO TOTAL',
+                    default => 'PAGO POR CUOTAS',
+                }
+            );
+            $pago->setAttribute(
+                'cuotas_reporte',
+                $esAmortizacion
+                    ? 'No aplica'
+                    : ($pago->pagosCuotas->pluck('nro_cuota')->implode(', ') ?: '-')
+            );
+            $pago->setAttribute(
+                'monto_aplicado_reporte',
+                $esAmortizacion
+                    ? round((float) $pago->amortizacionCapital->monto_capital, 2)
+                    : round((float) $pago->pagosCuotas->sum('monto'), 2)
+            );
+            $pago->setAttribute(
+                'glosa_reporte',
+                $esAmortizacion
+                    ? 'Autorización: '.$pago->amortizacionCapital->autorizacion
+                        .($pago->amortizacionCapital->observaciones
+                            ? ' / Obs.: '.$pago->amortizacionCapital->observaciones
+                            : '')
+                    : ($pago->anexo ?: '-')
+            );
+        });
+
+        $cuotasDetalle = $prestamo->cuotas->map(function ($cuota) use ($prestamo) {
+            $pagosCuotaActivos = $cuota->pagosCuotas->filter(
+                fn ($pagoCuota) => $pagoCuota->estado === 'AC'
+                    && $pagoCuota->pago?->estado === 'AC'
+            );
+
+            $cuota->setAttribute(
+                'monto_cancelado_reporte',
+                round((float) $pagosCuotaActivos->sum('monto'), 2)
+            );
+            $cuota->setAttribute(
+                'saldo_capital_reporte',
+                $cuota->estado === 'AC'
+                    ? round((float) $cuota->saldo, 2)
+                    : round((float) $prestamo->saldo_actual, 2)
+            );
+            $cuota->setAttribute(
+                'situacion_reporte',
+                $cuota->estado === 'AC' ? 'Cancelado' : ''
+            );
+            $cuota->setAttribute(
+                'observaciones_reporte',
+                $pagosCuotaActivos
+                    ->pluck('pago.anexo')
+                    ->filter()
+                    ->unique()
+                    ->implode(' / ')
+            );
+
+            return $cuota;
+        });
+
+        $amortizacionesReporte = $pagos
+            ->where('es_amortizacion_reporte', true)
+            ->values();
+
         return [
             'prestamo' => $prestamo,
             'pagos' => $pagos,
+            'cuotasDetalle' => $cuotasDetalle,
+            'amortizacionesReporte' => $amortizacionesReporte,
             'cuotasPagadas' => $prestamo->cuotas->where('estado', 'AC')->count(),
             'cuotasPendientes' => $prestamo->cuotas->where('estado', 'PE')->count(),
             'totalEfectivo' => round((float) $pagos->sum('monto'), 2),
+            'totalAplicado' => round((float) $pagos->sum('monto_aplicado_reporte'), 2),
             'totalDiferencia' => round((float) $pagos->sum('diferencia'), 2),
-            'esPrestamoDolares' => $prestamo->tipo->tipo_moneda === 'SU',
+            'totalMontoCancelado' => round(
+                (float) $cuotasDetalle->sum('monto_cancelado_reporte'),
+                2
+            ),
+            'totalAmortizadoCapital' => round(
+                (float) $amortizacionesReporte->sum('monto_aplicado_reporte'),
+                2
+            ),
+            'totalEfectivoAmortizaciones' => round(
+                (float) $amortizacionesReporte->sum('monto'),
+                2
+            ),
+            'esPrestamoDolares' => $prestamo->tipo?->tipo_moneda === 'SU',
         ];
     }
 }

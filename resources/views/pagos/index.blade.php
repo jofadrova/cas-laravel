@@ -82,10 +82,19 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="text-muted small">Cuotas</label>
-                                <div class="fw-semibold">
-                                    {{ $cuotasPagadas }} pagadas
-                                    /
-                                    {{ $cantidadCuotasPendientes }} pendientes
+                                <div class="d-flex align-items-center gap-3">
+                                    <span class="fw-semibold">
+                                        {{ $cuotasPagadas }} pagadas
+                                        /
+                                        {{ $cantidadCuotasPendientes }} pendientes
+                                    </span>
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-outline-primary btn-ver-cuotas"
+                                        data-url="{{ route('prestamos.detalle', $prestamo) }}"
+                                    >
+                                        <i class="bi bi-eye me-1"></i>Ver Cuotas
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -127,7 +136,7 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="row g-3 align-items-end">
-                                        <div class="col-md-2">
+                                        <div class="col-md-3">
                                             <label class="form-label text-muted">Cuotas seleccionadas</label>
                                             <div class="fs-5 fw-bold" id="cantidadCuotasSeleccionadas">
                                                 0
@@ -151,8 +160,43 @@
                                                 @enderror
                                             </div>
                                         </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label text-muted">Diferencia en efectivo</label>
+                                            <div class="fs-5 fw-bold" id="contenedorDiferenciaPago">
+                                                Bs <span id="diferenciaPago">0.00</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="fechaDeposito" class="form-label">Fecha de depósito</label>
+                                            <input
+                                                type="date"
+                                                class="form-control @error('fecha_deposito') is-invalid @enderror"
+                                                id="fechaDeposito"
+                                                name="fecha_deposito"
+                                                value="{{ old('fecha_deposito', now()->toDateString()) }}"
+                                            >
+                                            @error('fecha_deposito')
+                                                <small class="text-danger">{{ $message }}</small>
+                                            @enderror
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="nop" class="form-label">NOP</label>
+                                            <input
+                                                type="text"
+                                                class="form-control @error('nop') is-invalid @enderror"
+                                                id="nop"
+                                                name="nop"
+                                                inputmode="numeric"
+                                                maxlength="15"
+                                                value="{{ old('nop') }}"
+                                                placeholder="N.º de operación"
+                                            >
+                                            @error('nop')
+                                                <small class="text-danger">{{ $message }}</small>
+                                            @enderror
+                                        </div>
                                         @if($esPrestamoDolares)
-                                            <div class="col-md-2">
+                                            <div class="col-md-4">
                                                 <label class="form-label text-muted">T.C. aplicado en Solicitud </label>
                                                 <input type="number" min="0.00001" step="0.00001" class="form-control text-end @error('tipo_cambio') is-invalid @enderror" id="tipoCambio" name="tipo_cambio"
                                                     value="{{ old('tipo_cambio', number_format($prestamo->tipo_cambio,5,'.','')) }}">
@@ -161,12 +205,7 @@
                                                 @enderror
                                             </div>
                                         @endif
-                                        <div class="col-md-2">
-                                            <label class="form-label text-muted">Diferencia en efectivo</label>
-                                            <div class="fs-5 fw-bold" id="contenedorDiferenciaPago">
-                                                Bs <span id="diferenciaPago">0.00</span>
-                                            </div>
-                                        </div>
+
                                     </div>
                                     @if($esPrestamoDolares)
                                         <div class="alert alert-info mt-3 mb-0">
@@ -291,6 +330,37 @@
                                                 @enderror
                                             </div>
 
+                                            <div class="col-md-3">
+                                                <label for="fechaDepositoTotal" class="form-label">Fecha de depósito</label>
+                                                <input
+                                                    type="date"
+                                                    class="form-control @error('fecha_deposito_total', 'pagoTotal') is-invalid @enderror"
+                                                    id="fechaDepositoTotal"
+                                                    name="fecha_deposito_total"
+                                                    value="{{ old('fecha_deposito_total', now()->toDateString()) }}"
+                                                >
+                                                @error('fecha_deposito_total', 'pagoTotal')
+                                                    <small class="text-danger">{{ $message }}</small>
+                                                @enderror
+                                            </div>
+
+                                            <div class="col-md-3">
+                                                <label for="nopTotal" class="form-label">NOP</label>
+                                                <input
+                                                    type="text"
+                                                    class="form-control @error('nop_total', 'pagoTotal') is-invalid @enderror"
+                                                    id="nopTotal"
+                                                    name="nop_total"
+                                                    inputmode="numeric"
+                                                    maxlength="15"
+                                                    value="{{ old('nop_total') }}"
+                                                    placeholder="N.º de operación"
+                                                >
+                                                @error('nop_total', 'pagoTotal')
+                                                    <small class="text-danger">{{ $message }}</small>
+                                                @enderror
+                                            </div>
+
                                             @if($esPrestamoDolares)
                                                 <div class="col-md-3">
                                                     <label for="tipoCambioTotal" class="form-label text-muted">Tipo de cambio aplicado</label>
@@ -361,4 +431,5 @@
                 </div>
             </div>
         </div>
+        <div id="contenedorDetallePrestamo"></div>
 </x-app-layout>

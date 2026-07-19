@@ -14,6 +14,7 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @stack('styles')
     </head>
     <body>
         <div class="container-fluid p-0">
@@ -62,5 +63,6 @@
                 </div>
             </div>
         </div>
+        @stack('scripts')
     </body>
 </html>

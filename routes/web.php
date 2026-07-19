@@ -15,6 +15,7 @@ use App\Services\ExchangeRateService;
 use App\Http\Controllers\PagoController;
 use App\Http\Controllers\AmortizacionCapitalController;
 use App\Http\Controllers\RefinanciamientoController;
+use App\Http\Controllers\PrestamoReporteController;
 
 
 Route::get('/', function () {
@@ -93,6 +94,16 @@ Route::prefix('prestamos')->name('prestamos.')->group(function () {
         Route::get('/tipos/{tasa}/edit', [TipoPrestamoController::class, 'edit'])->name('tipos.edit');
         Route::put('/tipos/{tasa}', [TipoPrestamoController::class, 'update'])->name('tipos.update');
         Route::patch('/tipos/{tasa}/estado', [TipoPrestamoController::class, 'estado'])->name('tipos.estado');
+
+          /*
+        |--------------------------------------------------------------------------
+        | Reportes
+        |--------------------------------------------------------------------------
+        */
+        Route::prefix('reportes')->name('reportes.')->group(function () {
+                Route::get('/', [PrestamoReporteController::class, 'index'])->name('index');
+                Route::get('/tipos-prestamo', [PrestamoReporteController::class, 'tiposPrestamo'])->name('tipos-prestamo');
+            });
 
         /*
         |--------------------------------------------------------------------------

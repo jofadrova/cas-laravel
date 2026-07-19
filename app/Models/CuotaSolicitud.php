@@ -39,7 +39,7 @@ class CuotaSolicitud extends Model
         );
     }
 
-    public function pagos()
+    public function pagosCuotas()
     {
         return $this->hasMany(
             PagoCuota::class,

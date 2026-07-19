@@ -94,27 +94,30 @@
             </div>
         </div>
     </div>
-    <div class="col-lg-4">
-        <div class="card shadow-sm border-0 rounded-4">
-            <div class="card-header bg-white">
-                <strong>Últimas cotizaciones</strong>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-sm align-middle mb-0 cotizaciones-scroll">
-                    <tbody>
-                    @foreach($history->sortByDesc('rate_date') as $item)
-                        <tr>
-                            <td>{{ $item->rate_date->format('d/m') }}</td>
-                            <td class="text-end fw-bold">
-                                {{ number_format($item->usd_bob,2) }}
-                            </td>
-                        </tr>
-                    @endforeach
-                    </tbody>
-                </table>
-            </div>
+    <div class="col-xl-4">
+    <div class="card shadow-sm border-0 rounded-4 h-100">
+        <div class="card-header bg-white">
+            <strong>Últimas cotizaciones</strong>
+        </div>
+        <div class="cotizaciones-scroll">
+            <table class="table table-sm table-hover align-middle mb-0">
+                <tbody>
+                @foreach($history->sortByDesc('rate_date') as $item)
+                    <tr>
+                        <td>
+                            {{ $item->rate_date->format('d/m') }}
+                        </td>
+
+                        <td class="text-end fw-bold">
+                            {{ number_format($item->usd_bob,2) }}
+                        </td>
+                    </tr>
+                @endforeach
+                </tbody>
+            </table>
         </div>
     </div>
+</div>
 </div>
 </x-app-layout>
 <script>

@@ -218,7 +218,7 @@
                                         </li>
                                         @endif
                                         <li>
-                                            @if(!$prestamoCerrado && $prestamo->tipo->id_tasa == 1)
+                                            @if(!$prestamoCerrado && $prestamo->tipo?->id_tasa == 1)
                                                 <a class="dropdown-item"
                                                 href="{{ route('prestamos.garantes', $prestamo) }}">
                                                     <i class="bi bi-people me-2"></i>

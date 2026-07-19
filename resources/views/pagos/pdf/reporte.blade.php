@@ -195,16 +195,20 @@
             <td>
                 <div class="label">Socio</div>
                 <div class="value">
-                    {{ trim($prestamo->socio->paterno.' '.$prestamo->socio->materno.' '.$prestamo->socio->nombres) }}
+                    {{ trim(
+                        ($prestamo->socio?->paterno ?? '').' '.
+                        ($prestamo->socio?->materno ?? '').' '.
+                        ($prestamo->socio?->nombres ?? '')
+                    ) ?: 'No registrado' }}
                 </div>
             </td>
             <td>
                 <div class="label">Papeleta</div>
-                <div class="value">{{ $prestamo->socio->institucion->papeleta }}</div>
+                <div class="value">{{ $prestamo->socio?->institucion?->papeleta ?? 'No registrada' }}</div>
             </td>
             <td>
                 <div class="label">Grado</div>
-                <div class="value">{{ $prestamo->socio->institucion->grado->grado }}</div>
+                <div class="value">{{ $prestamo->socio?->institucion?->grado?->grado ?? 'No registrado' }}</div>
             </td>
             <td>
                 <div class="label">Estado</div>
@@ -214,7 +218,7 @@
         <tr>
             <td>
                 <div class="label">Tipo de préstamo</div>
-                <div class="value">{{ $prestamo->tipo->descripcion_tasa }}</div>
+                <div class="value">{{ $prestamo->tipo?->descripcion_tasa ?? 'Tipo no registrado' }}</div>
             </td>
             <td>
                 <div class="label">Monto original</div>
@@ -235,34 +239,140 @@
     <table class="payments">
         <thead>
             <tr>
+                <th width="4%">Cuota</th>
+                <th width="9%">Periodo</th>
+                <th width="9%">Cuota fija</th>
+                <th width="10%">Amort. capital</th>
+                <th width="8%">Interés</th>
+                <th width="7%">Min. Def.</th>
+                <th width="9%">Contingencias</th>
+                <th width="8%">Interés días</th>
+                <th width="9%">Saldo capital</th>
+                <th width="10%">Situación</th>
+                <th width="17%">Observaciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($cuotasDetalle as $cuota)
+                <tr>
+                    <td class="center">{{ $cuota->nro_cuota }}</td>
+                    <td class="center">{{ sprintf('%02d', $cuota->mes) }}/{{ $cuota->gestion }}</td>
+                    <td class="right">{{ number_format($cuota->cuota_fija, 2) }}</td>
+                    <td class="right">{{ number_format($cuota->amortizacion_cap, 2) }}</td>
+                    <td class="right">{{ number_format($cuota->interes, 2) }}</td>
+                    <td class="right">{{ number_format($cuota->min_defensa, 2) }}</td>
+                    <td class="right">{{ number_format($cuota->itf, 2) }}</td>
+                    <td class="right">{{ number_format($cuota->papel, 2) }}</td>
+                    <td class="right">{{ number_format($cuota->saldo_capital_reporte, 2) }}</td>
+                    <td>{{ $cuota->situacion_reporte }}</td>
+                    <td>{{ $cuota->observaciones_reporte ?: '-' }}</td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="12" class="empty">No existen cuotas registradas para este préstamo.</td>
+                </tr>
+            @endforelse
+        </tbody>
+        @if($cuotasDetalle->isNotEmpty())
+            <tfoot>
+                <tr class="totals">
+                    <td colspan="8" class="right">TOTAL CANCELADO</td>
+                    <td class="right">{{ number_format($totalMontoCancelado, 2) }}</td>
+                    <td colspan="3"></td>
+                </tr>
+            </tfoot>
+        @endif
+    </table>
+
+    @if($amortizacionesReporte->isNotEmpty())
+        <div class="section-title">AMORTIZACIONES DE CAPITAL</div>
+        <table class="payments">
+            <thead>
+                <tr>
+                    <th width="4%">N.º</th>
+                    <th width="8%">Fecha</th>
+                    <th width="12%">Modalidad</th>
+                    <th width="12%">Efectivo Bs</th>
+                    <th width="12%">Capital amortizado</th>
+                    <th width="8%">T.C.</th>
+                    <th width="12%">Saldo anterior</th>
+                    <th width="12%">Saldo nuevo</th>
+                    <th width="20%">Autorización / Observaciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($amortizacionesReporte as $pago)
+                    @php($amortizacion = $pago->amortizacionCapital)
+                    <tr>
+                        <td class="center">{{ $loop->iteration }}</td>
+                        <td class="center">
+                            {{ ($pago->fecha_deposito ?? $pago->fecha)->format('d/m/Y') }}
+                        </td>
+                        <td>
+                            {{ $amortizacion->tipo_recalculo === 'CUOTA'
+                                ? 'Reducir cuota'
+                                : 'Reducir plazo' }}
+                        </td>
+                        <td class="right">{{ number_format($pago->monto, 2) }}</td>
+                        <td class="right">
+                            {{ $monedaPrestamo }} {{ number_format($amortizacion->monto_capital, 2) }}
+                        </td>
+                        <td class="right">
+                            {{ $pago->tipo_cambio ? number_format($pago->tipo_cambio, 5) : '-' }}
+                        </td>
+                        <td class="right">
+                            {{ $monedaPrestamo }} {{ number_format($amortizacion->saldo_anterior, 2) }}
+                        </td>
+                        <td class="right">
+                            {{ $monedaPrestamo }} {{ number_format($amortizacion->saldo_nuevo, 2) }}
+                        </td>
+                        <td>
+                            Aut.: {{ $amortizacion->autorizacion }}
+                            @if($amortizacion->observaciones)
+                                / Obs.: {{ $amortizacion->observaciones }}
+                            @endif
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+            <tfoot>
+                <tr class="totals">
+                    <td colspan="3" class="right">TOTALES</td>
+                    <td class="right">{{ number_format($totalEfectivoAmortizaciones, 2) }}</td>
+                    <td class="right">
+                        {{ $monedaPrestamo }} {{ number_format($totalAmortizadoCapital, 2) }}
+                    </td>
+                    <td colspan="4"></td>
+                </tr>
+            </tfoot>
+        </table>
+    @endif
+
+    @if(false)
+    <table class="payments">
+        <thead>
+            <tr>
                 <th width="3%">N.º</th>
-                <th width="7%">Fecha</th>
+                <th width="8%">F. depósito</th>
+                <th width="9%">NOP</th>
                 <th width="9%">Tipo</th>
-                <th width="12%">Cuotas</th>
+                <th width="10%">Cuotas</th>
                 <th width="10%">Monto aplicado</th>
                 <th width="10%">Efectivo Bs</th>
                 <th width="7%">T.C.</th>
-                <th width="9%">Diferencia Bs</th>
-                <th width="27%">Glosa</th>
+                <th width="8%">Diferencia Bs</th>
+                <th width="20%">Glosa</th>
                 <th width="6%">Estado</th>
             </tr>
         </thead>
         <tbody>
             @forelse($pagos as $pago)
-                @php
-                    $esAmortizacion = $pago->tipo_pago === 'AM' && $pago->amortizacionCapital;
-                    $cuotas = $esAmortizacion
-                        ? 'No aplica'
-                        : $pago->pagosCuotas->pluck('nro_cuota')->implode(', ');
-                    $montoAplicado = $esAmortizacion
-                        ? (float) $pago->amortizacionCapital->monto_capital
-                        : (float) $pago->pagosCuotas->sum('monto');
-                @endphp
                 <tr>
                     <td class="center">{{ $loop->iteration }}</td>
-                    <td class="center">{{ $pago->fecha->format('d/m/Y') }}</td>
+                    <td class="center">{{ ($pago->fecha_deposito ?? $pago->fecha)->format('d/m/Y') }}</td>
+                    <td>{{ $pago->nop ?: '-' }}</td>
                     <td class="center type">
-                        @if($esAmortizacion)
+                        @if($pago->es_amortizacion_reporte)
                             AMORTIZACIÓN
                         @elseif($pago->tipo_pago === 'PT')
                             PAGO TOTAL
@@ -270,26 +380,17 @@
                             POR CUOTAS
                         @endif
                     </td>
-                    <td>{{ $cuotas ?: '-' }}</td>
-                    <td class="right">{{ $monedaPrestamo }} {{ number_format($montoAplicado, 2) }}</td>
+                    <td>{{ $pago->cuotas_reporte }}</td>
+                    <td class="right">{{ $monedaPrestamo }} {{ number_format($pago->monto_aplicado_reporte, 2) }}</td>
                     <td class="right">{{ number_format($pago->monto, 2) }}</td>
                     <td class="right">{{ $pago->tipo_cambio ? number_format($pago->tipo_cambio, 5) : '-' }}</td>
                     <td class="right">{{ number_format($pago->diferencia, 2) }}</td>
-                    <td>
-                        @if($esAmortizacion)
-                            Aut.: {{ $pago->amortizacionCapital->autorizacion }}
-                            @if($pago->amortizacionCapital->observaciones)
-                                / Obs.: {{ $pago->amortizacionCapital->observaciones }}
-                            @endif
-                        @else
-                            {{ $pago->anexo ?: '-' }}
-                        @endif
-                    </td>
+                    <td>{{ $pago->glosa_reporte }}</td>
                     <td class="center">{{ $pago->estado === 'AC' ? 'REG.' : $pago->estado }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="10" class="empty">No existen pagos registrados para este préstamo.</td>
+                    <td colspan="11" class="empty">No existen pagos registrados para este préstamo.</td>
                 </tr>
             @endforelse
         </tbody>
@@ -297,6 +398,7 @@
             <tfoot>
                 <tr class="totals">
                     <td colspan="5" class="right">TOTALES</td>
+                    <td class="right">{{ number_format($totalAplicado, 2) }}</td>
                     <td class="right">{{ number_format($totalEfectivo, 2) }}</td>
                     <td></td>
                     <td class="right">{{ number_format($totalDiferencia, 2) }}</td>
@@ -305,5 +407,6 @@
             </tfoot>
         @endif
     </table>
+    @endif
 </body>
 </html>

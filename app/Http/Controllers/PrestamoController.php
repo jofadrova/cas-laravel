@@ -333,12 +333,15 @@ class PrestamoController extends Controller
     public function detalle(Prestamo $prestamo)
     {
         try {
+
             return view(
                 'prestamos.partials.detalle',
                 $this->datosDetallePrestamo($prestamo)
             );
 
         } catch (\Throwable $e) {
+            report($e);
+
             if (request()->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -380,7 +383,9 @@ class PrestamoController extends Controller
             'garante2',
             'prestamoOrigen',
             'refinanciamientos',
-            'cuotas' => fn ($query) => $query->orderBy('nro_cuota'),
+            'cuotas' => fn ($query) => $query
+            ->with('pagosCuotas.pago')
+            ->orderBy('nro_cuota'),
             'amortizacionesCapital' => fn ($query) => $query
                 ->where('estado', 'AC')
                 ->orderBy('fecha')
@@ -396,7 +401,7 @@ class PrestamoController extends Controller
                 ->where('estado', 'PE')
                 ->values(),
             'amortizaciones' => $prestamo->amortizacionesCapital,
-            'esPrestamoDolares' => $prestamo->tipo->tipo_moneda === 'SU',
+            'esPrestamoDolares' => $prestamo->tipo?->tipo_moneda === 'SU',
         ];
     }
 

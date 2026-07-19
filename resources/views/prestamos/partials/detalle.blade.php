@@ -25,23 +25,31 @@
                                 <table class="table table-sm mb-0">
                                     <tr>
                                         <th width="40%">Socio</th>
-                                        <td>{{ trim($prestamo->socio->nombres.' '.$prestamo->socio->paterno.' '.$prestamo->socio->materno) }}</td>
+                                        <td>
+                                            {{ trim(
+                                                ($prestamo->socio?->nombres ?? '').' '.
+                                                ($prestamo->socio?->paterno ?? '').' '.
+                                                ($prestamo->socio?->materno ?? '')
+                                            ) ?: 'No registrado' }}
+                                        </td>
                                     </tr>
                                     <tr>
                                         <th>C.I.</th>
-                                        <td>{{ $prestamo->socio->nro_doc }} {{ $prestamo->socio->expedido }}</td>
+                                        <td>
+                                            {{ trim(($prestamo->socio?->nro_doc ?? '').' '.($prestamo->socio?->expedido ?? '')) ?: 'No registrado' }}
+                                        </td>
                                     </tr>
                                     <tr>
                                         <th>Papeleta</th>
-                                        <td>{{ $prestamo->socio->institucion->papeleta }}</td>
+                                        <td>{{ $prestamo->socio?->institucion?->papeleta ?? 'No registrada' }}</td>
                                     </tr>
                                     <tr>
                                         <th>Grado</th>
-                                        <td>{{ $prestamo->socio->institucion->grado->grado }}</td>
+                                        <td>{{ $prestamo->socio?->institucion?->grado?->grado ?? 'No registrado' }}</td>
                                     </tr>
                                     <tr>
                                         <th>Tipo</th>
-                                        <td>{{ $prestamo->tipo->descripcion_tasa }}</td>
+                                        <td>{{ $prestamo->tipo?->descripcion_tasa ?? 'Tipo no registrado' }}</td>
                                     </tr>
                                     <tr>
                                         <th>Estado</th>
@@ -167,6 +175,7 @@
                                             <th class="text-end">Interés</th>
                                             <th class="text-end">Otros cargos</th>
                                             <th class="text-end">Saldo</th>
+                                            <th class="text-end">Glosa</th>
                                             <th class="text-center">Estado</th>
                                         </tr>
                                     </thead>
@@ -188,6 +197,7 @@
                                                 <td class="text-end">{{ number_format($cuota->interes, 2) }}</td>
                                                 <td class="text-end">{{ number_format($otrosCargos, 2) }}</td>
                                                 <td class="text-end">{{ number_format($cuota->saldo, 2) }}</td>
+                                                <td>{{ $cuota->pagosCuotas->first()?->pago?->anexo ?? '-' }}</td>
                                                 <td class="text-center"><span class="badge bg-success">PAGADA</span></td>
                                             </tr>
                                         @empty

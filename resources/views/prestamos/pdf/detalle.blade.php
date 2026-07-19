@@ -137,17 +137,25 @@
         <tr>
             <td>
                 <div class="label">Socio</div>
-                <div class="value">{{ trim($prestamo->socio->nombres.' '.$prestamo->socio->paterno.' '.$prestamo->socio->materno) }}</div>
+                <div class="value">
+                    {{ trim(
+                        ($prestamo->socio?->nombres ?? '').' '.
+                        ($prestamo->socio?->paterno ?? '').' '.
+                        ($prestamo->socio?->materno ?? '')
+                    ) ?: 'No registrado' }}
+                </div>
             </td>
             <td>
                 <div class="label">C.I.</div>
-                <div class="value">{{ $prestamo->socio->nro_doc }} {{ $prestamo->socio->expedido }}</div>
+                <div class="value">
+                    {{ trim(($prestamo->socio?->nro_doc ?? '').' '.($prestamo->socio?->expedido ?? '')) ?: 'No registrado' }}
+                </div>
             </td>
             <td>
                 <div class="label">Papeleta / Grado</div>
                 <div class="value">
-                    {{ $prestamo->socio->institucion->papeleta }} /
-                    {{ $prestamo->socio->institucion->grado->grado }}
+                    {{ $prestamo->socio?->institucion?->papeleta ?? 'No registrada' }} /
+                    {{ $prestamo->socio?->institucion?->grado?->grado ?? 'No registrado' }}
                 </div>
             </td>
             <td>
@@ -184,7 +192,7 @@
         <tr>
             <td>
                 <div class="label">Tipo de préstamo</div>
-                <div class="value">{{ $prestamo->tipo->descripcion_tasa }}</div>
+                <div class="value">{{ $prestamo->tipo?->descripcion_tasa ?? 'Tipo no registrado' }}</div>
             </td>
             <td>
                 <div class="label">Monto / Saldo</div>

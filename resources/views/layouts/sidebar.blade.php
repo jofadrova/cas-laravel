@@ -96,7 +96,11 @@
                                     'prestamos.update',
                                     'prestamos.detalle',
                                     'prestamos.pagos',
-                                    'prestamos.pagos.*')
+                                    'prestamos.pagos.*',
+                                    'prestamos.refinanciamiento.*',
+                                    'prestamos.refinanciamiento',
+                                    'prestamos.amortizacion-capital',
+                                    'prestamos.amortizacion-capital.*')
                     ? 'active-menu'
                     : '' }}">
 

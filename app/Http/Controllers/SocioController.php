@@ -20,6 +20,8 @@ use App\Models\Residencia;
 use App\Models\SocioInstitucion;
 use App\Models\ContaSubcuenta;
 use App\Models\SocioDependiente;
+use App\Models\Prestamo;
+use App\Models\HistorialGarante;
 use App\Http\Requests\UpdateSocioRequest;
 use Barryvdh\DomPDF\Facade\Pdf;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
@@ -303,7 +305,107 @@ class SocioController extends Controller
     {
         $socio = Socio::with(['institucion.grado','residencia'])->findOrFail($id);
 
-        return view('socios.show', compact('socio'));
+        $prestamosPropios = Prestamo::query()
+            ->with([
+                'tipo',
+                'garante1',
+                'garante2',
+                'historialGarantes.garante1Old',
+                'historialGarantes.garante2Old',
+                'historialGarantes.garante1New',
+                'historialGarantes.garante2New',
+            ])
+            ->withCount([
+                'cuotas as cuotas_pagadas_count' => fn ($query) => $query->where('estado', 'AC'),
+                'cuotas as cuotas_pendientes_count' => fn ($query) => $query->where('estado', 'PE'),
+            ])
+            ->where('ide_per', $socio->id)
+            ->orderByDesc('fecha_deposito')
+            ->orderByDesc('id_solicitud')
+            ->get();
+
+        $idsGarantiasHistoricas = HistorialGarante::query()
+            ->where(function ($query) use ($socio) {
+                $query->where('garante1_old', $socio->id)
+                    ->orWhere('garante2_old', $socio->id)
+                    ->orWhere('garante1_new', $socio->id)
+                    ->orWhere('garante2_new', $socio->id);
+            })
+            ->pluck('id_solicitud');
+
+        $prestamosComoGarante = Prestamo::query()
+            ->with([
+                'socio.institucion',
+                'tipo',
+                'historialGarantes',
+            ])
+            ->where(function ($query) use ($socio, $idsGarantiasHistoricas) {
+                $query->where('id_garante1', $socio->id)
+                    ->orWhere('id_garante2', $socio->id)
+                    ->when(
+                        $idsGarantiasHistoricas->isNotEmpty(),
+                        fn ($query) => $query->orWhereIn('id_solicitud', $idsGarantiasHistoricas)
+                    );
+            })
+            ->orderByDesc('fecha_deposito')
+            ->orderByDesc('id_solicitud')
+            ->get()
+            ->each(function (Prestamo $prestamo) use ($socio) {
+                $roles = collect();
+
+                if ((int) $prestamo->id_garante1 === (int) $socio->id) {
+                    $roles->push('Garante 1 actual');
+                }
+
+                if ((int) $prestamo->id_garante2 === (int) $socio->id) {
+                    $roles->push('Garante 2 actual');
+                }
+
+                $fueGarante = $prestamo->historialGarantes->contains(
+                    fn ($historial) => in_array(
+                        (int) $socio->id,
+                        array_map('intval', [
+                            $historial->garante1_old,
+                            $historial->garante2_old,
+                            $historial->garante1_new,
+                            $historial->garante2_new,
+                        ]),
+                        true
+                    )
+                );
+
+                if ($fueGarante && $roles->isEmpty()) {
+                    $roles->push('Garante histórico');
+                }
+
+                $prestamo->setAttribute('roles_garantia', $roles->implode(' / '));
+            });
+
+        $resumenPorTipo = $prestamosPropios
+            ->groupBy(fn ($prestamo) => implode('|', [
+                $prestamo->tipo?->descripcion_tasa ?? 'Tipo no registrado',
+                $prestamo->tipo?->tipo_moneda ?? 'SB',
+            ]))
+            ->map(fn ($prestamos) => [
+                'tipo' => $prestamos->first()->tipo?->descripcion_tasa ?? 'Tipo no registrado',
+                'simbolo_moneda' => $prestamos->first()->tipo?->tipo_moneda === 'SU'
+                    ? '$us'
+                    : 'Bs',
+                'total' => $prestamos->count(),
+                'activos' => $prestamos->where('estado', 'AC')->count(),
+                'cancelados' => $prestamos->where('estado', 'PA')->count(),
+                'refinanciados' => $prestamos->where('estado', 'CE')->count(),
+                'monto' => round((float) $prestamos->sum('monto'), 2),
+                'saldo' => round((float) $prestamos->sum('saldo_actual'), 2),
+            ])
+            ->values();
+
+        return view('socios.show', compact(
+            'socio',
+            'prestamosPropios',
+            'prestamosComoGarante',
+            'resumenPorTipo'
+        ));
     }
 
     /**
