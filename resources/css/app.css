@@ -135,6 +135,27 @@ body.sidebar-collapsed .sidebar-menu .nav-item.mt-3 {
     }
 }
 
+:root {
+    --scas-bg: #f3f4f6;
+    --scas-card-bg: #ffffff;
+}
+
+html,
+body {
+    min-height: 100%;
+    background-color: var(--scas-bg) !important;
+}
+
+.app-shell,
+.app-content,
+main {
+    background-color: var(--scas-bg) !important;
+}
+
+.card {
+    background-color: var(--scas-card-bg);
+}
+
 .cotizaciones-scroll {
     height: 350px;
     overflow-y: auto;
