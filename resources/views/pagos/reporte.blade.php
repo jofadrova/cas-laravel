@@ -132,10 +132,15 @@
                                 <td class="text-end">
                                     {{ number_format($cuota->saldo_capital_reporte, 2) }}
                                 </td>
-                                <td>
-                                    @if($cuota->situacion_reporte)
+                                <td>                                                              
+                                    @if($cuota->estado === 'PE')
+                                        <span class="badge bg-danger">
+                                            PENDIENTE
+                                        </span>
+                                    @endif
+                                    @if($cuota->estado === 'AC')
                                         <span class="badge bg-success">
-                                            {{ $cuota->situacion_reporte }}
+                                            CANCELADO
                                         </span>
                                     @endif
                                 </td>

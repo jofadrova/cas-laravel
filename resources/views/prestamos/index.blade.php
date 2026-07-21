@@ -9,79 +9,79 @@
         </div>
     @endif
     {{-- Buscador --}}
-<form method="GET">
-    <div class="row mb-3 align-items-end">
-        {{-- Buscar por --}}
-        <div class="col-md-2">
-            <label class="form-label">Buscar por</label>
-            <select name="campo" class="form-select">
-                <option value="solicitud"
-                    {{ request('campo', 'solicitud') == 'solicitud' ? 'selected' : '' }}>
-                    Nro. Solicitud
-                </option>
-                <option value="papeleta"
-                    {{ request('campo') == 'papeleta' ? 'selected' : '' }}>
-                    Nro. Papeleta
-                </option>
-                <option value="asociado"
-                    {{ request('campo') == 'asociado' ? 'selected' : '' }}>
-                    Asociado
-                </option>
-            </select>
-        </div>
-        {{-- Criterio --}}
-        <div class="col-md-3">
-            <label class="form-label">Criterio</label>
-            <input type="text" name="buscar" class="form-control" placeholder="Ingrese el criterio..." value="{{ request('buscar') }}">
-        </div>
-        {{-- Estado --}}
-        <div class="col-md-2">
-            <label class="form-label">Estado</label>
-            <select name="estado" class="form-select">
-                <option value="">Todos</option>
-                <option value="AC"
-                    {{ request('estado') == 'AC' ? 'selected' : '' }}>
-                    Activo
-                </option>
-                <option value="IN"
-                    {{ request('estado') == 'IN' ? 'selected' : '' }}>
-                    Inactivo
-                </option>
-                <option value="PA"
-                    {{ request('estado') == 'PA' ? 'selected' : '' }}>
-                    Cancelado
-                </option>
-                <option value="CE"
-                    {{ request('estado') == 'CE' ? 'selected' : '' }}>
-                    Cerrado por refinanciamiento
-                </option>
-            </select>
-        </div>
-        {{-- Tipo --}}
-        <div class="col-md-3">
-            <label class="form-label">Tipo de préstamo</label>
-            <select name="tipo_prestamo" class="form-select">
-                <option value="">Todos</option>
-                @foreach($tipos as $tipo)
-                    <option
-                        value="{{ $tipo->id_tasa }}"
-                        {{ request('tipo_prestamo') == $tipo->id_tasa ? 'selected' : '' }}>
-                        {{ $tipo->descripcion_tasa }}
+    <form method="GET">
+        <div class="row mb-3 align-items-end">
+            {{-- Buscar por --}}
+            <div class="col-md-2">
+                <label class="form-label">Buscar por</label>
+                <select name="campo" class="form-select">
+                    <option value="solicitud"
+                        {{ request('campo', 'solicitud') == 'solicitud' ? 'selected' : '' }}>
+                        Nro. Solicitud
                     </option>
-                @endforeach
-            </select>
+                    <option value="papeleta"
+                        {{ request('campo') == 'papeleta' ? 'selected' : '' }}>
+                        Nro. Papeleta
+                    </option>
+                    <option value="asociado"
+                        {{ request('campo') == 'asociado' ? 'selected' : '' }}>
+                        Asociado
+                    </option>
+                </select>
+            </div>
+            {{-- Criterio --}}
+            <div class="col-md-3">
+                <label class="form-label">Criterio</label>
+                <input type="text" name="buscar" class="form-control" placeholder="Ingrese el criterio..." value="{{ request('buscar') }}">
+            </div>
+            {{-- Estado --}}
+            <div class="col-md-2">
+                <label class="form-label">Estado</label>
+                <select name="estado" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="AC"
+                        {{ request('estado') == 'AC' ? 'selected' : '' }}>
+                        Activo
+                    </option>
+                    <option value="IN"
+                        {{ request('estado') == 'IN' ? 'selected' : '' }}>
+                        Inactivo
+                    </option>
+                    <option value="PA"
+                        {{ request('estado') == 'PA' ? 'selected' : '' }}>
+                        Cancelado
+                    </option>
+                    <option value="CE"
+                        {{ request('estado') == 'CE' ? 'selected' : '' }}>
+                        Cerrado por refinanciamiento
+                    </option>
+                </select>
+            </div>
+            {{-- Tipo --}}
+            <div class="col-md-3">
+                <label class="form-label">Tipo de préstamo</label>
+                <select name="tipo_prestamo" class="form-select">
+                    <option value="">Todos</option>
+                    @foreach($tipos as $tipo)
+                        <option
+                            value="{{ $tipo->id_tasa }}"
+                            {{ request('tipo_prestamo') == $tipo->id_tasa ? 'selected' : '' }}>
+                            {{ $tipo->descripcion_tasa }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            {{-- Botones --}}
+            <div class="col-md-2 d-grid gap-2">
+                <button class="btn btn-primary">
+                    <i class="fas fa-search me-1"></i>Buscar
+                </button>
+                <a href="{{ route('prestamos.index') }}" class="btn btn-secondary">
+                    Limpiar
+                </a>
+            </div>
         </div>
-        {{-- Botones --}}
-        <div class="col-md-2 d-grid gap-2">
-            <button class="btn btn-primary">
-                <i class="fas fa-search me-1"></i>Buscar
-            </button>
-            <a href="{{ route('prestamos.index') }}" class="btn btn-secondary">
-                Limpiar
-            </a>
-        </div>
-    </div>
-</form>
+    </form>
     {{-- Card Principal --}}
     <div class="card shadow-sm">
         <div class="card-header d-flex justify-content-between align-items-center">
@@ -219,8 +219,7 @@
                                         @endif
                                         <li>
                                             @if(!$prestamoCerrado && $prestamo->tipo?->id_tasa == 1)
-                                                <a class="dropdown-item"
-                                                href="{{ route('prestamos.garantes', $prestamo) }}">
+                                                <a class="dropdown-item" href="{{ route('prestamos.garantes', $prestamo) }}">
                                                     <i class="bi bi-people me-2"></i>
                                                     Cambio de garantes
                                                 </a>

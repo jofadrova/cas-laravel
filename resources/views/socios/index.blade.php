@@ -1,116 +1,87 @@
 <x-app-layout>
-
-    <x-slot name="header">
-        Gestión de Socios
-    </x-slot>
-
+    <x-slot name="header">Gestión de Socios</x-slot>
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show">
             <i class="fa-solid fa-circle-check me-2"></i>
             {{ session('success') }}
-            <button type="button"
-                    class="btn-close"
-                    data-bs-dismiss="alert">
-            </button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"> </button>
         </div>
     @endif
      @if(session('info'))
         <div class="alert alert-info alert-dismissible fade show">
             <i class="fa-solid fa-circle-check me-2"></i>
             {{ session('info') }}
-            <button type="button"
-                    class="btn-close"
-                    data-bs-dismiss="alert">
-            </button>
+            <button type="button" class="btn-close"  data-bs-dismiss="alert"></button>
         </div>
     @endif
+    <form method="GET" action="{{ route('socios.index') }}">
+        <div class="row mb-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">Buscar por</label>
+                <select name="buscar_por" class="form-select">
+                    <option value="papeleta"
+                        {{ request('buscar_por') == 'papeleta' ? 'selected' : '' }}>
+                        Nro Papeleta
+                    </option>
+                    <option value="ci"
+                        {{ request('buscar_por') == 'ci' ? 'selected' : '' }}>
+                        CI
+                    </option>
+                    <option value="apellido"
+                        {{ request('buscar_por') == 'apellido' ? 'selected' : '' }}>
+                        Apellido
+                    </option>
+                    <option value="nombre"
+                        {{ request('buscar_por') == 'nombre' ? 'selected' : '' }}>
+                        Nombre
+                    </option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Valor</label>
+                <input type="text" name="valor" class="form-control" value="{{ request('valor') }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Estado</label>
+                <select name="estado" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="AC"
+                        {{ request('estado') == 'AC' ? 'selected' : '' }}>
+                        Activos
+                    </option>
+                    <option value="BA"
+                        {{ request('estado') == 'BA' ? 'selected' : '' }}>
+                        Baja
+                    </option>
+                    <option value="SU"
+                        {{ request('estado') == 'SU' ? 'selected' : '' }}>
+                        Suspendidos
+                    </option>
+                </select>            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">Registros</label>
+                <select name="per_page" class="form-select">
+                    <option value="10" {{ request('per_page',10)==10 ? 'selected':'' }}>10</option>
+                    <option value="25" {{ request('per_page')==25 ? 'selected':'' }}>25</option>
+                    <option value="50" {{ request('per_page')==50 ? 'selected':'' }}>50</option>
+                    <option value="100" {{ request('per_page')==100 ? 'selected':'' }}>100</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100"> 
+                    <i class="fas fa-search me-1"></i>
+                    Buscar
+                </button>
+            </div>
+        </div>
+    </form>
     <div class="card shadow-sm">
         <div class="card-header d-flex justify-content-between">
             <h5 class="mb-0">Gestión de Socios</h5>
             <a href="{{ route('socios.create') }}"
-               class="btn btn-success">
-                <i class="bi bi-plus-circle me-1"></i>Nuevo Socio
+               class="btn btn-success"><i class="bi bi-plus-circle me-1"></i>Nuevo Socio
             </a>
-        </div>
-        <div class="card-body border-bottom bg-light">
-            <form method="GET" action="{{ route('socios.index') }}">
-                <div class="row g-3">
-                    <div class="col-md-3">
-                        <label class="form-label">Buscar por</label>
-                        <select name="buscar_por" class="form-select">
-                            <option value="papeleta"
-                                {{ request('buscar_por') == 'papeleta' ? 'selected' : '' }}>
-                                Nro Papeleta
-                            </option>
-                            <option value="ci"
-                                {{ request('buscar_por') == 'ci' ? 'selected' : '' }}>
-                                CI
-                            </option>
-
-                            <option value="apellido"
-                                {{ request('buscar_por') == 'apellido' ? 'selected' : '' }}>
-                                Apellido
-                            </option>
-
-                            <option value="nombre"
-                                {{ request('buscar_por') == 'nombre' ? 'selected' : '' }}>
-                                Nombre
-                            </option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-3">
-                        <label class="form-label">Valor</label>
-                        <input type="text"
-                            name="valor"
-                            class="form-control"
-                            value="{{ request('valor') }}">
-                    </div>
-
-                    <div class="col-md-2">
-                        <label class="form-label">Estado</label>
-                        <select name="estado" class="form-select">
-                            <option value="">Todos</option>
-
-                            <option value="AC"
-                                {{ request('estado') == 'AC' ? 'selected' : '' }}>
-                                Activos
-                            </option>
-
-                            <option value="BA"
-                                {{ request('estado') == 'BA' ? 'selected' : '' }}>
-                                Baja
-                            </option>
-
-                            <option value="SU"
-                                {{ request('estado') == 'SU' ? 'selected' : '' }}>
-                                Suspendidos
-                            </option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-2">
-                        <label class="form-label">Registros</label>
-                        <select name="per_page" class="form-select">
-                            <option value="10" {{ request('per_page',10)==10 ? 'selected':'' }}>10</option>
-                            <option value="25" {{ request('per_page')==25 ? 'selected':'' }}>25</option>
-                            <option value="50" {{ request('per_page')==50 ? 'selected':'' }}>50</option>
-                            <option value="100" {{ request('per_page')==100 ? 'selected':'' }}>100</option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-2 d-flex align-items-end">
-                        <button type="submit"
-                                class="btn btn-primary w-100">
-                            <i class="fas fa-search me-1"></i>
-                            Buscar
-                        </button>
-                    </div>
-
-                </div>
-
-            </form>
-
         </div>
         <div class="card-body">
             <table class="table table-hover align-middle">
@@ -144,11 +115,8 @@
                                 'direction' => $currentSort == 'grado' && $currentDirection == 'asc'
                                     ? 'desc'
                                     : 'asc'
-                            ])) }}"
-                            class="text-dark text-decoration-none fw-bold">
-
+                            ])) }}" class="text-dark text-decoration-none fw-bold">
                                 Grado
-
                                 @if($currentSort == 'grado')
                                     <i class="fas fa-sort-{{ $currentDirection == 'asc' ? 'up' : 'down' }} ms-1"></i>
                                 @else
@@ -164,9 +132,7 @@
                                     : 'asc'
                             ])) }}"
                             class="text-dark text-decoration-none fw-bold">
-
                                 Socio
-
                                 @if($currentSort == 'paterno')
                                     <i class="fas fa-sort-{{ $currentDirection == 'asc' ? 'up' : 'down' }} ms-1"></i>
                                 @else
@@ -182,9 +148,7 @@
                                     : 'asc'
                             ])) }}"
                             class="text-dark text-decoration-none fw-bold">
-
                                 CI
-
                                 @if($currentSort == 'nro_doc')
                                     <i class="fas fa-sort-{{ $currentDirection == 'asc' ? 'up' : 'down' }} ms-1"></i>
                                 @else
@@ -200,9 +164,7 @@
                                     : 'asc'
                             ])) }}"
                             class="text-dark text-decoration-none fw-bold">
-
                                 Estado
-
                                 @if($currentSort == 'estado')
                                     <i class="fas fa-sort-{{ $currentDirection == 'asc' ? 'up' : 'down' }} ms-1"></i>
                                 @else
@@ -247,9 +209,7 @@
                                         <i class="bi bi-gear-fill me-1"></i>
                                     Acciones
                                 </button>
-
                                 <ul class="dropdown-menu dropdown-menu-end">
-
                                     <li>
                                         <a class="dropdown-item"
                                         href="{{ route('socios.edit', $socio->id) }}">
@@ -257,7 +217,6 @@
                                             Editar
                                         </a>
                                     </li>
-
                                     <li>
                                         <a class="dropdown-item"
                                         href="{{ route('socios.show', $socio->id) }}">
@@ -265,7 +224,6 @@
                                             Información del Socio
                                         </a>
                                     </li>
-
                                     <li>
                                         <button class="dropdown-item btnCambiarEstadoSocio"
                                                 data-id="{{ $socio->id }}"
@@ -280,7 +238,6 @@
                                             @endif
                                         </button>
                                     </li>
-
                                     <li>
                                         <a class="dropdown-item"
                                         href="{{ route('socios.kardex', $socio->id) }}"
@@ -289,7 +246,6 @@
                                             Kardex
                                         </a>
                                     </li>
-
                                     @if($socio->estado == 'BA')
                                         <li><hr class="dropdown-divider"></li>
 
@@ -301,18 +257,16 @@
                                             </a>
                                         </li>
                                     @endif
-
                                 </ul>
                             </div>
                         </td>
-
                     </tr>
                     @empty
                     <tr>
                         <td colspan="6" class="text-center">No existen registros</td>
                     </tr>
                     @endforelse
-                    </tbody>
+                </tbody>
             </table>
             <div class="mt-3">
                 {{ $socios->links() }}
@@ -323,42 +277,28 @@
 <div class="modal fade" id="modalEstadoSocio" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-
             <div class="modal-header bg-danger text-white">
                 <h5 class="modal-title">
                     <i class="fas fa-exclamation-triangle me-2"></i>
                     Confirmar Acción
                 </h5>
             </div>
-
             <div class="modal-body">
                 <p id="mensajeEstadoSocio"></p>
             </div>
-
             <div class="modal-footer">
-
-                <button type="button"
-                        class="btn btn-secondary"
-                        data-bs-dismiss="modal">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                     Cancelar
                 </button>
-
                 <form id="formEstadoSocio" method="POST">
                     @csrf
                     @method('PATCH')
-
-                    <input type="hidden"
-                           name="estado"
-                           id="nuevoEstadoSocio">
-
-                    <button type="submit"
-                            class="btn btn-danger">
+                    <input type="hidden" name="estado" id="nuevoEstadoSocio">
+                    <button type="submit" class="btn btn-danger">
                         Confirmar
                     </button>
                 </form>
-
             </div>
-
         </div>
     </div>
 </div>

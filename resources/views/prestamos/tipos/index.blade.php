@@ -10,6 +10,56 @@
             </button>
         </div>
     @endif
+    <form method="GET">
+        <div class="row mb-3 align-items-end">
+            {{-- Buscar --}}
+            <div class="col-md-4">
+                <label class="form-label">Buscar</label>
+                <input type="text" name="buscar" class="form-control" placeholder="Descripción..." value="{{ request('buscar') }}">
+            </div>
+            {{-- Moneda --}}
+            <div class="col-md-2">
+                <label class="form-label">Moneda</label>
+                <select name="tipo_moneda" class="form-select">
+                    <option value="">Todas</option>
+                    <option value="BS"
+                        {{ request('tipo_moneda') == 'BS' ? 'selected' : '' }}>
+                        Bs.
+                    </option>
+                    <option value="SU"
+                        {{ request('tipo_moneda') == 'SU' ? 'selected' : '' }}>
+                        $us.
+                    </option>
+                </select>
+            </div>
+
+            {{-- Estado --}}
+            <div class="col-md-2">
+                <label class="form-label">Estado</label>
+                <select name="estado" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="AC"
+                        {{ request('estado') == 'AC' ? 'selected' : '' }}>
+                        Activo
+                    </option>
+                    <option value="IN"
+                        {{ request('estado') == 'IN' ? 'selected' : '' }}>
+                        Inactivo
+                    </option>
+                </select>
+            </div>
+            {{-- Botones --}}
+            <div class="col-md-4">
+                <button class="btn btn-primary">
+                    <i class="fas fa-search me-1"></i>
+                    Buscar
+                </button>
+                <a href="{{ route('prestamos.tipos.index') }}" class="btn btn-secondary">
+                    Limpiar
+                </a>
+            </div>
+        </div>
+    </form>
     <div class="card shadow-sm">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Tipos de Préstamo</h5>
@@ -17,57 +67,7 @@
                 <i class="bi bi-plus-circle me-1"></i>
                 Nuevo Tipo de Préstamo
             </a>
-        </div>
-       <form method="GET">
-            <div class="row mb-3 align-items-end">
-                {{-- Buscar --}}
-                <div class="col-md-4">
-                    <label class="form-label">Buscar</label>
-                    <input type="text" name="buscar" class="form-control" placeholder="Descripción..." value="{{ request('buscar') }}">
-                </div>
-                {{-- Moneda --}}
-                <div class="col-md-2">
-                    <label class="form-label">Moneda</label>
-                    <select name="tipo_moneda" class="form-select">
-                        <option value="">Todas</option>
-                        <option value="BS"
-                            {{ request('tipo_moneda') == 'BS' ? 'selected' : '' }}>
-                            Bs.
-                        </option>
-                        <option value="SU"
-                            {{ request('tipo_moneda') == 'SU' ? 'selected' : '' }}>
-                            $us.
-                        </option>
-                    </select>
-                </div>
-
-                {{-- Estado --}}
-                <div class="col-md-2">
-                    <label class="form-label">Estado</label>
-                    <select name="estado" class="form-select">
-                        <option value="">Todos</option>
-                        <option value="AC"
-                            {{ request('estado') == 'AC' ? 'selected' : '' }}>
-                            Activo
-                        </option>
-                        <option value="IN"
-                            {{ request('estado') == 'IN' ? 'selected' : '' }}>
-                            Inactivo
-                        </option>
-                    </select>
-                </div>
-                {{-- Botones --}}
-                <div class="col-md-4">
-                    <button class="btn btn-primary">
-                        <i class="fas fa-search me-1"></i>
-                        Buscar
-                    </button>
-                    <a href="{{ route('prestamos.tipos.index') }}" class="btn btn-secondary">
-                        Limpiar
-                    </a>
-                </div>
-            </div>
-        </form>
+        </div>       
         <div class="card-body">
             <table class="table table-hover align-middle">
                 <thead class="table-light">

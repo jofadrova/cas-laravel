@@ -7,18 +7,13 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
-    <div class="card shadow-sm">
-        <div class="card-header d-flex justify-content-between">
-            <h5 class="mb-0">Gestión de Usuarios</h5>
-            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalUsuario"><i class="bi bi-plus-circle me-1"></i> Nuevo Usuario </button>
-        </div>
-        <form method="GET">
-            <div class="row mb-3 align-items-end">
-            <div class="col-md-5">
+    <form method="GET">
+        <div class="row mb-3 align-items-end">
+            <div class="col-md-4">
                 <label class="form-label">Buscar</label>
                 <input type="text" name="buscar" class="form-control" placeholder="Usuario o nombre..." value="{{ request('buscar') }}">
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <label class="form-label">Estado</label>
                 <select name="estado" class="form-select">
                     <option value="">Todos</option>
@@ -41,8 +36,13 @@
                     Limpiar
                 </a>
             </div>
-            </div>
-        </form>
+        </div>
+    </form>
+    <div class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between">
+            <h5 class="mb-0">Gestión de Usuarios</h5>
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalUsuario"><i class="bi bi-plus-circle me-1"></i> Nuevo Usuario </button>
+        </div>        
         <div class="card-body">
             <table class="table table-hover align-middle">
                 <thead class="table-light">
