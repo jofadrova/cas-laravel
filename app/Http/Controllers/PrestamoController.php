@@ -32,6 +32,9 @@ class PrestamoController extends Controller
 
         $table = ScasTable::make(
             Prestamo::with(['socio.institucion', 'tipo'])
+                ->withCount([
+                    'cuotas as cuotas_pagadas_count' => fn ($query) => $query->where('estado', 'AC'),
+                ])
         )
        ->customSearch(function ($query, $buscar) {
             switch (request('campo')) {
@@ -210,6 +213,12 @@ class PrestamoController extends Controller
     {
         abort_if($prestamo->estado !== 'AC', 403, 'El préstamo cerrado no admite operaciones.');
 
+        if ($prestamo->cuotas()->where('estado', 'AC')->exists()) {
+            return redirect()
+                ->route('prestamos.index')
+                ->with('error', 'El préstamo no puede editarse porque ya tiene cuotas pagadas.');
+        }
+
         if (!$prestamo->editable) {
             return redirect()
                 ->route('prestamos.index')
@@ -226,6 +235,11 @@ class PrestamoController extends Controller
     public function update(UpdatePrestamoRequest $request, Prestamo $prestamo, PrestamoService $service)
     {
         abort_if($prestamo->estado !== 'AC', 403, 'El préstamo cerrado no admite operaciones.');
+        abort_if(
+            $prestamo->cuotas()->where('estado', 'AC')->exists(),
+            403,
+            'El préstamo no puede editarse porque ya tiene cuotas pagadas.'
+        );
 
         if (!$prestamo->editable) {
             abort(403, 'La edición de este préstamo está bloqueada.');

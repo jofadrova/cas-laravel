@@ -8,6 +8,13 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="fa-solid fa-triangle-exclamation me-2"></i>
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
     {{-- Buscador --}}
     <form method="GET">
         <div class="row mb-3 align-items-end">
@@ -112,6 +119,7 @@
                     @forelse($prestamos as $prestamo)
                         @php
                             $prestamoCerrado = in_array($prestamo->estado, ['PA', 'CE'], true);
+                            $tieneCuotasPagadas = (int) $prestamo->cuotas_pagadas_count > 0;
                             $puedeRefinanciar = $prestamo->estado === 'AC'
                                 && (int) optional($prestamo->tipo)->id_tasa === 1;
                         @endphp
@@ -166,7 +174,7 @@
                                         <li>
                                             <h6 class="dropdown-header">MANTENIMIENTO</h6>
                                         </li>
-                                        @if(!$prestamoCerrado && $prestamo->editable)
+                                        @if(!$prestamoCerrado && !$tieneCuotasPagadas && $prestamo->editable)
                                         <li>
                                             <a class="dropdown-item"
                                             href="{{ route('prestamos.edit',$prestamo) }}">
@@ -176,11 +184,13 @@
                                         </li>
                                         @else
                                         <li>
-                                            <a class="dropdown-item disabled"
-                                            href="#">
+                                            <span class="dropdown-item disabled text-muted"
+                                                @if($tieneCuotasPagadas)
+                                                    title="No se puede editar porque el préstamo tiene cuotas pagadas"
+                                                @endif>
                                                 <i class="bi bi-lock-fill me-2 text-secondary"></i>
                                                 Editar préstamo
-                                            </a>
+                                            </span>
                                         </li>
                                         @endif
                                         @if($prestamo->editable)
