@@ -1,4 +1,5 @@
 <x-app-layout>
+    <x-slot name="header">Registro de Pago de Préstamo</x-slot>
     @php
         $esPrestamoDolares = $prestamo->tipo->tipo_moneda === 'SU';
         $monedaPrestamo = $esPrestamoDolares ? '$us' : 'Bs';
@@ -11,7 +12,6 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
             </div>
         @endif
-        <h1 class="h2 mb-4">Registro de Pago de Préstamo</h1>
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-success text-white">
                 <i class="bi bi-cash-coin me-2"></i>

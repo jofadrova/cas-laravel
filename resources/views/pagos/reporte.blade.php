@@ -1,16 +1,26 @@
-<x-app-layout>
-    <x-slot name="header">Reporte de Pagos</x-slot>
+@php
+    $monedaPrestamo = $esPrestamoDolares ? '$us' : 'Bs';
+@endphp
 
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-        </div>
-    @endif
-
-    @php
-        $monedaPrestamo = $esPrestamoDolares ? '$us' : 'Bs';
-    @endphp
+<div class="modal fade" id="modalReportePagos" tabindex="-1"
+    aria-labelledby="tituloModalReportePagos" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="tituloModalReportePagos">
+                    <i class="bi bi-receipt me-2"></i>
+                    Reporte de Pagos
+                </h5>
+                <button type="button" class="btn-close btn-close-white"
+                    data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                @if(session('success'))
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                    </div>
+                @endif
 
     <div class="card shadow-sm mb-4">
         <div class="card-header bg-success text-white">
@@ -18,7 +28,7 @@
             Resumen del Préstamo
         </div>
         <div class="card-body">
-            <div class="row g-4">
+            <div class="row g-3">
                 <div class="col-md-4">
                     <label class="text-muted small">Solicitud</label>
                     <div class="fw-semibold">
@@ -71,7 +81,7 @@
                         {{ $monedaPrestamo }} {{ number_format($prestamo->monto, 2) }}
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label class="text-muted small">Saldo actual</label>
                     <div class="fw-bold text-danger">
                         {{ $monedaPrestamo }} {{ number_format($prestamo->saldo_actual, 2) }}
@@ -83,10 +93,16 @@
                         {{ $cuotasPagadas }} pagadas / {{ $cuotasPendientes }} pendientes
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <label class="text-muted small">Total efectivo registrado</label>
+                <div class="col-md-2">
+                    <label class="text-muted small">Total pagado</label>
                     <div class="fw-bold text-success">
-                        Bs {{ number_format($totalEfectivo, 2) }}
+                        {{ $monedaPrestamo }} {{ number_format($totalPagado, 2) }}
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <label class="text-muted small">Total capital amortizado</label>
+                    <div class="fw-bold text-success">
+                        {{ $monedaPrestamo }} {{ number_format($totalCapitalAmortizado, 2) }}
                     </div>
                 </div>
             </div>
@@ -132,7 +148,7 @@
                                 <td class="text-end">
                                     {{ number_format($cuota->saldo_capital_reporte, 2) }}
                                 </td>
-                                <td>                                                              
+                                <td>
                                     @if($cuota->estado === 'PE')
                                         <span class="badge bg-danger">
                                             PENDIENTE
@@ -250,14 +266,17 @@
             @endif
 
             <div class="d-flex justify-content-end gap-2 mt-3">
-                <a href="{{ route('prestamos.index') }}" class="btn btn-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                     <i class="bi bi-check-circle me-1"></i>ACEPTAR
-                </a>
+                </button>
                 <a href="{{ route('prestamos.pagos.reporte.pdf', $prestamo) }}"
                     class="btn btn-danger" target="_blank">
                     <i class="bi bi-printer me-1"></i>IMPRIMIR
                 </a>
             </div>
         </div>
+                </div>
+            </div>
+        </div>
     </div>
-</x-app-layout>
+</div>

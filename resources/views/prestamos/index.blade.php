@@ -257,7 +257,7 @@
                                             @endif
                                         </li>
                                         <li>
-                                            <a class="dropdown-item"
+                                            <a class="dropdown-item btn-reporte-pagos"
                                             href="{{ route('prestamos.pagos.reporte', $prestamo) }}">
                                                 <i class="bi bi-receipt me-2 text-info"></i>
                                                 Reporte de pagos
@@ -305,8 +305,7 @@
         {{ $prestamos->links() }}
         </div>
     </div>
-</x-app-layout>
-<div id="contenedorDetallePrestamo"></div>
+    <div id="contenedorDetallePrestamo"></div>
     @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -364,4 +363,75 @@ modal.show();
         console.error(error);
     }
 });
+
+document.addEventListener('click', async function (e) {
+    const boton = e.target.closest('.btn-reporte-pagos');
+
+    if (!boton) return;
+
+    e.preventDefault();
+
+    const contenedor = document.getElementById('contenedorDetallePrestamo');
+    contenedor.innerHTML = `
+        <div class="modal fade" id="modalReportePagos" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title">
+                            <i class="bi bi-receipt me-2"></i>
+                            Reporte de Pagos
+                        </h5>
+                    </div>
+                    <div class="modal-body d-flex flex-column align-items-center justify-content-center py-5">
+                        <div class="spinner-border text-success mb-3" role="status" aria-hidden="true"></div>
+                        <div class="fw-semibold text-muted">Cargando reporte de pagos...</div>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+
+    const modalElemento = document.getElementById('modalReportePagos');
+    const modal = new bootstrap.Modal(modalElemento, {
+        backdrop: 'static',
+        keyboard: false
+    });
+
+    modalElemento.addEventListener('hidden.bs.modal', () => {
+        contenedor.innerHTML = '';
+    }, { once: true });
+
+    modal.show();
+
+    try {
+        const response = await fetch(boton.href, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        if (!response.ok) throw new Error();
+
+        const respuesta = document.createElement('div');
+        respuesta.innerHTML = await response.text();
+        const contenidoReporte = respuesta.querySelector('.modal-content');
+
+        if (!contenidoReporte) throw new Error();
+
+        modalElemento
+            .querySelector('.modal-content')
+            .replaceWith(contenidoReporte);
+    } catch (error) {
+        console.error(error);
+        modalElemento.querySelector('.modal-body').innerHTML = `
+            <div class="alert alert-danger mb-0">
+                No fue posible cargar el reporte de pagos. Intente nuevamente.
+            </div>`;
+        modalElemento.querySelector('.modal-header').insertAdjacentHTML(
+            'beforeend',
+            '<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>'
+        );
+    }
+});
 </script>
+    @endpush
+</x-app-layout>

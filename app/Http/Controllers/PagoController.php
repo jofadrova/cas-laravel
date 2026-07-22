@@ -261,7 +261,13 @@ class PagoController extends Controller
 
     public function reporte(Prestamo $prestamo)
     {
-        return view('pagos.reporte', $this->datosReporte($prestamo));
+        $datos = $this->datosReporte($prestamo);
+
+        if (request()->ajax()) {
+            return view('pagos.reporte', $datos);
+        }
+
+        return view('pagos.reporte-pagina', $datos);
     }
 
     public function reportePdf(Prestamo $prestamo)
@@ -279,33 +285,55 @@ class PagoController extends Controller
         $prestamo->load([
             'socio.institucion.grado',
             'tipo',
-            'cuotas',
+            'cuotas' => fn ($query) => $query->orderBy('nro_cuota'),
+            'amortizacionesCapital' => fn ($query) => $query
+                ->where('estado', 'AC')
+                ->orderBy('fecha')
+                ->orderBy('id'),
         ]);
+
         $idsCuotas = $prestamo->cuotas->pluck('id');
-        $idsPagosCuotas = PagoCuota::query()
+        $pagosCuotasActivos = PagoCuota::query()
+            ->join('pagos', 'pagos.id', '=', 'pagos_cuotas.id_pago')
             ->whereIn('id_cuota_solicitud', $idsCuotas)
-            ->distinct()
-            ->pluck('id_pago');
-        $idsPagosAmortizaciones = $prestamo->amortizacionesCapital()
-            ->pluck('id_pago');
-        $idsPagos = $idsPagosCuotas
-            ->merge($idsPagosAmortizaciones)
+            ->where('pagos_cuotas.estado', 'AC')
+            ->where('pagos.estado', 'AC')
+            ->get([
+                'pagos_cuotas.*',
+                'pagos.anexo as pago_anexo',
+            ]);
+        $pagosCuotasPorCuota = $pagosCuotasActivos
+            ->groupBy('id_cuota_solicitud');
+        $pagosCuotasPorPago = $pagosCuotasActivos
+            ->groupBy('id_pago');
+        $amortizacionesPorPago = $prestamo->amortizacionesCapital
+            ->keyBy('id_pago');
+        $idsPagos = $pagosCuotasActivos
+            ->pluck('id_pago')
+            ->merge($amortizacionesPorPago->keys())
             ->unique()
             ->values();
 
         $pagos = Pago::query()
-            ->with([
-                'amortizacionCapital',
-                'pagosCuotas' => fn ($query) => $query
-                    ->whereIn('id_cuota_solicitud', $idsCuotas)
-                    ->orderBy('nro_cuota'),
-            ])
             ->whereIn('id', $idsPagos)
+            ->where('estado', 'AC')
             ->orderBy('fecha')
             ->orderBy('id')
             ->get();
 
-        $pagos->each(function (Pago $pago): void {
+        $pagos->each(function (Pago $pago) use (
+            $pagosCuotasPorPago,
+            $amortizacionesPorPago
+        ): void {
+            $pago->setRelation(
+                'pagosCuotas',
+                $pagosCuotasPorPago->get($pago->id, collect())->values()
+            );
+            $pago->setRelation(
+                'amortizacionCapital',
+                $amortizacionesPorPago->get($pago->id)
+            );
+
             $esAmortizacion = $pago->tipo_pago === 'AM'
                 && $pago->amortizacionCapital !== null;
 
@@ -341,11 +369,12 @@ class PagoController extends Controller
             );
         });
 
-        $cuotasDetalle = $prestamo->cuotas->map(function ($cuota) use ($prestamo) {
-            $pagosCuotaActivos = $cuota->pagosCuotas->filter(
-                fn ($pagoCuota) => $pagoCuota->estado === 'AC'
-                    && $pagoCuota->pago?->estado === 'AC'
-            );
+        $cuotasDetalle = $prestamo->cuotas->map(function ($cuota) use (
+            $prestamo,
+            $pagosCuotasPorCuota
+        ) {
+            $pagosCuotaActivos = $pagosCuotasPorCuota
+                ->get($cuota->id, collect());
 
             $cuota->setAttribute(
                 'monto_cancelado_reporte',
@@ -364,7 +393,7 @@ class PagoController extends Controller
             $cuota->setAttribute(
                 'observaciones_reporte',
                 $pagosCuotaActivos
-                    ->pluck('pago.anexo')
+                    ->pluck('pago_anexo')
                     ->filter()
                     ->unique()
                     ->implode(' / ')
@@ -376,6 +405,12 @@ class PagoController extends Controller
         $amortizacionesReporte = $pagos
             ->where('es_amortizacion_reporte', true)
             ->values();
+        $cuotasPagadasReporte = $prestamo->cuotas
+            ->where('estado', 'AC');
+        $capitalAmortizaciones = round(
+            (float) $prestamo->amortizacionesCapital->sum('monto_capital'),
+            2
+        );
 
         return [
             'prestamo' => $prestamo,
@@ -384,6 +419,16 @@ class PagoController extends Controller
             'amortizacionesReporte' => $amortizacionesReporte,
             'cuotasPagadas' => $prestamo->cuotas->where('estado', 'AC')->count(),
             'cuotasPendientes' => $prestamo->cuotas->where('estado', 'PE')->count(),
+            'totalPagado' => round(
+                (float) $cuotasPagadasReporte->sum('cuota_fija')
+                    + $capitalAmortizaciones,
+                2
+            ),
+            'totalCapitalAmortizado' => round(
+                (float) $cuotasPagadasReporte->sum('amortizacion_cap')
+                    + $capitalAmortizaciones,
+                2
+            ),
             'totalEfectivo' => round((float) $pagos->sum('monto'), 2),
             'totalAplicado' => round((float) $pagos->sum('monto_aplicado_reporte'), 2),
             'totalDiferencia' => round((float) $pagos->sum('diferencia'), 2),
@@ -391,10 +436,7 @@ class PagoController extends Controller
                 (float) $cuotasDetalle->sum('monto_cancelado_reporte'),
                 2
             ),
-            'totalAmortizadoCapital' => round(
-                (float) $amortizacionesReporte->sum('monto_aplicado_reporte'),
-                2
-            ),
+            'totalAmortizadoCapital' => $capitalAmortizaciones,
             'totalEfectivoAmortizaciones' => round(
                 (float) $amortizacionesReporte->sum('monto'),
                 2

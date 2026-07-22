@@ -173,109 +173,106 @@ main {
    SCAS - COLORES INSTITUCIONALES
    ========================================================== */
 
-:root{
+:root {
     --scas-primary: #017209;
     --scas-primary-dark: #014205;
-    --scas-primary-light: #00cf49;
+    --scas-primary-light: #01ad3d;
 
-    --scas-secondary: #0B4EA2;
-    --scas-accent: #37B8D9;
+    --scas-secondary: #0b4ea2;
+    --scas-accent: #37b8d9;
 
     --scas-header-text: #ffffff;
 }
-
 
 /* ==========================================================
    CABECERAS
    ========================================================== */
 
-.scas-header{
+.scas-header {
     background: var(--scas-primary);
     color: var(--scas-header-text);
 }
 
-.scas-header-light{
+.scas-header-light {
     background: var(--scas-primary-light);
     color: var(--scas-header-text);
+    padding: 12px 20px;
+    font-size: 1.1rem;
 }
 
-.scas-header-dark{
+.scas-header-dark {
     background: var(--scas-primary-dark);
     color: var(--scas-header-text);
 }
 
-.scas-header i{
-    margin-right: .5rem;
+.scas-header i {
+    margin-right: 0.5rem;
 }
 
 /*=========================================================
   CABECERA PRINCIPAL DE LAS PÁGINAS
 =========================================================*/
 
-.scas-page-header{
+.scas-page-header {
     background: #017209;
     color: #fff;
-    padding: .85rem 1.25rem;
-    border-radius: .5rem;
-    box-shadow: 0 .125rem .25rem rgba(0,0,0,.08);
+    padding: 0.85rem 1.25rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.08);
     margin-bottom: 1.5rem;
 }
 
-.scas-page-header h3{
+.scas-page-header h3 {
     margin: 0;
     font-size: 1.35rem;
     font-weight: 600;
     color: inherit;
 }
 
-
 /* ==========================================================
    CARD HEADER
    ========================================================== */
 
-.card-header.scas-header{
+.card-header.scas-header {
     background: var(--scas-primary) !important;
-    color:#fff !important;
-    font-weight:600;
-    border-bottom:none;
+    color: #fff !important;
+    font-weight: 600;
+    border-bottom: none;
 }
-
 
 /* ==========================================================
    MODAL HEADER
    ========================================================== */
 
-.modal-header.scas-header{
+.modal-header.scas-header {
     background: var(--scas-primary);
-    color:#fff;
-    border-bottom:none;
+    color: #fff;
+    border-bottom: none;
 }
 
-.modal-header.scas-header .btn-close{
+.modal-header.scas-header .btn-close {
     filter: invert(1);
 }
-
 
 /* ==========================================================
    TABLAS
    ========================================================== */
 
-.table thead.scas-header th{
+.table thead.scas-header th {
     background: var(--scas-primary);
-    color:#fff;
+    color: #fff;
     border-color: var(--scas-primary-dark);
-    vertical-align:middle;
+    vertical-align: middle;
 }
-
 
 /* ==========================================================
    TÍTULOS DE SECCIÓN
    ========================================================== */
 
-.section-header{
+.section-header {
     background: var(--scas-primary);
-    color:#fff;
-    padding:.75rem 1rem;
-    border-radius:.4rem .4rem 0 0;
-    font-weight:600;
+    color: #fff;
+    padding: 0.75rem 1rem;
+    border-radius: 0.4rem 0.4rem 0 0;
+    font-weight: 600;
 }

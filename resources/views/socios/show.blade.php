@@ -2,12 +2,12 @@
     <x-slot name="header">Información del Socio</x-slot>
     @fragment('informacion-socio')
     <div class="card shadow-sm mb-4">
-        <div class="card-header scas-header-light">
+        <div class="scas-header-light">
             <i class="fas fa-eye me-2"></i>
             Información del Socio
         </div>
         <div class="card-body">
-            <div class="row">         
+            <div class="row">
                 <div class="col-md-3 text-center">
                     @if($socio->foto)
                         <img src="{{ asset('storage/socios/'.$socio->foto) }}"
