@@ -26,9 +26,11 @@
                     @include('layouts.topbar')
                     <main class="p-4">
                         @if (isset($header))
-                            <h3 class="mb-4">
-                                {{ $header }}
-                            </h3>
+                            <div class="scas-page-header mb-4">
+                                <h3 class="mb-0">
+                                    {{ $header }}
+                                </h3>
+                            </div>
                         @endif
                         {{ $slot }}
                     </main>

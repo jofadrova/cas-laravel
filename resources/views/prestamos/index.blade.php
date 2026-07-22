@@ -218,7 +218,6 @@
                                                 data-confirm-button="Habilitar edición">
                                                 @csrf
                                                 @method('PATCH')
-
                                                 <button type="submit" class="dropdown-item {{ $prestamoCerrado ? 'disabled' : '' }}"
                                                     @disabled($prestamoCerrado)>
                                                     <i class="bi bi-unlock-fill me-2 text-success"></i>
@@ -339,46 +338,30 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 document.addEventListener('click', async function (e) {
-
     const boton = e.target.closest('.btn-detalle');
-
     if (!boton) return;
-
     e.preventDefault();
-
     const id = boton.dataset.id;
-
     try {
-
         const response = await fetch(boton.href, {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
             }
         });
-
         if (!response.ok)
             throw new Error();
-
         const html = await response.text();
-
 // Aquí va
 const contenedor = document.getElementById('contenedorDetallePrestamo');
-
 contenedor.innerHTML = '';
 contenedor.innerHTML = html;
-
 // Ahora el modal ya existe en el DOM
 const modal = new bootstrap.Modal(
     document.getElementById('modalDetallePrestamo')
 );
-
 modal.show();
-
     } catch (error) {
-
         console.error(error);
-
     }
-
 });
 </script>

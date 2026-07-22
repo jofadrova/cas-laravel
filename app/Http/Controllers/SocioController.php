@@ -400,12 +400,16 @@ class SocioController extends Controller
             ])
             ->values();
 
-        return view('socios.show', compact(
+        $vista = view('socios.show', compact(
             'socio',
             'prestamosPropios',
             'prestamosComoGarante',
             'resumenPorTipo'
         ));
+
+        return request()->ajax()
+            ? $vista->fragment('informacion-socio')
+            : $vista;
     }
 
     /**

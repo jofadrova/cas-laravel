@@ -1,4 +1,4 @@
-<div id="sidebarMenu" class="sidebar-menu bg-success text-white h-100 p-3">
+<div id="sidebarMenu" class="sidebar-menu scas-page-header text-white h-100 p-3">
     <div class="sidebar-header">
         <img src="{{ asset('images/cas_sidebar.png') }}" alt="CAS" class="sidebar-logo d-block mx-auto mb-3">
         <button type="button" id="sidebarToggle" class="sidebar-toggle btn btn-light btn-sm" aria-label="Contraer menú lateral" aria-controls="sidebarMenu" aria-expanded="true" title="Contraer menú">

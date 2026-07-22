@@ -57,8 +57,8 @@
                         {{ request('estado') == 'SU' ? 'selected' : '' }}>
                         Suspendidos
                     </option>
-                </select>            </div>
-
+                </select>
+            </div>
             <div class="col-md-2">
                 <label class="form-label">Registros</label>
                 <select name="per_page" class="form-select">
@@ -99,9 +99,7 @@
                                     : 'asc'
                             ])) }}"
                             class="text-dark text-decoration-none fw-bold">
-
                                 Papeleta
-
                                 @if($currentSort == 'papeleta')
                                     <i class="fas fa-sort-{{ $currentDirection == 'asc' ? 'up' : 'down' }} ms-1"></i>
                                 @else
@@ -129,8 +127,7 @@
                                 'sort' => 'paterno',
                                 'direction' => $currentSort == 'paterno' && $currentDirection == 'asc'
                                     ? 'desc'
-                                    : 'asc'
-                            ])) }}"
+                                    : 'asc' ])) }}"
                             class="text-dark text-decoration-none fw-bold">
                                 Socio
                                 @if($currentSort == 'paterno')
@@ -145,8 +142,7 @@
                                 'sort' => 'nro_doc',
                                 'direction' => $currentSort == 'nro_doc' && $currentDirection == 'asc'
                                     ? 'desc'
-                                    : 'asc'
-                            ])) }}"
+                                    : 'asc' ])) }}"
                             class="text-dark text-decoration-none fw-bold">
                                 CI
                                 @if($currentSort == 'nro_doc')
@@ -161,8 +157,7 @@
                                 'sort' => 'estado',
                                 'direction' => $currentSort == 'estado' && $currentDirection == 'asc'
                                     ? 'desc'
-                                    : 'asc'
-                            ])) }}"
+                                    : 'asc' ])) }}"
                             class="text-dark text-decoration-none fw-bold">
                                 Estado
                                 @if($currentSort == 'estado')
@@ -218,7 +213,7 @@
                                         </a>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item"
+                                        <a class="dropdown-item btnInformacionSocio"
                                         href="{{ route('socios.show', $socio->id) }}">
                                             <i class="fas fa-eye me-2 text-info"></i>
                                             Información del Socio
@@ -270,6 +265,23 @@
             </table>
             <div class="mt-3">
                 {{ $socios->links() }}
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modalInformacionSocio" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header scas-header text-white py-2">
+                    <h5 class="modal-title">
+                        <i class="fas fa-eye me-2"></i>Información del Socio
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body p-3" id="contenidoInformacionSocio">
+                    <div class="text-center py-5 text-muted">
+                        Seleccione un socio para consultar su información.
+                    </div>
+                </div>
             </div>
         </div>
     </div>
