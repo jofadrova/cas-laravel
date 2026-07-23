@@ -45,6 +45,7 @@
         }
         .section-title.pending { background: #b7791f; }
         .section-title.amortization { background: #087990; }
+        .section-title.reprogramming { background: #0d6efd; }
         .summary td {
             width: 25%;
             padding: 4px 6px;
@@ -312,6 +313,53 @@
     </table>
     @else
         <div class="empty-block">No existen cuotas pendientes.</div>
+    @endif
+
+    @if($reprogramaciones->isNotEmpty())
+        <div class="section-title reprogramming">
+            REPROGRAMACIONES DEL PRÉSTAMO ({{ $reprogramaciones->count() }})
+        </div>
+        <table class="detail-table">
+            <thead>
+                <tr>
+                    <th width="8%">Fecha</th>
+                    <th width="8%">Pagadas</th>
+                    <th width="11%">Pendientes</th>
+                    <th width="10%">Plazo total</th>
+                    <th width="12%">Saldo {{ $monedaPrestamo }}</th>
+                    <th width="11%">Cuota anterior</th>
+                    <th width="11%">Cuota nueva</th>
+                    <th width="29%">Autorización / Observaciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($reprogramaciones as $reprogramacion)
+                    <tr>
+                        <td class="center">{{ $reprogramacion->fecha->format('d/m/Y') }}</td>
+                        <td class="center">{{ $reprogramacion->cuotas_pagadas }}</td>
+                        <td class="center">
+                            {{ $reprogramacion->cuotas_pendientes_anterior }}
+                            a
+                            {{ $reprogramacion->cuotas_pendientes_nuevo }}
+                        </td>
+                        <td class="center">
+                            {{ $reprogramacion->periodo_anterior }}
+                            a
+                            {{ $reprogramacion->periodo_nuevo }}
+                        </td>
+                        <td class="right">{{ number_format($reprogramacion->saldo_capital, 2) }}</td>
+                        <td class="right">{{ number_format($reprogramacion->cuota_anterior, 2) }}</td>
+                        <td class="right">{{ number_format($reprogramacion->cuota_nueva, 2) }}</td>
+                        <td>
+                            Aut.: {{ $reprogramacion->autorizacion }}
+                            @if($reprogramacion->observaciones)
+                                / Obs.: {{ $reprogramacion->observaciones }}
+                            @endif
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
     @endif
 
     @if($amortizaciones->isNotEmpty())

@@ -266,6 +266,66 @@
                         </div>
                     </div>
 
+                    @if($reprogramaciones->isNotEmpty())
+                        <div class="col-12">
+                            <div class="card border-primary">
+                                <div class="card-header bg-primary text-white fw-semibold">
+                                    <i class="bi bi-calendar2-range me-2"></i>
+                                    Reprogramaciones del préstamo ({{ $reprogramaciones->count() }})
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-striped table-bordered align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Fecha</th>
+                                                <th class="text-center">Cuotas pagadas</th>
+                                                <th class="text-center">Pendientes</th>
+                                                <th class="text-center">Plazo total</th>
+                                                <th class="text-end">Saldo capital</th>
+                                                <th class="text-end">Cuota anterior</th>
+                                                <th class="text-end">Cuota nueva</th>
+                                                <th>Autorización / Observaciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($reprogramaciones as $reprogramacion)
+                                                <tr>
+                                                    <td>{{ $reprogramacion->fecha->format('d/m/Y') }}</td>
+                                                    <td class="text-center">{{ $reprogramacion->cuotas_pagadas }}</td>
+                                                    <td class="text-center">
+                                                        {{ $reprogramacion->cuotas_pendientes_anterior }}
+                                                        →
+                                                        {{ $reprogramacion->cuotas_pendientes_nuevo }}
+                                                    </td>
+                                                    <td class="text-center">
+                                                        {{ $reprogramacion->periodo_anterior }}
+                                                        →
+                                                        {{ $reprogramacion->periodo_nuevo }}
+                                                    </td>
+                                                    <td class="text-end">
+                                                        {{ $monedaPrestamo }} {{ number_format($reprogramacion->saldo_capital, 2) }}
+                                                    </td>
+                                                    <td class="text-end">
+                                                        {{ $monedaPrestamo }} {{ number_format($reprogramacion->cuota_anterior, 2) }}
+                                                    </td>
+                                                    <td class="text-end">
+                                                        {{ $monedaPrestamo }} {{ number_format($reprogramacion->cuota_nueva, 2) }}
+                                                    </td>
+                                                    <td>
+                                                        <strong>Aut.:</strong> {{ $reprogramacion->autorizacion }}
+                                                        @if($reprogramacion->observaciones)
+                                                            <br><strong>Obs.:</strong> {{ $reprogramacion->observaciones }}
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
                     @if($amortizaciones->isNotEmpty())
                         <div class="col-12">
                             <div class="card border-info">

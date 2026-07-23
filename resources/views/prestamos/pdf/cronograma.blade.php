@@ -344,6 +344,53 @@ table{
         </td>
     </tr>
 </table>
+@if($reprogramaciones->isNotEmpty())
+    @php($monedaPrestamo = $prestamo->tipo?->tipo_moneda === 'SU' ? '$us' : 'Bs')
+    <div class="band" style="font-size:14px;">
+        HISTORIAL DE REPROGRAMACIONES
+    </div>
+    <table class="crono" style="margin-bottom:10px;">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Pagadas</th>
+                <th>Pendientes</th>
+                <th>Plazo total</th>
+                <th>Saldo {{ $monedaPrestamo }}</th>
+                <th>Cuota anterior</th>
+                <th>Cuota nueva</th>
+                <th>Autorización / Observaciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($reprogramaciones as $reprogramacion)
+                <tr>
+                    <td class="c">{{ $reprogramacion->fecha->format('d/m/Y') }}</td>
+                    <td class="c">{{ $reprogramacion->cuotas_pagadas }}</td>
+                    <td class="c">
+                        {{ $reprogramacion->cuotas_pendientes_anterior }}
+                        a
+                        {{ $reprogramacion->cuotas_pendientes_nuevo }}
+                    </td>
+                    <td class="c">
+                        {{ $reprogramacion->periodo_anterior }}
+                        a
+                        {{ $reprogramacion->periodo_nuevo }}
+                    </td>
+                    <td class="r">{{ number_format($reprogramacion->saldo_capital, 2) }}</td>
+                    <td class="r">{{ number_format($reprogramacion->cuota_anterior, 2) }}</td>
+                    <td class="r">{{ number_format($reprogramacion->cuota_nueva, 2) }}</td>
+                    <td>
+                        Aut.: {{ $reprogramacion->autorizacion }}
+                        @if($reprogramacion->observaciones)
+                            / Obs.: {{ $reprogramacion->observaciones }}
+                        @endif
+                    </td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+@endif
 <div class="band">PLAN DE PAGOS</div>
 <table class="crono">
     <thead>
@@ -354,8 +401,8 @@ table{
             <th>Capital</th>
             <th>Interés</th>
             <th>Min.Def.</th>
-            <th>ITF</th>
-            <th>Papel</th>
+            <th>Contingencias</th>
+            <th>Interes dias</th>
             <th>Saldo</th>
         </tr>
     </thead>

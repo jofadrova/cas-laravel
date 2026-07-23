@@ -124,6 +124,15 @@ class Prestamo extends Model
         );
     }
 
+    public function reprogramaciones()
+    {
+        return $this->hasMany(
+            ReprogramacionPrestamo::class,
+            'id_solicitud',
+            'id_solicitud'
+        );
+    }
+
     public function prestamoOrigen()
     {
         return $this->belongsTo(

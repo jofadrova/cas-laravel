@@ -15,6 +15,7 @@ use App\Services\ExchangeRateService;
 use App\Http\Controllers\PagoController;
 use App\Http\Controllers\AmortizacionCapitalController;
 use App\Http\Controllers\RefinanciamientoController;
+use App\Http\Controllers\ReprogramacionPrestamoController;
 use App\Http\Controllers\PrestamoReporteController;
 
 
@@ -168,6 +169,10 @@ Route::prefix('prestamos')->name('prestamos.')->group(function () {
             ->name('refinanciamiento');
         Route::post('{prestamo}/refinanciamiento', [RefinanciamientoController::class, 'store'])
             ->name('refinanciamiento.store');
+        Route::get('{prestamo}/reprogramacion', [ReprogramacionPrestamoController::class, 'create'])
+            ->name('reprogramacion');
+        Route::post('{prestamo}/reprogramacion', [ReprogramacionPrestamoController::class, 'store'])
+            ->name('reprogramacion.store');
 
 
     });

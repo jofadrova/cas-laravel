@@ -34,6 +34,7 @@ class PrestamoController extends Controller
             Prestamo::with(['socio.institucion', 'tipo'])
                 ->withCount([
                     'cuotas as cuotas_pagadas_count' => fn ($query) => $query->where('estado', 'AC'),
+                    'cuotas as cuotas_pendientes_count' => fn ($query) => $query->where('estado', 'PE'),
                 ])
         )
        ->customSearch(function ($query, $buscar) {
@@ -154,7 +155,12 @@ class PrestamoController extends Controller
             'tipo',
             'garante1',
             'garante2',
+            'reprogramaciones' => fn ($query) => $query
+                ->where('estado', 'AC')
+                ->orderBy('fecha')
+                ->orderBy('id'),
         ]);
+        $reprogramaciones = $prestamo->reprogramaciones;
 
         $cuotas = \App\Models\CuotaSolicitud::where(
                 'id_solicitud',
@@ -178,7 +184,7 @@ class PrestamoController extends Controller
 
         $pdf = Pdf::loadView(
             'prestamos.pdf.cronograma',
-            compact('prestamo', 'cuotas','qr')
+            compact('prestamo', 'cuotas', 'reprogramaciones', 'qr')
         );
 
         $pdf->setPaper('letter');
@@ -404,6 +410,10 @@ class PrestamoController extends Controller
                 ->where('estado', 'AC')
                 ->orderBy('fecha')
                 ->orderBy('id'),
+            'reprogramaciones' => fn ($query) => $query
+                ->where('estado', 'AC')
+                ->orderBy('fecha')
+                ->orderBy('id'),
         ]);
 
         return [
@@ -415,6 +425,7 @@ class PrestamoController extends Controller
                 ->where('estado', 'PE')
                 ->values(),
             'amortizaciones' => $prestamo->amortizacionesCapital,
+            'reprogramaciones' => $prestamo->reprogramaciones,
             'esPrestamoDolares' => $prestamo->tipo?->tipo_moneda === 'SU',
         ];
     }

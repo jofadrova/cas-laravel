@@ -24,6 +24,7 @@ import { initDashboard } from "./dashboard";
 import { iniciarPagos } from './pagos/index';
 import { iniciarAmortizacionCapital } from './prestamos/amortizacion-capital';
 import { iniciarRefinanciamiento } from './prestamos/refinanciamiento';
+import { iniciarReprogramacionPrestamo } from './prestamos/reprogramacion';
 import { iniciarSidebar } from './sidebar';
 import { iniciarDetallePrestamo } from './prestamos/detalleModal';
 
@@ -36,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
     iniciarPagos();
     iniciarAmortizacionCapital();
     iniciarRefinanciamiento();
+    iniciarReprogramacionPrestamo();
     iniciarSidebar();
     iniciarDetallePrestamo();
 });

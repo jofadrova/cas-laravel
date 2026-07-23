@@ -122,6 +122,10 @@
                             $tieneCuotasPagadas = (int) $prestamo->cuotas_pagadas_count > 0;
                             $puedeRefinanciar = $prestamo->estado === 'AC'
                                 && (int) optional($prestamo->tipo)->id_tasa === 1;
+                            $puedeReprogramar = $prestamo->estado === 'AC'
+                                && (float) $prestamo->saldo_actual > 0
+                                && (int) $prestamo->cuotas_pendientes_count > 0
+                                && (int) $prestamo->periodo < (int) optional($prestamo->tipo)->plazo_max;
                         @endphp
                         <tr>
                             <td>{{ $prestamo->nro_solicitud }}</td>
@@ -288,6 +292,20 @@
                                                 <span class="dropdown-item disabled text-muted">
                                                     <i class="bi bi-arrow-repeat me-2 text-warning"></i>
                                                     Refinanciar
+                                                </span>
+                                            @endif
+                                        </li>
+                                        <li>
+                                            @if($puedeReprogramar)
+                                                <a class="dropdown-item"
+                                                    href="{{ route('prestamos.reprogramacion', $prestamo) }}">
+                                                    <i class="bi bi-calendar2-range me-2 text-primary"></i>
+                                                    Reprogramar préstamo
+                                                </a>
+                                            @else
+                                                <span class="dropdown-item disabled text-muted">
+                                                    <i class="bi bi-calendar2-range me-2 text-secondary"></i>
+                                                    Reprogramar préstamo
                                                 </span>
                                             @endif
                                         </li>
