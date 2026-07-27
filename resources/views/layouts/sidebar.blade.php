@@ -121,7 +121,7 @@
         </li>
         <li class="nav-item">
             <a href="{{ route('prestamos.proyeccion') }}"
-            class="nav-link text-white">
+            class="nav-link text-white {{ request()->routeIs('prestamos.proyeccion*') ? 'active-menu' : '' }}">
                 <i class="bi bi-graph-up-arrow me-2"></i>
                 Proyección de Préstamos
             </a>

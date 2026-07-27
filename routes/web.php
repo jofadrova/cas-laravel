@@ -17,6 +17,7 @@ use App\Http\Controllers\AmortizacionCapitalController;
 use App\Http\Controllers\RefinanciamientoController;
 use App\Http\Controllers\ReprogramacionPrestamoController;
 use App\Http\Controllers\PrestamoReporteController;
+use App\Http\Controllers\ProyeccionPrestamoController;
 
 
 Route::get('/', function () {
@@ -118,8 +119,12 @@ Route::prefix('prestamos')->name('prestamos.')->group(function () {
         Route::post('/simular', [PrestamoController::class, 'simular'])
             ->name('simular');
 
-        Route::get('/proyeccion', [PrestamoController::class, 'proyeccion'])
+        Route::get('/proyeccion', [ProyeccionPrestamoController::class, 'index'])
             ->name('proyeccion');
+        Route::post('/proyeccion/calcular', [ProyeccionPrestamoController::class, 'calcular'])
+            ->name('proyeccion.calcular');
+        Route::post('/proyeccion/reporte', [ProyeccionPrestamoController::class, 'reporte'])
+            ->name('proyeccion.reporte');
 
         Route::get('/depositos', [PrestamoController::class, 'depositos'])
             ->name('depositos');
@@ -161,19 +166,12 @@ Route::prefix('prestamos')->name('prestamos.')->group(function () {
         Route::post('{prestamo}/pagos/total', [PagoController::class, 'storeTotal'])->name('pagos.total.store');
         Route::get('{prestamo}/pagos/reporte', [PagoController::class, 'reporte'])->name('pagos.reporte');
         Route::get('{prestamo}/pagos/reporte/pdf', [PagoController::class, 'reportePdf'])->name('pagos.reporte.pdf');
-        Route::get('{prestamo}/amortizacion-capital', [AmortizacionCapitalController::class, 'create'])
-            ->name('amortizacion-capital');
-        Route::post('{prestamo}/amortizacion-capital', [AmortizacionCapitalController::class, 'store'])
-            ->name('amortizacion-capital.store');
-        Route::get('{prestamo}/refinanciamiento', [RefinanciamientoController::class, 'create'])
-            ->name('refinanciamiento');
-        Route::post('{prestamo}/refinanciamiento', [RefinanciamientoController::class, 'store'])
-            ->name('refinanciamiento.store');
-        Route::get('{prestamo}/reprogramacion', [ReprogramacionPrestamoController::class, 'create'])
-            ->name('reprogramacion');
-        Route::post('{prestamo}/reprogramacion', [ReprogramacionPrestamoController::class, 'store'])
-            ->name('reprogramacion.store');
-
+        Route::get('{prestamo}/amortizacion-capital', [AmortizacionCapitalController::class, 'create'])->name('amortizacion-capital');
+        Route::post('{prestamo}/amortizacion-capital', [AmortizacionCapitalController::class, 'store'])->name('amortizacion-capital.store');
+        Route::get('{prestamo}/refinanciamiento', [RefinanciamientoController::class, 'create'])->name('refinanciamiento');
+        Route::post('{prestamo}/refinanciamiento', [RefinanciamientoController::class, 'store'])->name('refinanciamiento.store');
+        Route::get('{prestamo}/reprogramacion', [ReprogramacionPrestamoController::class, 'create'])->name('reprogramacion');
+        Route::post('{prestamo}/reprogramacion', [ReprogramacionPrestamoController::class, 'store'])->name('reprogramacion.store');
 
     });
 });

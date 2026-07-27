@@ -27,6 +27,7 @@ import { iniciarRefinanciamiento } from './prestamos/refinanciamiento';
 import { iniciarReprogramacionPrestamo } from './prestamos/reprogramacion';
 import { iniciarSidebar } from './sidebar';
 import { iniciarDetallePrestamo } from './prestamos/detalleModal';
+import { iniciarProyeccionPrestamo } from './prestamos/proyeccion';
 
 import PrestamoGarantes from './prestamos/PrestamoGarantes';
 if (document.getElementById('cardNuevosGarantes')) {
@@ -40,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     iniciarReprogramacionPrestamo();
     iniciarSidebar();
     iniciarDetallePrestamo();
+    iniciarProyeccionPrestamo();
 });
 
 window.initDashboard = initDashboard;

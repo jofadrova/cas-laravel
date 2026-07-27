@@ -364,29 +364,29 @@ table{
         </thead>
         <tbody>
             @foreach($reprogramaciones as $reprogramacion)
-                <tr>
-                    <td class="c">{{ $reprogramacion->fecha->format('d/m/Y') }}</td>
-                    <td class="c">{{ $reprogramacion->cuotas_pagadas }}</td>
-                    <td class="c">
-                        {{ $reprogramacion->cuotas_pendientes_anterior }}
-                        a
-                        {{ $reprogramacion->cuotas_pendientes_nuevo }}
-                    </td>
-                    <td class="c">
-                        {{ $reprogramacion->periodo_anterior }}
-                        a
-                        {{ $reprogramacion->periodo_nuevo }}
-                    </td>
-                    <td class="r">{{ number_format($reprogramacion->saldo_capital, 2) }}</td>
-                    <td class="r">{{ number_format($reprogramacion->cuota_anterior, 2) }}</td>
-                    <td class="r">{{ number_format($reprogramacion->cuota_nueva, 2) }}</td>
-                    <td>
-                        Aut.: {{ $reprogramacion->autorizacion }}
-                        @if($reprogramacion->observaciones)
-                            / Obs.: {{ $reprogramacion->observaciones }}
-                        @endif
-                    </td>
-                </tr>
+            <tr>
+                <td class="c">{{ $reprogramacion->fecha->format('d/m/Y') }}</td>
+                <td class="c">{{ $reprogramacion->cuotas_pagadas }}</td>
+                <td class="c">
+                    {{ $reprogramacion->cuotas_pendientes_anterior }}
+                    a
+                    {{ $reprogramacion->cuotas_pendientes_nuevo }}
+                </td>
+                <td class="c">
+                    {{ $reprogramacion->periodo_anterior }}
+                    a
+                    {{ $reprogramacion->periodo_nuevo }}
+                </td>
+                <td class="r">{{ number_format($reprogramacion->saldo_capital, 2) }}</td>
+                <td class="r">{{ number_format($reprogramacion->cuota_anterior, 2) }}</td>
+                <td class="r">{{ number_format($reprogramacion->cuota_nueva, 2) }}</td>
+                <td>
+                    Aut.: {{ $reprogramacion->autorizacion }}
+                    @if($reprogramacion->observaciones)
+                        / Obs.: {{ $reprogramacion->observaciones }}
+                    @endif
+                </td>
+            </tr>
             @endforeach
         </tbody>
     </table>
