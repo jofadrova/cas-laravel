@@ -134,7 +134,24 @@
                 Registro de Depósitos
             </a>
         </li>
+          <li class="nav-item mt-3">
+            <h6 class="text-uppercase text-light mt-4 mb-3">
+                Procesamiento mensual
+            </h6>
+        </li>
 
+        <li class="nav-item">
+            <a href="{{ Route::has('procesamiento-mensual.lotes.index')
+                        ? route('procesamiento-mensual.lotes.index')
+                        : '#' }}"
+            class="nav-link text-white
+            {{ request()->routeIs('procesamiento-mensual.lotes.*')
+                    ? 'active-menu'
+                    : '' }}">
+                <i class="bi bi-calendar2-check me-2"></i>
+                Lotes mensuales
+            </a>
+        </li>
     </ul>
 
 </div>

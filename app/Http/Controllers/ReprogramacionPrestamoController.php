@@ -39,17 +39,13 @@ class ReprogramacionPrestamoController extends Controller
         ));
     }
 
-    public function store(
-        StoreReprogramacionPrestamoRequest $request,
-        Prestamo $prestamo,
-        ReprogramacionPrestamoService $service
-    ) {
+    public function store(StoreReprogramacionPrestamoRequest $request, Prestamo $prestamo, ReprogramacionPrestamoService $service) 
+    {
         $reprogramacion = $service->aplicar($prestamo, $request->validated());
 
         return redirect()
             ->route('prestamos.index')
-            ->with(
-                'success',
+            ->with('success',
                 "El préstamo fue reprogramado a {$reprogramacion->cuotas_pendientes_nuevo} cuotas pendientes."
             );
     }

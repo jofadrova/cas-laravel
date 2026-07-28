@@ -18,6 +18,7 @@ use App\Http\Controllers\RefinanciamientoController;
 use App\Http\Controllers\ReprogramacionPrestamoController;
 use App\Http\Controllers\PrestamoReporteController;
 use App\Http\Controllers\ProyeccionPrestamoController;
+use App\Http\Controllers\LoteMensualController;
 
 
 Route::get('/', function () {
@@ -174,6 +175,18 @@ Route::prefix('prestamos')->name('prestamos.')->group(function () {
         Route::post('{prestamo}/reprogramacion', [ReprogramacionPrestamoController::class, 'store'])->name('reprogramacion.store');
 
     });
+ /*
+    |--------------------------------------------------------------------------
+    | PROCESAMIENTO MENSUAL
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('procesamiento-mensual')
+        ->name('procesamiento-mensual.')
+        ->group(function () {
+            Route::resource('lotes', LoteMensualController::class)
+                ->parameters(['lotes' => 'lote'])
+                ->except(['destroy']);
+        });
 });
 
 require __DIR__.'/auth.php';
