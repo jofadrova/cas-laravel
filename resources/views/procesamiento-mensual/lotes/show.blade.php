@@ -1,8 +1,5 @@
 <x-app-layout>
-    <x-slot name="header">
-        Lote {{ $lote->periodo }}
-    </x-slot>
-
+    <x-slot name="header">Lote {{ $lote->periodo }}</x-slot>
     <div class="container-fluid py-4">
         @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -26,10 +23,7 @@
                 <div class="text-muted">Código de periodo: {{ $lote->codigo_periodo }}</div>
             </div>
             <div class="d-flex gap-2">
-                <a
-                    href="{{ route('procesamiento-mensual.lotes.index') }}"
-                    class="btn btn-outline-secondary"
-                >
+                <a href="{{ route('procesamiento-mensual.lotes.index') }} "class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left me-1"></i>
                     Volver
                 </a>
@@ -66,8 +60,8 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="text-muted small">Estado</div>
-                                <span class="badge {{ $lote->clase_estado }}">
-                                    {{ $lote->estado }}
+                                <span class="badge rounded-pill {{ $lote->clase_estado }}">
+                                    {{ $lote->estado ?: 'SIN ESTADO' }}
                                 </span>
                             </div>
                             <div class="col-md-4">
@@ -112,12 +106,15 @@
                             <i class="bi bi-info-circle-fill me-2"></i>
                             El lote está listo para incorporar sus archivos mensuales.
                         </div>
-                        <button type="button" class="btn btn-success w-100" disabled>
+                        <a
+                            href="{{ route('procesamiento-mensual.lotes.archivos.index', ['lote' => $lote]) }}"
+                            class="btn btn-success w-100"
+                        >
                             <i class="bi bi-file-earmark-spreadsheet me-1"></i>
                             Gestionar archivos
-                        </button>
+                        </a>
                         <small class="text-muted d-block mt-2">
-                            La carga y clasificación de archivos corresponde a la siguiente etapa.
+                            Cargue y consolide los archivos Excel remitidos para este periodo.
                         </small>
                     </div>
                 </div>

@@ -19,6 +19,8 @@ use App\Http\Controllers\ReprogramacionPrestamoController;
 use App\Http\Controllers\PrestamoReporteController;
 use App\Http\Controllers\ProyeccionPrestamoController;
 use App\Http\Controllers\LoteMensualController;
+use App\Http\Controllers\LoteArchivoController;
+use App\Http\Controllers\PrestamoArchivoController;
 
 
 Route::get('/', function () {
@@ -180,13 +182,21 @@ Route::prefix('prestamos')->name('prestamos.')->group(function () {
     | PROCESAMIENTO MENSUAL
     |--------------------------------------------------------------------------
     */
-    Route::prefix('procesamiento-mensual')
-        ->name('procesamiento-mensual.')
-        ->group(function () {
-            Route::resource('lotes', LoteMensualController::class)
-                ->parameters(['lotes' => 'lote'])
-                ->except(['destroy']);
-        });
+        Route::prefix('procesamiento-mensual')->name('procesamiento-mensual.')->group(function () {
+
+                Route::get(
+                    'lotes/{lote}/archivos',
+                    [LoteArchivoController::class, 'index']
+                )->name('lotes.archivos.index');
+
+                Route::post(
+                    'lotes/{lote}/archivos/prestamos',
+                    [PrestamoArchivoController::class, 'store']
+                )->name('lotes.archivos.prestamos.store');
+
+                Route::delete('lotes/{lote}/archivos/prestamos',[PrestamoArchivoController::class, 'limpiar'])->name('lotes.archivos.prestamos.limpiar');
+                Route::resource('lotes', LoteMensualController::class)->parameters(['lotes' => 'lote'])->except(['destroy']);
+            });
 });
 
 require __DIR__.'/auth.php';
