@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class LotePrestamoRegistro extends Model
 {
@@ -53,6 +54,24 @@ class LotePrestamoRegistro extends Model
         ];
     }
 
+    public function getCodigoPersonalNormalizadoAttribute(): ?string
+    {
+        $valor = trim((string) $this->codigo_personal);
+
+        if ($valor === '') {
+            return null;
+        }
+
+        if (preg_match('/^\d+(?:\.0+)?$/', $valor)) {
+            $valor = preg_replace('/\.0+$/', '', $valor);
+            $valor = ltrim((string) $valor, '0');
+
+            return $valor === '' ? '0' : $valor;
+        }
+
+        return $valor;
+    }
+
     public function lote(): BelongsTo
     {
         return $this->belongsTo(LoteMensual::class, 'lote_mensual_id');
@@ -61,5 +80,13 @@ class LotePrestamoRegistro extends Model
     public function archivo(): BelongsTo
     {
         return $this->belongsTo(LoteArchivo::class, 'lote_archivo_id');
+    }
+
+    public function conciliacion(): HasOne
+    {
+        return $this->hasOne(
+            LotePrestamoConciliacion::class,
+            'lote_prestamo_registro_id'
+        );
     }
 }

@@ -286,7 +286,7 @@
                                 <td>{{ $registro->codigo_concepto }}</td>
                                 <td>{{ $registro->codigo_acreedor }}</td>
                                 <td>{{ $registro->cta_bancaria_acreedor }}</td>
-                                <td>{{ $registro->codigo_personal }}</td>
+                                <td>{{ $registro->codigo_personal_normalizado }}</td>
                                 <td>{{ $registro->eit_item }}</td>
                                 <td>{{ $registro->carnet }}</td>
                                 <td>{{ $registro->grado }}</td>
@@ -334,10 +334,21 @@
                     </button>
                 @endif
 
-                <button type="button" class="btn btn-success">
-                    Continuar
-                    <i class="bi bi-arrow-right ms-1"></i>
-                </button>
+                <form
+                    id="formCompararPrestamos"
+                    method="POST"
+                    action="{{ route('procesamiento-mensual.lotes.archivos.prestamos.conciliacion.comparar', $lote) }}"
+                >
+                    @csrf
+                    <button
+                        type="submit"
+                        id="btnCompararPrestamos"
+                        class="btn btn-success"
+                    >
+                        Continuar
+                        <i class="bi bi-arrow-right ms-1"></i>
+                    </button>
+                </form>
             </div>
         @endif
     </div>
@@ -426,27 +437,65 @@
         </div>
     </div>
 
+    <div
+        id="overlayComparando"
+        class="d-none position-fixed top-0 start-0 w-100 h-100 align-items-center justify-content-center"
+        style="z-index: 2000; background: rgba(15, 23, 42, .68);"
+        role="status"
+        aria-live="polite"
+        aria-label="Comparando préstamos"
+    >
+        <div class="bg-white rounded-4 shadow-lg px-5 py-4 text-center">
+            <div
+                class="spinner-border text-success mb-3"
+                style="width: 3rem; height: 3rem;"
+                aria-hidden="true"
+            ></div>
+            <h5 class="mb-1">Comparando préstamos...</h5>
+            <p class="text-muted mb-0">
+                Espere mientras se consultan y clasifican todos los registros.
+            </p>
+        </div>
+    </div>
+
     @push('scripts')
         <script>
             document.addEventListener('DOMContentLoaded', function () {
-                const formulario = document.getElementById('formCargaPrestamos');
-                const boton = document.getElementById('btnCargarPrestamos');
-                const overlay = document.getElementById('overlayConsolidando');
+                const formularioCarga = document.getElementById('formCargaPrestamos');
+                const botonCarga = document.getElementById('btnCargarPrestamos');
+                const overlayCarga = document.getElementById('overlayConsolidando');
+                const formularioComparacion = document.getElementById('formCompararPrestamos');
+                const botonComparacion = document.getElementById('btnCompararPrestamos');
+                const overlayComparacion = document.getElementById('overlayComparando');
 
-                if (!formulario || !boton || !overlay) {
-                    return;
+                if (formularioCarga && botonCarga && overlayCarga) {
+                    formularioCarga.addEventListener('submit', function () {
+                        botonCarga.disabled = true;
+                        overlayCarga.classList.remove('d-none');
+                        overlayCarga.classList.add('d-flex');
+                    });
                 }
 
-                formulario.addEventListener('submit', function () {
-                    boton.disabled = true;
-                    overlay.classList.remove('d-none');
-                    overlay.classList.add('d-flex');
-                });
+                if (formularioComparacion && botonComparacion && overlayComparacion) {
+                    formularioComparacion.addEventListener('submit', function () {
+                        botonComparacion.disabled = true;
+                        overlayComparacion.classList.remove('d-none');
+                        overlayComparacion.classList.add('d-flex');
+                    });
+                }
 
                 window.addEventListener('pageshow', function () {
-                    boton.disabled = false;
-                    overlay.classList.add('d-none');
-                    overlay.classList.remove('d-flex');
+                    if (botonCarga && overlayCarga) {
+                        botonCarga.disabled = false;
+                        overlayCarga.classList.add('d-none');
+                        overlayCarga.classList.remove('d-flex');
+                    }
+
+                    if (botonComparacion && overlayComparacion) {
+                        botonComparacion.disabled = false;
+                        overlayComparacion.classList.add('d-none');
+                        overlayComparacion.classList.remove('d-flex');
+                    }
                 });
             });
         </script>

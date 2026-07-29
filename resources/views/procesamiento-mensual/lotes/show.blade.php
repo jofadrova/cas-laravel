@@ -1,5 +1,8 @@
 <x-app-layout>
-    <x-slot name="header">Lote {{ $lote->periodo }}</x-slot>
+    <x-slot name="header">
+        Lote {{ $lote->periodo }}
+    </x-slot>
+
     <div class="container-fluid py-4">
         @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -23,7 +26,10 @@
                 <div class="text-muted">Código de periodo: {{ $lote->codigo_periodo }}</div>
             </div>
             <div class="d-flex gap-2">
-                <a href="{{ route('procesamiento-mensual.lotes.index') }} "class="btn btn-outline-secondary">
+                <a
+                    href="{{ route('procesamiento-mensual.lotes.index') }}"
+                    class="btn btn-outline-secondary"
+                >
                     <i class="bi bi-arrow-left me-1"></i>
                     Volver
                 </a>
@@ -68,6 +74,16 @@
                                 <div class="text-muted small">Fecha de recepción</div>
                                 <div class="fw-semibold">
                                     {{ $lote->fecha_recepcion?->format('d/m/Y') ?? 'Sin registrar' }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-muted small">Tipo de cambio</div>
+                                <div class="fw-semibold">
+                                    @if($lote->tipo_cambio)
+                                        $us 1 = Bs {{ number_format((float) $lote->tipo_cambio, 5, ',', '.') }}
+                                    @else
+                                        Sin registrar
+                                    @endif
                                 </div>
                             </div>
                             <div class="col-md-4">

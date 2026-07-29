@@ -48,6 +48,7 @@ class LoteMensual extends Model
     protected $fillable = [
         'mes',
         'gestion',
+        'tipo_cambio',
         'fecha_recepcion',
         'estado',
         'observaciones',
@@ -61,6 +62,7 @@ class LoteMensual extends Model
         return [
             'mes' => 'integer',
             'gestion' => 'integer',
+            'tipo_cambio' => 'decimal:5',
             'fecha_recepcion' => 'date',
             'fecha_cierre' => 'datetime',
         ];
@@ -96,6 +98,16 @@ class LoteMensual extends Model
         };
     }
 
+    public function creador(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'creado_por');
+    }
+
+    public function cerrador(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'cerrado_por');
+    }
+
     public function scopeDelPeriodo(
         Builder $query,
         int $mes,
@@ -123,15 +135,5 @@ class LoteMensual extends Model
             [self::ESTADO_CERRADO, self::ESTADO_ANULADO],
             true
         );
-    }
-
-    public function creador(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'creado_por');
-    }
-
-    public function cerrador(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'cerrado_por');
     }
 }

@@ -3,7 +3,7 @@
 @endphp
 
 <div class="row g-3">
-    <div class="col-md-4">
+    <div class="col-md-3">
         <label for="mes" class="form-label">
             Mes <span class="text-danger">*</span>
         </label>
@@ -28,7 +28,7 @@
         @enderror
     </div>
 
-    <div class="col-md-4">
+    <div class="col-md-3">
         <label for="gestion" class="form-label">
             Gestión <span class="text-danger">*</span>
         </label>
@@ -47,7 +47,7 @@
         @enderror
     </div>
 
-    <div class="col-md-4">
+    <div class="col-md-3">
         <label for="fecha_recepcion" class="form-label">
             Fecha de recepción
         </label>
@@ -66,6 +66,32 @@
         @error('fecha_recepcion')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
+    </div>
+
+    <div class="col-md-3">
+        <label for="tipo_cambio" class="form-label">
+            Tipo de cambio <span class="text-danger">*</span>
+        </label>
+        <div class="input-group">
+            <span class="input-group-text">$us 1 = Bs</span>
+            <input
+                type="number"
+                name="tipo_cambio"
+                id="tipo_cambio"
+                min="0.00001"
+                max="99999.99999"
+                step="0.00001"
+                value="{{ old('tipo_cambio', $lote->tipo_cambio ?? '') }}"
+                class="form-control @error('tipo_cambio') is-invalid @enderror"
+                required
+            >
+            @error('tipo_cambio')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+        <div class="form-text">
+            Se aplicará a todas las operaciones del lote.
+        </div>
     </div>
 
     <div class="col-12">

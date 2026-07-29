@@ -217,7 +217,9 @@ class PrestamoExcelImportService
                 'codigo_concepto' => $this->nuloSiVacio($valores[12]),
                 'codigo_acreedor' => $this->nuloSiVacio($valores[13]),
                 'cta_bancaria_acreedor' => $this->nuloSiVacio($valores[14]),
-                'codigo_personal' => $this->nuloSiVacio($valores[15]),
+                'codigo_personal' => $this->normalizarCodigoPersonal(
+                    $valores[15]
+                ),
                 'eit_item' => $this->nuloSiVacio($valores[16]),
                 'carnet' => $this->nuloSiVacio($valores[17]),
                 'grado' => $this->nuloSiVacio($valores[18]),
@@ -311,6 +313,24 @@ class PrestamoExcelImportService
         $valor = trim($valor);
 
         return $valor === '' ? null : $valor;
+    }
+
+    private function normalizarCodigoPersonal(string $valor): ?string
+    {
+        $valor = trim($valor);
+
+        if ($valor === '') {
+            return null;
+        }
+
+        if (preg_match('/^\d+(?:\.0+)?$/', $valor)) {
+            $valor = preg_replace('/\.0+$/', '', $valor);
+            $valor = ltrim((string) $valor, '0');
+
+            return $valor === '' ? '0' : $valor;
+        }
+
+        return $valor;
     }
 
     private function letraColumna(int $numero): string
