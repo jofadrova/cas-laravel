@@ -2,12 +2,12 @@
 
 namespace App\Http\Requests;
 
+use App\Models\LoteArchivo;
 use App\Models\LoteMensual;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Validator;
 
-class StorePrestamoArchivoRequest extends FormRequest
+class StoreCertificadoAporteArchivoRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -24,7 +24,7 @@ class StorePrestamoArchivoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'archivos' => ['required', 'array', 'min:1', 'max:15'],
+            'archivos' => ['required', 'array', 'min:1', 'max:10'],
             'archivos.*' => [
                 'required',
                 'file',
@@ -45,18 +45,6 @@ class StorePrestamoArchivoRequest extends FormRequest
                     return;
                 }
 
-                if (DB::table('lote_prestamo_procesamientos')
-                    ->where('lote_mensual_id', $lote->id)
-                    ->exists()) {
-                    $validator->errors()->add(
-                        'archivos',
-                        'No se pueden cargar archivos de Préstamos porque '
-                        . 'el pago mensual ya fue consolidado.'
-                    );
-
-                    return;
-                }
-
                 if (in_array($lote->estado, [
                     LoteMensual::ESTADO_PROCESADO,
                     LoteMensual::ESTADO_CERRADO,
@@ -64,8 +52,36 @@ class StorePrestamoArchivoRequest extends FormRequest
                 ], true)) {
                     $validator->errors()->add(
                         'archivos',
-                        'No se pueden cargar archivos porque el lote se encuentra '
+                        'No se pueden cargar archivos de Certificados de Aportes '
+                        . 'porque el lote se encuentra '
                         . strtolower($lote->estado) . '.'
+                    );
+
+                    return;
+                }
+
+                $existentes = LoteArchivo::query()
+                    ->where('lote_mensual_id', $lote->id)
+                    ->where('tipo', LoteArchivo::TIPO_CERTIFICADOS)
+                    ->count();
+                $nuevos = count($this->file('archivos', []));
+                $total = $existentes + $nuevos;
+
+                if ($total < 3) {
+                    $validator->errors()->add(
+                        'archivos',
+                        'El lote debe contener entre 3 y 10 archivos de '
+                        . "Certificados de Aportes. "
+                        . "Con esta selección tendría {$total}."
+                    );
+                }
+
+                if ($total > 10) {
+                    $validator->errors()->add(
+                        'archivos',
+                        'El lote admite como máximo 10 archivos de '
+                        . "Certificados de Aportes. "
+                        . "Actualmente tiene {$existentes}."
                     );
                 }
             },
@@ -75,22 +91,14 @@ class StorePrestamoArchivoRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'archivos.required' => 'Seleccione al menos un archivo Excel.',
+            'archivos.required' => 'Seleccione los archivos Excel de Certificados de Aportes.',
             'archivos.array' => 'La selección de archivos no es válida.',
             'archivos.min' => 'Seleccione al menos un archivo Excel.',
-            'archivos.max' => 'Puede cargar como máximo 15 archivos a la vez.',
+            'archivos.max' => 'Puede seleccionar como máximo 10 archivos a la vez.',
             'archivos.*.required' => 'Uno de los archivos seleccionados no es válido.',
             'archivos.*.file' => 'Uno de los elementos seleccionados no es un archivo.',
-            'archivos.*.mimes' => 'Solo se permiten archivos Excel con extensión .xlsx o .xls.',
+            'archivos.*.mimes' => 'Solo se permiten archivos Excel .xlsx o .xls.',
             'archivos.*.max' => 'Cada archivo Excel debe pesar como máximo 10 MB.',
-        ];
-    }
-
-    public function attributes(): array
-    {
-        return [
-            'archivos' => 'archivos Excel',
-            'archivos.*' => 'archivo Excel',
         ];
     }
 }

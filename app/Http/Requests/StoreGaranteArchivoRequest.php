@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\LoteMensual;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Validator;
 
 class StoreGaranteArchivoRequest extends FormRequest
@@ -45,6 +46,18 @@ class StoreGaranteArchivoRequest extends FormRequest
                 $lote = $this->route('lote');
 
                 if (! $lote) {
+                    return;
+                }
+
+                if (DB::table('lote_prestamo_procesamientos')
+                    ->where('lote_mensual_id', $lote->id)
+                    ->exists()) {
+                    $validator->errors()->add(
+                        'archivos_garantes',
+                        'No se pueden cargar descuentos a garantes porque '
+                        . 'el pago mensual de Préstamos ya fue consolidado.'
+                    );
+
                     return;
                 }
 

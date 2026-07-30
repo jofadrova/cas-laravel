@@ -2,27 +2,93 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StorePrestamoArchivoRequest;
+use App\Http\Requests\StoreFvsArchivoRequest;
 use App\Models\LoteArchivo;
 use App\Models\LoteMensual;
-use App\Models\LotePrestamoRegistro;
-use App\Services\ProcesamientoMensual\PrestamoExcelImportService;
+use App\Models\LoteFvsRegistro;
+use App\Services\ProcesamientoMensual\FvsExcelImportService;
+use App\Services\ProcesamientoMensual\EstadoLoteMensualService;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Illuminate\View\View;
 use InvalidArgumentException;
 use Throwable;
 
-class PrestamoArchivoController extends Controller
+class FvsArchivoController extends Controller
 {
+    public function index(Request $request, LoteMensual $lote): View
+    {
+        $archivos = LoteArchivo::query()
+            ->where('lote_mensual_id', $lote->id)
+            ->where('tipo', LoteArchivo::TIPO_FVS)
+            ->orderBy('id')
+            ->get();
+
+        $buscar = trim((string) $request->query('buscar', ''));
+
+        $consulta = LoteFvsRegistro::query()
+            ->with('archivo:id,nombre_original')
+            ->where('lote_mensual_id', $lote->id)
+            ->when($buscar !== '', function ($query) use ($buscar): void {
+                $query->where(function ($subconsulta) use ($buscar): void {
+                    $subconsulta
+                        ->where('codigo_personal', 'like', "%{$buscar}%")
+                        ->orWhere('eit_item', 'like', "%{$buscar}%")
+                        ->orWhere('carnet', 'like', "%{$buscar}%")
+                        ->orWhere('nombres', 'like', "%{$buscar}%")
+                        ->orWhereHas(
+                            'archivo',
+                            fn ($archivo) => $archivo->where(
+                                'nombre_original',
+                                'like',
+                                "%{$buscar}%"
+                            )
+                        );
+                });
+            })
+            ->orderBy('lote_archivo_id')
+            ->orderBy('fila_origen');
+
+        $registros = $consulta->paginate(50)->withQueryString();
+
+        $resumen = LoteFvsRegistro::query()
+            ->where('lote_mensual_id', $lote->id)
+            ->selectRaw('COUNT(*) AS filas')
+            ->selectRaw('COALESCE(SUM(monto_descuento), 0) AS monto_descuento')
+            ->selectRaw('COALESCE(SUM(tot_2), 0) AS tot_2')
+            ->selectRaw('COALESCE(SUM(comision), 0) AS comision')
+            ->first();
+
+        $puedeModificar = ! in_array($lote->estado, [
+            LoteMensual::ESTADO_PROCESADO,
+            LoteMensual::ESTADO_CERRADO,
+            LoteMensual::ESTADO_ANULADO,
+        ], true);
+
+        return view('procesamiento-mensual.lotes.fvs.index', [
+            'lote' => $lote,
+            'archivos' => $archivos,
+            'registros' => $registros,
+            'resumen' => $resumen,
+            'buscar' => $buscar,
+            'puedeModificar' => $puedeModificar,
+            'puedeCargar' => $puedeModificar && $archivos->count() < 10,
+            'cantidadMinimaPendiente' => max(1, 3 - $archivos->count()),
+            'cantidadDisponible' => max(0, 10 - $archivos->count()),
+        ]);
+    }
+
     public function store(
-        StorePrestamoArchivoRequest $request,
+        StoreFvsArchivoRequest $request,
         LoteMensual $lote,
-        PrestamoExcelImportService $importador
+        FvsExcelImportService $importador,
+        EstadoLoteMensualService $estadoLote
     ): RedirectResponse {
         /** @var array<int, UploadedFile> $archivos */
         $archivos = $request->file('archivos', []);
@@ -48,14 +114,14 @@ class PrestamoArchivoController extends Controller
 
             $yaExiste = LoteArchivo::query()
                 ->where('lote_mensual_id', $lote->id)
-                ->where('tipo', LoteArchivo::TIPO_PRESTAMOS)
+                ->where('tipo', LoteArchivo::TIPO_FVS)
                 ->where('hash_sha256', $lectura['hash_sha256'])
                 ->exists();
 
             if ($yaExiste) {
                 throw ValidationException::withMessages([
                     "archivos.{$indice}" => $archivo->getClientOriginalName()
-                        . ': este archivo ya fue cargado anteriormente en el lote.',
+                        . ': este archivo FVS ya fue cargado en el lote.',
                 ]);
             }
 
@@ -75,17 +141,18 @@ class PrestamoArchivoController extends Controller
                 $lecturas,
                 &$rutasGuardadas
             ): void {
-                LoteMensual::query()
-                    ->whereKey($lote->id)
-                    ->lockForUpdate()
-                    ->firstOrFail();
+                LoteMensual::query()->lockForUpdate()->findOrFail($lote->id);
 
-                if (DB::table('lote_prestamo_procesamientos')
+                $cantidadActual = LoteArchivo::query()
                     ->where('lote_mensual_id', $lote->id)
-                    ->exists()) {
+                    ->where('tipo', LoteArchivo::TIPO_FVS)
+                    ->count();
+                $cantidadFinal = $cantidadActual + count($lecturas);
+
+                if ($cantidadFinal < 3 || $cantidadFinal > 10) {
                     throw ValidationException::withMessages([
-                        'archivos' => 'El pago mensual de Préstamos ya fue '
-                            . 'consolidado. No se admiten nuevas cargas.',
+                        'archivos' => "El lote debe contener entre 3 y 10 archivos FVS; "
+                            . "con esta carga tendría {$cantidadFinal}.",
                     ]);
                 }
 
@@ -94,7 +161,7 @@ class PrestamoArchivoController extends Controller
                     $archivoSubido = $item['archivo'];
                     $datos = $item['datos'];
                     $nombreGuardado = Str::uuid() . '.' . $datos['extension'];
-                    $directorio = "procesamiento-mensual/lotes/{$lote->id}/prestamos";
+                    $directorio = "procesamiento-mensual/lotes/{$lote->id}/fvs";
                     $ruta = $archivoSubido->storeAs(
                         $directorio,
                         $nombreGuardado,
@@ -103,7 +170,7 @@ class PrestamoArchivoController extends Controller
 
                     if (! $ruta) {
                         throw new \RuntimeException(
-                            'No fue posible guardar uno de los archivos originales.'
+                            'No fue posible guardar uno de los archivos FVS.'
                         );
                     }
 
@@ -111,7 +178,7 @@ class PrestamoArchivoController extends Controller
 
                     $archivoLote = LoteArchivo::create([
                         'lote_mensual_id' => $lote->id,
-                        'tipo' => LoteArchivo::TIPO_PRESTAMOS,
+                        'tipo' => LoteArchivo::TIPO_FVS,
                         'nombre_original' => $datos['nombre_original'],
                         'ruta' => $ruta,
                         'extension' => $datos['extension'],
@@ -127,27 +194,20 @@ class PrestamoArchivoController extends Controller
 
                     $ahora = now();
                     $registros = array_map(
-                        function (array $registro) use (
-                            $lote,
-                            $archivoLote,
-                            $ahora
-                        ): array {
-                            return [
-                                ...$registro,
-                                'lote_mensual_id' => $lote->id,
-                                'lote_archivo_id' => $archivoLote->id,
-                                'created_at' => $ahora,
-                                'updated_at' => $ahora,
-                            ];
-                        },
+                        fn (array $registro): array => [
+                            ...$registro,
+                            'lote_mensual_id' => $lote->id,
+                            'lote_archivo_id' => $archivoLote->id,
+                            'created_at' => $ahora,
+                            'updated_at' => $ahora,
+                        ],
                         $datos['registros']
                     );
 
                     foreach (array_chunk($registros, 500) as $bloque) {
-                        LotePrestamoRegistro::insert($bloque);
+                        LoteFvsRegistro::insert($bloque);
                     }
                 }
-
             });
         } catch (Throwable $exception) {
             foreach ($rutasGuardadas as $ruta) {
@@ -157,7 +217,7 @@ class PrestamoArchivoController extends Controller
             if ($exception instanceof QueryException
                 && str_contains($exception->getMessage(), 'lote_archivos_lote_tipo_hash_unique')) {
                 throw ValidationException::withMessages([
-                    'archivos' => 'Uno de los archivos ya fue cargado en este lote.',
+                    'archivos' => 'Uno de los archivos FVS ya fue cargado en este lote.',
                 ]);
             }
 
@@ -169,64 +229,55 @@ class PrestamoArchivoController extends Controller
             'filas_importadas'
         ));
 
+        $estadoLote->sincronizar($lote->fresh());
+
         return redirect()
-            ->route('procesamiento-mensual.lotes.archivos.index', $lote)
+            ->route('procesamiento-mensual.lotes.fvs.index', $lote)
             ->with(
                 'success',
-                count($lecturas) . ' archivo(s) de préstamos cargado(s). '
+                count($lecturas) . ' archivo(s) FVS cargado(s). '
                 . "{$filas} fila(s) fueron incorporadas a la tabla consolidada."
             );
     }
 
     public function limpiar(LoteMensual $lote): RedirectResponse
     {
-        if (DB::table('lote_prestamo_procesamientos')
-            ->where('lote_mensual_id', $lote->id)
-            ->exists()) {
-            return redirect()
-                ->route('procesamiento-mensual.lotes.archivos.index', $lote)
-                ->with(
-                    'error',
-                    'No es posible limpiar Préstamos porque el pago mensual '
-                    . 'ya fue consolidado. El grupo permanece solo para consulta.'
-                );
-        }
-
         if (in_array($lote->estado, [
             LoteMensual::ESTADO_PROCESADO,
             LoteMensual::ESTADO_CERRADO,
             LoteMensual::ESTADO_ANULADO,
         ], true)) {
             return redirect()
-                ->route('procesamiento-mensual.lotes.archivos.index', $lote)
+                ->route('procesamiento-mensual.lotes.fvs.index', $lote)
                 ->with(
                     'error',
-                    "No es posible limpiar la importación porque el lote se encuentra {$lote->estado}."
+                    "No es posible limpiar FVS porque el lote se encuentra {$lote->estado}."
                 );
         }
 
         $archivos = LoteArchivo::query()
             ->where('lote_mensual_id', $lote->id)
-            ->where('tipo', LoteArchivo::TIPO_PRESTAMOS)
+            ->where('tipo', LoteArchivo::TIPO_FVS)
             ->get(['id', 'ruta']);
 
         if ($archivos->isEmpty()) {
             return redirect()
-                ->route('procesamiento-mensual.lotes.archivos.index', $lote)
-                ->with('info', 'No existen archivos de préstamos para limpiar.');
+                ->route('procesamiento-mensual.lotes.fvs.index', $lote)
+                ->with('info', 'No existen archivos FVS para limpiar.');
         }
 
         $idsArchivos = $archivos->pluck('id');
         $rutas = $archivos->pluck('ruta')->filter()->values()->all();
 
         DB::transaction(function () use ($lote, $idsArchivos): void {
-            LotePrestamoRegistro::query()
+            LoteFvsRegistro::query()
                 ->where('lote_mensual_id', $lote->id)
                 ->whereIn('lote_archivo_id', $idsArchivos)
                 ->delete();
 
             LoteArchivo::query()
                 ->where('lote_mensual_id', $lote->id)
+                ->where('tipo', LoteArchivo::TIPO_FVS)
                 ->whereIn('id', $idsArchivos)
                 ->delete();
         });
@@ -236,10 +287,10 @@ class PrestamoArchivoController extends Controller
         }
 
         return redirect()
-            ->route('procesamiento-mensual.lotes.archivos.index', $lote)
+            ->route('procesamiento-mensual.lotes.fvs.index', $lote)
             ->with(
                 'success',
-                'La importación de préstamos fue limpiada. Ya puede cargar otros archivos.'
+                'La importación FVS fue limpiada. Ya puede cargar un nuevo grupo.'
             );
     }
 }

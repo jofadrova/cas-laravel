@@ -1,38 +1,24 @@
 <x-app-layout>
     <x-slot name="header">
-        Gestionar archivos · {{ $lote->periodo }}
+        Gestionar FVS · {{ $lote->periodo }}
     </x-slot>
 
     <div class="container-fluid py-4">
-        @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="bi bi-check-circle-fill me-2"></i>
-                {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
-
-        @if(session('info'))
-            <div class="alert alert-info alert-dismissible fade show" role="alert">
-                <i class="bi bi-info-circle-fill me-2"></i>
-                {{ session('info') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
-
-        @if(session('error'))
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                {{ session('error') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
+        @foreach(['success' => 'success', 'info' => 'info', 'error' => 'danger'] as $sesion => $clase)
+            @if(session($sesion))
+                <div class="alert alert-{{ $clase }} alert-dismissible fade show" role="alert">
+                    <i class="bi bi-{{ $clase === 'success' ? 'check-circle-fill' : 'exclamation-circle-fill' }} me-2"></i>
+                    {{ session($sesion) }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            @endif
+        @endforeach
 
         @if($errors->any())
             <div class="alert alert-danger" role="alert">
                 <div class="fw-semibold mb-2">
                     <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                    No fue posible importar los archivos
+                    No fue posible importar los archivos FVS
                 </div>
                 <ul class="mb-0 ps-3">
                     @foreach($errors->all() as $error)
@@ -44,7 +30,7 @@
 
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
             <div>
-                <h4 class="mb-1">Archivos del lote {{ $lote->periodo }}</h4>
+                <h4 class="mb-1">FVS del lote {{ $lote->periodo }}</h4>
                 <div class="text-muted">
                     Código {{ $lote->codigo_periodo }}
                     <span class="mx-1">·</span>
@@ -65,45 +51,46 @@
         <div class="card border-0 shadow-sm rounded-4 mb-4">
             <div class="card-header bg-white py-3">
                 <h5 class="mb-0">
-                    <i class="bi bi-bank text-success me-2"></i>
-                    Préstamos
+                    <i class="bi bi-currency-exchange text-success me-2"></i>
+                    Carga de archivos FVS
                 </h5>
             </div>
             <div class="card-body">
                 @if($puedeCargar)
                     <form
-                        id="formCargaPrestamos"
+                        id="formCargaFvs"
                         method="POST"
-                        action="{{ route('procesamiento-mensual.lotes.archivos.prestamos.store', $lote) }}"
+                        action="{{ route('procesamiento-mensual.lotes.fvs.store', $lote) }}"
                         enctype="multipart/form-data"
                     >
                         @csrf
-
                         <div class="row g-3 align-items-end">
                             <div class="col-xl-9">
-                                <label for="archivos" class="form-label fw-semibold">
-                                    Archivos Excel de préstamos
+                                <label for="archivosFvs" class="form-label fw-semibold">
+                                    Archivos Excel FVS
                                 </label>
                                 <input
                                     type="file"
-                                    class="form-control @error('archivos') is-invalid @enderror"
-                                    id="archivos"
+                                    class="form-control"
+                                    id="archivosFvs"
                                     name="archivos[]"
                                     accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
                                     multiple
                                     required
                                 >
                                 <div class="form-text">
-                                    Seleccione entre 1 y 15 archivos .xlsx o .xls.
-                                    Cada archivo debe corresponder a
+                                    El lote debe reunir entre <strong>3 y 10 archivos</strong>.
+                                    Actualmente existen {{ $archivos->count() }}; puede agregar hasta
+                                    {{ $cantidadDisponible }}. Todos deben corresponder a
                                     <strong>{{ $lote->nombre_mes }} {{ $lote->gestion }}</strong>.
                                 </div>
+                                <div id="mensajeSeleccionFvs" class="small mt-2" aria-live="polite"></div>
                             </div>
                             <div class="col-xl-3">
                                 <button
                                     type="submit"
                                     class="btn btn-success w-100"
-                                    id="btnCargarPrestamos"
+                                    id="btnCargarFvs"
                                 >
                                     <i class="bi bi-cloud-arrow-up-fill me-1"></i>
                                     Cargar y consolidar
@@ -111,18 +98,17 @@
                             </div>
                         </div>
                     </form>
+                @elseif($puedeModificar)
+                    <div class="alert alert-info mb-0">
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        El lote ya alcanzó el máximo de 10 archivos FVS.
+                    </div>
                 @else
                     <div class="alert alert-warning mb-0">
                         <i class="bi bi-lock-fill me-2"></i>
-                        @if($prestamosProcesados)
-                            El pago mensual de <strong>Préstamos</strong> ya fue
-                            consolidado. Este grupo permanece únicamente para
-                            consulta; puede continuar trabajando en FVS y
-                            Certificados de Aportes.
-                        @else
-                            La carga está bloqueada porque el lote se encuentra
-                            <strong>{{ $lote->estado }}</strong>.
-                        @endif
+                        La carga está bloqueada porque el lote se encuentra
+                        <strong>{{ $lote->estado }}</strong>. La información permanece disponible
+                        para consulta.
                     </div>
                 @endif
             </div>
@@ -134,6 +120,9 @@
                     <div class="card-body">
                         <div class="text-muted small">Archivos cargados</div>
                         <div class="fs-4 fw-bold">{{ $archivos->count() }}</div>
+                        <div class="small {{ $archivos->count() >= 3 ? 'text-success' : 'text-warning' }}">
+                            {{ $archivos->count() >= 3 ? 'Cantidad válida' : 'Mínimo requerido: 3' }}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -179,10 +168,23 @@
 
         <div class="card border-0 shadow-sm rounded-4 mb-4">
             <div class="card-header bg-white py-3">
-                <h5 class="mb-0">
-                    <i class="bi bi-files text-primary me-2"></i>
-                    Archivos incorporados
-                </h5>
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <h5 class="mb-0">
+                        <i class="bi bi-files text-primary me-2"></i>
+                        Archivos FVS incorporados
+                    </h5>
+                    @if($archivos->isNotEmpty() && $puedeModificar)
+                        <button
+                            type="button"
+                            class="btn btn-outline-danger btn-sm"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modalLimpiarFvs"
+                        >
+                            <i class="bi bi-trash3-fill me-1"></i>
+                            Limpiar importación
+                        </button>
+                    @endif
+                </div>
             </div>
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
@@ -222,7 +224,7 @@
                         @empty
                             <tr>
                                 <td colspan="7" class="text-center text-muted py-4">
-                                    Aún no se cargaron archivos de préstamos.
+                                    Aún no se cargaron archivos FVS.
                                 </td>
                             </tr>
                         @endforelse
@@ -233,14 +235,36 @@
 
         <div class="card border-0 shadow-sm rounded-4">
             <div class="card-header bg-white py-3">
-                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
-                    <h5 class="mb-0">
-                        <i class="bi bi-table text-success me-2"></i>
-                        Tabla consolidada de préstamos
-                    </h5>
-                    <span class="text-muted small">
-                        {{ number_format((int) $resumen->filas) }} registros
-                    </span>
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div>
+                        <h5 class="mb-0">
+                            <i class="bi bi-table text-success me-2"></i>
+                            Tabla consolidada FVS
+                        </h5>
+                        <span class="text-muted small">
+                            {{ number_format((int) $resumen->filas) }} registros en total
+                        </span>
+                    </div>
+                    <form method="GET" class="d-flex gap-2" role="search">
+                        <input
+                            type="search"
+                            name="buscar"
+                            value="{{ $buscar }}"
+                            class="form-control form-control-sm"
+                            placeholder="Papeleta, carnet o nombre"
+                        >
+                        <button class="btn btn-outline-primary btn-sm" type="submit">
+                            <i class="bi bi-search"></i>
+                        </button>
+                        @if($buscar !== '')
+                            <a
+                                href="{{ route('procesamiento-mensual.lotes.fvs.index', $lote) }}"
+                                class="btn btn-outline-secondary btn-sm"
+                            >
+                                Limpiar
+                            </a>
+                        @endif
+                    </form>
                 </div>
             </div>
             <div class="table-responsive">
@@ -312,7 +336,9 @@
                         @empty
                             <tr>
                                 <td colspan="25" class="text-center text-muted py-4">
-                                    La tabla consolidada está vacía.
+                                    {{ $buscar !== ''
+                                        ? 'No se encontraron registros con el criterio indicado.'
+                                        : 'La tabla consolidada FVS está vacía.' }}
                                 </td>
                             </tr>
                         @endforelse
@@ -326,76 +352,22 @@
                 </div>
             @endif
         </div>
-
-        @if($archivos->isNotEmpty())
-            <div class="d-flex flex-wrap justify-content-end gap-2 mt-4">
-                @if($puedeCargar)
-                    <button
-                        type="button"
-                        class="btn btn-outline-danger"
-                        data-bs-toggle="modal"
-                        data-bs-target="#modalLimpiarImportacion"
-                    >
-                        <i class="bi bi-trash3-fill me-1"></i>
-                        Limpiar importación
-                    </button>
-                @endif
-
-                @if($puedeCargar)
-                    <form
-                        id="formCompararPrestamos"
-                        method="POST"
-                        action="{{ route('procesamiento-mensual.lotes.archivos.prestamos.conciliacion.comparar', $lote) }}"
-                    >
-                        @csrf
-                        <button
-                            type="submit"
-                            id="btnCompararPrestamos"
-                            class="btn btn-success"
-                        >
-                            Continuar
-                            <i class="bi bi-arrow-right ms-1"></i>
-                        </button>
-                    </form>
-                @else
-                    <button
-                        type="button"
-                        class="btn btn-secondary"
-                        disabled
-                        title="{{ $prestamosProcesados
-                            ? 'El pago mensual de Préstamos ya fue consolidado'
-                            : 'El lote no permite volver a comparar' }}"
-                    >
-                        <i class="bi bi-lock-fill me-1"></i>
-                        Comparación bloqueada
-                    </button>
-
-                    <a
-                        href="{{ route('procesamiento-mensual.lotes.archivos.prestamos.conciliacion.index', $lote) }}"
-                        class="btn btn-outline-primary"
-                    >
-                        <i class="bi bi-eye-fill me-1"></i>
-                        Consultar comparación
-                    </a>
-                @endif
-            </div>
-        @endif
     </div>
 
-    @if($archivos->isNotEmpty() && $puedeCargar)
+    @if($archivos->isNotEmpty() && $puedeModificar)
         <div
             class="modal fade"
-            id="modalLimpiarImportacion"
+            id="modalLimpiarFvs"
             tabindex="-1"
-            aria-labelledby="modalLimpiarImportacionLabel"
+            aria-labelledby="modalLimpiarFvsLabel"
             aria-hidden="true"
         >
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content border-0 shadow">
                     <div class="modal-header bg-danger text-white">
-                        <h5 class="modal-title" id="modalLimpiarImportacionLabel">
+                        <h5 class="modal-title" id="modalLimpiarFvsLabel">
                             <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                            Limpiar importación de préstamos
+                            Limpiar importación FVS
                         </h5>
                         <button
                             type="button"
@@ -404,20 +376,17 @@
                             aria-label="Cerrar"
                         ></button>
                     </div>
-
                     <div class="modal-body">
-                        <p class="mb-3">
-                            Se eliminarán los archivos de préstamos cargados y todos
+                        <p>
+                            Se eliminarán los {{ $archivos->count() }} archivos FVS y todos
                             sus registros de la tabla consolidada.
                         </p>
-
                         <div class="alert alert-warning mb-0">
                             <i class="bi bi-exclamation-circle-fill me-2"></i>
-                            Esta acción no se puede deshacer. Después podrá cargar
-                            un nuevo grupo de archivos Excel.
+                            Esta acción no se puede deshacer. Después podrá cargar un
+                            nuevo grupo de 3 a 10 archivos.
                         </div>
                     </div>
-
                     <div class="modal-footer">
                         <button
                             type="button"
@@ -426,14 +395,12 @@
                         >
                             Cancelar
                         </button>
-
                         <form
                             method="POST"
-                            action="{{ route('procesamiento-mensual.lotes.archivos.prestamos.limpiar', $lote) }}"
+                            action="{{ route('procesamiento-mensual.lotes.fvs.limpiar', $lote) }}"
                         >
                             @csrf
                             @method('DELETE')
-
                             <button type="submit" class="btn btn-danger">
                                 <i class="bi bi-trash3-fill me-1"></i>
                                 Sí, limpiar importación
@@ -446,12 +413,12 @@
     @endif
 
     <div
-        id="overlayConsolidando"
+        id="overlayConsolidandoFvs"
         class="d-none position-fixed top-0 start-0 w-100 h-100 align-items-center justify-content-center"
         style="z-index: 2000; background: rgba(15, 23, 42, .68);"
         role="status"
         aria-live="polite"
-        aria-label="Consolidando archivos"
+        aria-label="Consolidando archivos FVS"
     >
         <div class="bg-white rounded-4 shadow-lg px-5 py-4 text-center">
             <div
@@ -466,65 +433,55 @@
         </div>
     </div>
 
-    <div
-        id="overlayComparando"
-        class="d-none position-fixed top-0 start-0 w-100 h-100 align-items-center justify-content-center"
-        style="z-index: 2000; background: rgba(15, 23, 42, .68);"
-        role="status"
-        aria-live="polite"
-        aria-label="Comparando préstamos"
-    >
-        <div class="bg-white rounded-4 shadow-lg px-5 py-4 text-center">
-            <div
-                class="spinner-border text-success mb-3"
-                style="width: 3rem; height: 3rem;"
-                aria-hidden="true"
-            ></div>
-            <h5 class="mb-1">Comparando préstamos...</h5>
-            <p class="text-muted mb-0">
-                Espere mientras se consultan y clasifican todos los registros.
-            </p>
-        </div>
-    </div>
-
     @push('scripts')
         <script>
             document.addEventListener('DOMContentLoaded', function () {
-                const formularioCarga = document.getElementById('formCargaPrestamos');
-                const botonCarga = document.getElementById('btnCargarPrestamos');
-                const overlayCarga = document.getElementById('overlayConsolidando');
-                const formularioComparacion = document.getElementById('formCompararPrestamos');
-                const botonComparacion = document.getElementById('btnCompararPrestamos');
-                const overlayComparacion = document.getElementById('overlayComparando');
+                const formulario = document.getElementById('formCargaFvs');
+                const entrada = document.getElementById('archivosFvs');
+                const boton = document.getElementById('btnCargarFvs');
+                const mensaje = document.getElementById('mensajeSeleccionFvs');
+                const overlay = document.getElementById('overlayConsolidandoFvs');
+                const existentes = @json($archivos->count());
+                const minimoPendiente = @json($cantidadMinimaPendiente);
+                const disponibles = @json($cantidadDisponible);
 
-                if (formularioCarga && botonCarga && overlayCarga) {
-                    formularioCarga.addEventListener('submit', function () {
-                        botonCarga.disabled = true;
-                        overlayCarga.classList.remove('d-none');
-                        overlayCarga.classList.add('d-flex');
-                    });
+                if (!formulario || !entrada || !boton || !mensaje || !overlay) {
+                    return;
                 }
 
-                if (formularioComparacion && botonComparacion && overlayComparacion) {
-                    formularioComparacion.addEventListener('submit', function () {
-                        botonComparacion.disabled = true;
-                        overlayComparacion.classList.remove('d-none');
-                        overlayComparacion.classList.add('d-flex');
-                    });
-                }
+                entrada.addEventListener('change', function () {
+                    const seleccionados = entrada.files.length;
+                    const total = existentes + seleccionados;
+                    const valido = seleccionados >= minimoPendiente
+                        && seleccionados <= disponibles
+                        && total >= 3
+                        && total <= 10;
+
+                    mensaje.className = 'small mt-2 ' + (valido ? 'text-success' : 'text-danger');
+                    mensaje.textContent = seleccionados === 0
+                        ? ''
+                        : seleccionados + ' archivo(s) seleccionado(s); el lote tendrá '
+                            + total + ' archivo(s).';
+                    boton.disabled = !valido;
+                });
+
+                formulario.addEventListener('submit', function (evento) {
+                    if (formulario.dataset.enviando === '1') {
+                        evento.preventDefault();
+                        return;
+                    }
+
+                    formulario.dataset.enviando = '1';
+                    boton.disabled = true;
+                    overlay.classList.remove('d-none');
+                    overlay.classList.add('d-flex');
+                });
 
                 window.addEventListener('pageshow', function () {
-                    if (botonCarga && overlayCarga) {
-                        botonCarga.disabled = false;
-                        overlayCarga.classList.add('d-none');
-                        overlayCarga.classList.remove('d-flex');
-                    }
-
-                    if (botonComparacion && overlayComparacion) {
-                        botonComparacion.disabled = false;
-                        overlayComparacion.classList.add('d-none');
-                        overlayComparacion.classList.remove('d-flex');
-                    }
+                    formulario.dataset.enviando = '0';
+                    overlay.classList.add('d-none');
+                    overlay.classList.remove('d-flex');
+                    entrada.dispatchEvent(new Event('change'));
                 });
             });
         </script>

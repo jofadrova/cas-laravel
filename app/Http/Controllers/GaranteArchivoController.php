@@ -87,6 +87,19 @@ class GaranteArchivoController extends Controller
                 &$rutasGuardadas,
                 &$rutasAnteriores
             ): void {
+                LoteMensual::query()
+                    ->whereKey($lote->id)
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
+                if (DB::table('lote_prestamo_procesamientos')
+                    ->where('lote_mensual_id', $lote->id)
+                    ->exists()) {
+                    throw new LogicException(
+                        'El pago mensual de Préstamos ya fue consolidado.'
+                    );
+                }
+
                 $archivosAnteriores = LoteArchivo::query()
                     ->where('lote_mensual_id', $lote->id)
                     ->where('tipo', LoteArchivo::TIPO_GARANTES)
@@ -237,6 +250,16 @@ class GaranteArchivoController extends Controller
 
     public function limpiar(LoteMensual $lote): RedirectResponse
     {
+        if (DB::table('lote_prestamo_procesamientos')
+            ->where('lote_mensual_id', $lote->id)
+            ->exists()) {
+            return back()->with(
+                'error',
+                'No se puede limpiar garantes porque el pago mensual de '
+                . 'Préstamos ya fue consolidado.'
+            );
+        }
+
         if (in_array($lote->estado, [
             LoteMensual::ESTADO_PROCESADO,
             LoteMensual::ESTADO_CERRADO,

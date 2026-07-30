@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\LoteArchivo;
 use App\Models\LoteMensual;
 use App\Models\LotePrestamoRegistro;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class LoteArchivoController extends Controller
@@ -32,7 +33,12 @@ class LoteArchivoController extends Controller
             ->selectRaw('COALESCE(SUM(comision), 0) AS comision')
             ->first();
 
-        $puedeCargar = ! in_array($lote->estado, [
+        $prestamosProcesados = DB::table('lote_prestamo_procesamientos')
+            ->where('lote_mensual_id', $lote->id)
+            ->exists();
+
+        $puedeCargar = ! $prestamosProcesados
+            && ! in_array($lote->estado, [
             LoteMensual::ESTADO_PROCESADO,
             LoteMensual::ESTADO_CERRADO,
             LoteMensual::ESTADO_ANULADO,
@@ -44,6 +50,7 @@ class LoteArchivoController extends Controller
             'registros' => $registros,
             'resumen' => $resumen,
             'puedeCargar' => $puedeCargar,
+            'prestamosProcesados' => $prestamosProcesados,
         ]);
     }
 }

@@ -127,10 +127,32 @@
                             class="btn btn-success w-100"
                         >
                             <i class="bi bi-file-earmark-spreadsheet me-1"></i>
-                            Gestionar archivos
+                            Gestionar Préstamos
                         </a>
                         <small class="text-muted d-block mt-2">
-                            Cargue y consolide los archivos Excel remitidos para este periodo.
+                            Cargue, compare y consolide los descuentos mensuales de préstamos.
+                        </small>
+
+                        <a
+                            href="{{ route('procesamiento-mensual.lotes.fvs.index', ['lote' => $lote]) }}"
+                            class="btn btn-success w-100 mt-3"
+                        >
+                            <i class="bi bi-currency-exchange me-1"></i>
+                            Gestionar FVS
+                        </a>
+                        <small class="text-muted d-block mt-2">
+                            Cargue y consolide los archivos mensuales correspondientes a FVS.
+                        </small>
+
+                        <a
+                            href="{{ route('procesamiento-mensual.lotes.certificados.index', ['lote' => $lote]) }}"
+                            class="btn btn-success w-100 mt-3"
+                        >
+                            <i class="bi bi-award me-1"></i>
+                            Gestionar Certificados de Aportes
+                        </a>
+                        <small class="text-muted d-block mt-2">
+                            Cargue y consolide los archivos mensuales de certificados de aportes.
                         </small>
                     </div>
                 </div>

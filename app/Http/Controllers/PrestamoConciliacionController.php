@@ -182,11 +182,6 @@ SQL,
             'observados' =>
                 $cuotasObservadas + $resumenGarantes['observados'],
         ];
-        $puedeCargarGarantes = ! in_array($lote->estado, [
-            LoteMensual::ESTADO_PROCESADO,
-            LoteMensual::ESTADO_CERRADO,
-            LoteMensual::ESTADO_ANULADO,
-        ], true);
         $procesamientoPago = DB::table('lote_prestamo_procesamientos')
             ->where('lote_mensual_id', $lote->id)
             ->first([
@@ -194,6 +189,12 @@ SQL,
                 'monto_total',
                 'fecha_procesamiento',
             ]);
+        $puedeCargarGarantes = $procesamientoPago === null
+            && ! in_array($lote->estado, [
+            LoteMensual::ESTADO_PROCESADO,
+            LoteMensual::ESTADO_CERRADO,
+            LoteMensual::ESTADO_ANULADO,
+        ], true);
         $puedeRealizarPago = $procesamientoPago === null
             && ! in_array($lote->estado, [
                 LoteMensual::ESTADO_PROCESADO,
@@ -297,6 +298,23 @@ SQL,
         LoteMensual $lote,
         PrestamoConciliacionService $conciliador
     ): RedirectResponse {
+        $prestamosProcesados = DB::table('lote_prestamo_procesamientos')
+            ->where('lote_mensual_id', $lote->id)
+            ->exists();
+
+        if ($prestamosProcesados) {
+            return redirect()
+                ->route(
+                    'procesamiento-mensual.lotes.archivos.prestamos.conciliacion.index',
+                    $lote
+                )
+                ->with(
+                    'error',
+                    'El pago mensual de Préstamos ya fue consolidado. '
+                    . 'La información permanece disponible solo para consulta.'
+                );
+        }
+
         if (in_array($lote->estado, [
             LoteMensual::ESTADO_PROCESADO,
             LoteMensual::ESTADO_CERRADO,

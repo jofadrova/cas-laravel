@@ -23,6 +23,8 @@ use App\Http\Controllers\LoteArchivoController;
 use App\Http\Controllers\PrestamoArchivoController;
 use App\Http\Controllers\PrestamoConciliacionController;
 use App\Http\Controllers\GaranteArchivoController;
+use App\Http\Controllers\FvsArchivoController;
+use App\Http\Controllers\CertificadoAporteArchivoController;
 
 
 Route::get('/', function () {
@@ -234,6 +236,36 @@ Route::prefix('prestamos')->name('prestamos.')->group(function () {
                 'lotes/{lote}/archivos/prestamos/conciliacion/garantes',
                 [GaranteArchivoController::class, 'limpiar']
             )->name('lotes.archivos.prestamos.conciliacion.garantes.limpiar');
+
+            Route::get(
+                'lotes/{lote}/fvs',
+                [FvsArchivoController::class, 'index']
+            )->name('lotes.fvs.index');
+
+            Route::post(
+                'lotes/{lote}/fvs',
+                [FvsArchivoController::class, 'store']
+            )->name('lotes.fvs.store');
+
+            Route::delete(
+                'lotes/{lote}/fvs',
+                [FvsArchivoController::class, 'limpiar']
+            )->name('lotes.fvs.limpiar');
+
+            Route::get(
+                'lotes/{lote}/certificados',
+                [CertificadoAporteArchivoController::class, 'index']
+            )->name('lotes.certificados.index');
+
+            Route::post(
+                'lotes/{lote}/certificados',
+                [CertificadoAporteArchivoController::class, 'store']
+            )->name('lotes.certificados.store');
+
+            Route::delete(
+                'lotes/{lote}/certificados',
+                [CertificadoAporteArchivoController::class, 'limpiar']
+            )->name('lotes.certificados.limpiar');
 
             Route::resource('lotes', LoteMensualController::class)
                 ->parameters(['lotes' => 'lote'])

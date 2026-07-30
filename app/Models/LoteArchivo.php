@@ -10,6 +10,13 @@ class LoteArchivo extends Model
 {
     public const TIPO_PRESTAMOS = 'PRESTAMOS';
     public const TIPO_GARANTES = 'GARANTES';
+    /**
+     * Nombre funcional: FVS.
+     * Se conserva temporalmente el valor físico UFV porque ya está almacenado
+     * en lote_archivos.tipo. No cambiarlo sin una migración de datos evaluada.
+     */
+    public const TIPO_FVS = 'UFV';
+    public const TIPO_CERTIFICADOS = 'CERTIFICADOS';
     public const ESTADO_CARGADO = 'CARGADO';
 
     protected $table = 'lote_archivos';
@@ -57,6 +64,22 @@ class LoteArchivo extends Model
     {
         return $this->hasMany(
             LoteGaranteRegistro::class,
+            'lote_archivo_id'
+        );
+    }
+
+    public function registrosFvs(): HasMany
+    {
+        return $this->hasMany(
+            LoteFvsRegistro::class,
+            'lote_archivo_id'
+        );
+    }
+
+    public function registrosCertificados(): HasMany
+    {
+        return $this->hasMany(
+            LoteCertificadoAporteRegistro::class,
             'lote_archivo_id'
         );
     }

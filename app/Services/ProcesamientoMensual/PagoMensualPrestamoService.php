@@ -13,6 +13,11 @@ class PagoMensualPrestamoService
 {
     private const TOLERANCIA_CENTAVOS = 1;
 
+    public function __construct(
+        private readonly EstadoLoteMensualService $estadoLote
+    ) {
+    }
+
     public function ejecutar(LoteMensual $lote, ?int $usuarioId): array
     {
         return DB::transaction(function () use ($lote, $usuarioId): array {
@@ -200,7 +205,6 @@ class PagoMensualPrestamoService
                     'monto' => $monto,
                     'estado' => 'AC',
                     'idlog' => $usuarioId,
-                    'fecha' => now()
                 ]);
 
                 DB::table('lote_prestamo_pagos')->insert([
@@ -266,9 +270,12 @@ class PagoMensualPrestamoService
                 ]);
             }
 
-            $loteBloqueado->forceFill([
-                'estado' => LoteMensual::ESTADO_PROCESADO,
-            ])->save();
+            /*
+             * Finalizar los pagos bloquea solamente el grupo PRESTAMOS.
+             * El estado global del lote se sincroniza por separado y solo
+             * llegará a PROCESADO cuando los tres grupos estén completos.
+             */
+            $this->estadoLote->sincronizar($loteBloqueado);
 
             /*
              * solicitudes y cuotas_solicitud son tablas Legacy/MyISAM. Sus
