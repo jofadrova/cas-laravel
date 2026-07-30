@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class LotePrestamoConciliacion extends Model
 {
+    public const CONCEPTO_CUOTA = 'CUOTA_PRESTAMO';
+    public const CONCEPTO_GARANTE = 'DESCUENTO_GARANTE';
+
     public const COINCIDE = 'COINCIDE';
     public const FALTA = 'FALTA';
     public const DEMASIA = 'DEMASIA';
@@ -30,6 +33,8 @@ class LotePrestamoConciliacion extends Model
         'lote_mensual_id',
         'lote_prestamo_registro_id',
         'orden_operacion',
+        'concepto',
+        'lote_garante_registro_id',
         'eit_item',
         'socio_institucion_id',
         'id_socio',
@@ -74,6 +79,22 @@ class LotePrestamoConciliacion extends Model
             LotePrestamoConciliacionDetalle::class,
             'lote_prestamo_conciliacion_id'
         )->orderBy('id_solicitud')->orderBy('nro_cuota');
+    }
+
+    public function garanteRegistro(): BelongsTo
+    {
+        return $this->belongsTo(
+            LoteGaranteRegistro::class,
+            'lote_garante_registro_id'
+        );
+    }
+
+    public function getConceptoTextoAttribute(): string
+    {
+        return match ($this->concepto) {
+            self::CONCEPTO_GARANTE => 'DESCUENTO A GARANTE',
+            default => 'CUOTA DE PRÉSTAMO',
+        };
     }
 
     public function getClaseBadgeAttribute(): string

@@ -6,7 +6,7 @@ use App\Models\LoteMensual;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
-class StorePrestamoArchivoRequest extends FormRequest
+class StoreGaranteArchivoRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -15,16 +15,20 @@ class StorePrestamoArchivoRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        if ($this->hasFile('archivos') && ! is_array($this->file('archivos'))) {
-            $this->files->set('archivos', [$this->file('archivos')]);
+        if ($this->hasFile('archivos_garantes')
+            && ! is_array($this->file('archivos_garantes'))) {
+            $this->files->set(
+                'archivos_garantes',
+                [$this->file('archivos_garantes')]
+            );
         }
     }
 
     public function rules(): array
     {
         return [
-            'archivos' => ['required', 'array', 'min:1', 'max:15'],
-            'archivos.*' => [
+            'archivos_garantes' => ['required', 'array', 'min:1', 'max:5'],
+            'archivos_garantes.*' => [
                 'required',
                 'file',
                 'mimes:xlsx,xls',
@@ -50,8 +54,8 @@ class StorePrestamoArchivoRequest extends FormRequest
                     LoteMensual::ESTADO_ANULADO,
                 ], true)) {
                     $validator->errors()->add(
-                        'archivos',
-                        'No se pueden cargar archivos porque el lote se encuentra '
+                        'archivos_garantes',
+                        'No se pueden cargar descuentos a garantes porque el lote se encuentra '
                         . strtolower($lote->estado) . '.'
                     );
                 }
@@ -62,22 +66,18 @@ class StorePrestamoArchivoRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'archivos.required' => 'Seleccione al menos un archivo Excel.',
-            'archivos.array' => 'La selección de archivos no es válida.',
-            'archivos.min' => 'Seleccione al menos un archivo Excel.',
-            'archivos.max' => 'Puede cargar como máximo 15 archivos a la vez.',
-            'archivos.*.required' => 'Uno de los archivos seleccionados no es válido.',
-            'archivos.*.file' => 'Uno de los elementos seleccionados no es un archivo.',
-            'archivos.*.mimes' => 'Solo se permiten archivos Excel con extensión .xlsx o .xls.',
-            'archivos.*.max' => 'Cada archivo Excel debe pesar como máximo 10 MB.',
-        ];
-    }
-
-    public function attributes(): array
-    {
-        return [
-            'archivos' => 'archivos Excel',
-            'archivos.*' => 'archivo Excel',
+            'archivos_garantes.required' =>
+                'Seleccione el archivo Excel de descuentos a garantes.',
+            'archivos_garantes.array' =>
+                'La selección del archivo de garantes no es válida.',
+            'archivos_garantes.min' =>
+                'Seleccione al menos un archivo Excel de garantes.',
+            'archivos_garantes.max' =>
+                'Puede cargar como máximo 5 archivos de garantes a la vez.',
+            'archivos_garantes.*.mimes' =>
+                'Solo se permiten archivos de garantes .xlsx o .xls.',
+            'archivos_garantes.*.max' =>
+                'Cada archivo de garantes debe pesar como máximo 10 MB.',
         ];
     }
 }

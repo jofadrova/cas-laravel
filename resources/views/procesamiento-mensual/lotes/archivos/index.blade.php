@@ -334,21 +334,41 @@
                     </button>
                 @endif
 
-                <form
-                    id="formCompararPrestamos"
-                    method="POST"
-                    action="{{ route('procesamiento-mensual.lotes.archivos.prestamos.conciliacion.comparar', $lote) }}"
-                >
-                    @csrf
-                    <button
-                        type="submit"
-                        id="btnCompararPrestamos"
-                        class="btn btn-success"
+                @if($puedeCargar)
+                    <form
+                        id="formCompararPrestamos"
+                        method="POST"
+                        action="{{ route('procesamiento-mensual.lotes.archivos.prestamos.conciliacion.comparar', $lote) }}"
                     >
-                        Continuar
-                        <i class="bi bi-arrow-right ms-1"></i>
+                        @csrf
+                        <button
+                            type="submit"
+                            id="btnCompararPrestamos"
+                            class="btn btn-success"
+                        >
+                            Continuar
+                            <i class="bi bi-arrow-right ms-1"></i>
+                        </button>
+                    </form>
+                @else
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        disabled
+                        title="El lote procesado no puede volver a compararse"
+                    >
+                        <i class="bi bi-lock-fill me-1"></i>
+                        Comparación bloqueada
                     </button>
-                </form>
+
+                    <a
+                        href="{{ route('procesamiento-mensual.lotes.archivos.prestamos.conciliacion.index', $lote) }}"
+                        class="btn btn-outline-primary"
+                    >
+                        <i class="bi bi-eye-fill me-1"></i>
+                        Consultar comparación
+                    </a>
+                @endif
             </div>
         @endif
     </div>

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class LoteArchivo extends Model
 {
     public const TIPO_PRESTAMOS = 'PRESTAMOS';
+    public const TIPO_GARANTES = 'GARANTES';
     public const ESTADO_CARGADO = 'CARGADO';
 
     protected $table = 'lote_archivos';
@@ -48,6 +49,14 @@ class LoteArchivo extends Model
     {
         return $this->hasMany(
             LotePrestamoRegistro::class,
+            'lote_archivo_id'
+        );
+    }
+
+    public function registrosGarantes(): HasMany
+    {
+        return $this->hasMany(
+            LoteGaranteRegistro::class,
             'lote_archivo_id'
         );
     }

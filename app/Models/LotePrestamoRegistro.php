@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class LotePrestamoRegistro extends Model
 {
@@ -82,11 +82,11 @@ class LotePrestamoRegistro extends Model
         return $this->belongsTo(LoteArchivo::class, 'lote_archivo_id');
     }
 
-    public function conciliacion(): HasOne
+    public function conciliaciones(): HasMany
     {
-        return $this->hasOne(
+        return $this->hasMany(
             LotePrestamoConciliacion::class,
             'lote_prestamo_registro_id'
-        );
+        )->orderBy('orden_operacion');
     }
 }

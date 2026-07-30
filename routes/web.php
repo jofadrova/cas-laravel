@@ -22,6 +22,7 @@ use App\Http\Controllers\LoteMensualController;
 use App\Http\Controllers\LoteArchivoController;
 use App\Http\Controllers\PrestamoArchivoController;
 use App\Http\Controllers\PrestamoConciliacionController;
+use App\Http\Controllers\GaranteArchivoController;
 
 
 Route::get('/', function () {
@@ -211,6 +212,28 @@ Route::prefix('prestamos')->name('prestamos.')->group(function () {
                 'lotes/{lote}/archivos/prestamos/conciliacion',
                 [PrestamoConciliacionController::class, 'comparar']
             )->name('lotes.archivos.prestamos.conciliacion.comparar');
+
+            Route::post(
+                'lotes/{lote}/archivos/prestamos/conciliacion/pagar',
+                [PrestamoConciliacionController::class, 'pagar']
+            )->name('lotes.archivos.prestamos.conciliacion.pagar');
+
+            Route::get(
+                'lotes/{lote}/archivos/prestamos/conciliacion/resumen-pago',
+                [PrestamoConciliacionController::class, 'resumen']
+            )->name(
+                'lotes.archivos.prestamos.conciliacion.resumen'
+            );
+
+            Route::post(
+                'lotes/{lote}/archivos/prestamos/conciliacion/garantes',
+                [GaranteArchivoController::class, 'store']
+            )->name('lotes.archivos.prestamos.conciliacion.garantes.store');
+
+            Route::delete(
+                'lotes/{lote}/archivos/prestamos/conciliacion/garantes',
+                [GaranteArchivoController::class, 'limpiar']
+            )->name('lotes.archivos.prestamos.conciliacion.garantes.limpiar');
 
             Route::resource('lotes', LoteMensualController::class)
                 ->parameters(['lotes' => 'lote'])
