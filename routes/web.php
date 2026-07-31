@@ -23,6 +23,7 @@ use App\Http\Controllers\LoteArchivoController;
 use App\Http\Controllers\PrestamoArchivoController;
 use App\Http\Controllers\PrestamoConciliacionController;
 use App\Http\Controllers\GaranteArchivoController;
+use App\Http\Controllers\PrestamoOtroArchivoController;
 use App\Http\Controllers\FvsArchivoController;
 use App\Http\Controllers\CertificadoAporteArchivoController;
 
@@ -223,9 +224,17 @@ Route::prefix('prestamos')->name('prestamos.')->group(function () {
             Route::get(
                 'lotes/{lote}/archivos/prestamos/conciliacion/resumen-pago',
                 [PrestamoConciliacionController::class, 'resumen']
-            )->name(
-                'lotes.archivos.prestamos.conciliacion.resumen'
-            );
+            )->name('lotes.archivos.prestamos.conciliacion.resumen');
+
+            Route::post(
+                'lotes/{lote}/archivos/prestamos/otros/previsualizar',
+                [PrestamoOtroArchivoController::class, 'previsualizar']
+            )->name('lotes.archivos.prestamos.otros.preview');
+
+            Route::post(
+                'lotes/{lote}/archivos/prestamos/otros',
+                [PrestamoOtroArchivoController::class, 'store']
+            )->name('lotes.archivos.prestamos.otros.store');
 
             Route::post(
                 'lotes/{lote}/archivos/prestamos/conciliacion/garantes',
