@@ -58,7 +58,10 @@ class PrestamoConciliacionService
             $garantes
         );
         $institucionesPorPapeleta = $this->cargarInstituciones($registros);
-        $cuotasPorSocio = $this->cargarCuotas($lote);
+        $cuotasPorPapeleta = $this->cargarCuotasPorPapeleta(
+            $lote,
+            $institucionesPorPapeleta->keys()
+        );
         $ahora = now();
         $resultados = [];
         $detalles = [];
@@ -88,24 +91,13 @@ class PrestamoConciliacionService
             }
 
             /*
-             * La papeleta es la identidad informada por el archivo mensual.
-             * En los datos Legacy puede existir más de un registro de
-             * socio_institucion para la misma papeleta y esos registros pueden
-             * apuntar a distintos id_socio. Por ello no debemos limitar las
-             * cuotas al único registro elegido por resolverInstitucion().
+             * La papeleta del archivo es la llave operativa del descuento.
+             * La consulta ya recorrió todas las filas históricas de
+             * socio_institucion asociadas a esa papeleta. Solo eliminamos
+             * duplicados de la misma cuota que puedan producir esas filas.
              */
-            $idsSocioPapeleta = $instituciones
-                ->pluck('id_socio')
-                ->filter()
-                ->map(fn ($id): string => (string) $id)
-                ->unique()
-                ->values();
-
-            $cuotas = $idsSocioPapeleta
-                ->flatMap(
-                    fn (string $idSocio): Collection =>
-                        $cuotasPorSocio->get($idSocio, collect())
-                )
+            $cuotas = $cuotasPorPapeleta
+                ->get($clave, collect())
                 ->unique('id_cuota_solicitud')
                 ->sortBy([
                     ['tipo_prestamo', 'asc'],
@@ -113,6 +105,14 @@ class PrestamoConciliacionService
                     ['nro_cuota', 'asc'],
                 ])
                 ->values();
+            $institucionResultado = $cuotas->isEmpty()
+                ? $institucion
+                : (
+                    $instituciones->firstWhere(
+                        'id_socio',
+                        $cuotas->first()->id_socio
+                    ) ?? $institucion
+                );
             $descuentosGarante = $garantesPorPapeleta
                 ->get($clave, collect())
                 ->values();
@@ -130,8 +130,10 @@ class PrestamoConciliacionService
                     $usuarioId,
                     $ahora
                 );
-                $resultado['socio_institucion_id'] = $institucion->id;
-                $resultado['id_socio'] = $institucion->id_socio;
+                $resultado['socio_institucion_id'] =
+                    $institucionResultado->id;
+                $resultado['id_socio'] =
+                    $institucionResultado->id_socio;
                 $resultado['clasificacion'] =
                     LotePrestamoConciliacion::SIN_CUOTA;
                 $resultado['observacion'] =
@@ -183,8 +185,10 @@ class PrestamoConciliacionService
                 $resultado['concepto'] = $operacion['concepto'];
                 $resultado['lote_garante_registro_id'] =
                     $operacion['garante']?->id;
-                $resultado['socio_institucion_id'] = $institucion->id;
-                $resultado['id_socio'] = $institucion->id_socio;
+                $resultado['socio_institucion_id'] =
+                    $institucionResultado->id;
+                $resultado['id_socio'] =
+                    $institucionResultado->id_socio;
                 $resultado['monto_excel'] =
                     $this->desdeCentavos($montoComparable);
                 $resultado['monto_excel_asignado'] =
@@ -615,8 +619,21 @@ SQL;
         ];
     }
 
-    private function cargarCuotas(LoteMensual $lote): Collection
-    {
+    private function cargarCuotasPorPapeleta(
+        LoteMensual $lote,
+        Collection $papeletas
+    ): Collection {
+        if ($papeletas->isEmpty()) {
+            return collect();
+        }
+
+        $expresionPapeleta = <<<'SQL'
+COALESCE(
+    NULLIF(TRIM(LEADING '0' FROM TRIM(CAST(si.papeleta AS CHAR))), ''),
+    '0'
+)
+SQL;
+
         return DB::table('cuotas_solicitud AS cs')
             ->join(
                 'solicitudes AS s',
@@ -624,12 +641,20 @@ SQL;
                 '=',
                 'cs.id_solicitud'
             )
+            ->join(
+                'socio_institucion AS si',
+                'si.id_socio',
+                '=',
+                's.ide_per'
+            )
             ->leftJoin('tasa AS t', 't.id_tasa', '=', 's.tipo_prestamo')
+            ->whereIn(DB::raw($expresionPapeleta), $papeletas->all())
             ->where('cs.mes', (int) $lote->mes)
             ->where('cs.gestion', (int) $lote->gestion)
-            ->where('cs.estado', 'PE')
-            ->whereIn('s.estado', ['AC', 'DI'])
+            ->whereRaw("UPPER(TRIM(cs.estado)) = 'PE'")
+            ->whereRaw("UPPER(TRIM(s.estado)) IN ('AC', 'DI')")
             ->select([
+                'si.papeleta',
                 's.ide_per AS id_socio',
                 's.id_solicitud',
                 's.tipo_prestamo',
@@ -641,12 +666,16 @@ SQL;
                 't.cod_desc',
                 't.tipo_tasa',
             ])
+            ->orderBy('si.papeleta')
             ->orderBy('s.ide_per')
             ->orderBy('s.tipo_prestamo')
             ->orderBy('s.id_solicitud')
             ->orderBy('cs.nro_cuota')
             ->get()
-            ->groupBy(fn (object $cuota): string => (string) $cuota->id_socio);
+            ->groupBy(
+                fn (object $cuota): string =>
+                    $this->normalizarCodigoPersonal($cuota->papeleta)
+            );
     }
 
     private function cargarCuotasObjetivoGarantes(

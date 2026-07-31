@@ -1,5 +1,8 @@
 <x-app-layout>
-    <x-slot name="header">Lotes mensuales</x-slot>
+    <x-slot name="header">
+        Lotes mensuales
+    </x-slot>
+
     <div class="container-fluid py-4">
         @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -129,7 +132,7 @@
                                 </td>
                                 <td>{{ $lote->created_at?->format('d/m/Y H:i') }}</td>
                                 <td class="text-end">
-                                    <div class="dropdown">
+                                    <div class="dropdown toolbox-dropdown">
                                         <button
                                             class="btn btn-outline-primary btn-sm dropdown-toggle"
                                             type="button"
@@ -138,7 +141,7 @@
                                             <i class="bi bi-gear-fill me-1"></i>
                                             Acciones
                                         </button>
-                                        <ul class="dropdown-menu dropdown-menu-end shadow">
+                                        <ul class="dropdown-menu dropdown-menu-end shadow toolbox-dropdown-menu">
                                             <li>
                                                 <a
                                                     class="dropdown-item"
@@ -188,4 +191,67 @@
             @endif
         </div>
     </div>
+
+    @push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.toolbox-dropdown').forEach(function (dropdown) {
+        const boton = dropdown.querySelector('[data-bs-toggle="dropdown"]');
+        const menu = dropdown.querySelector('.toolbox-dropdown-menu');
+
+        if (!boton || !menu) {
+            return;
+        }
+
+        let marcador = null;
+
+        const posicionarMenu = function () {
+            const botonRect = boton.getBoundingClientRect();
+            const separacion = 4;
+
+            menu.style.position = 'fixed';
+            menu.style.inset = 'auto';
+            menu.style.transform = 'none';
+            menu.style.margin = '0';
+            menu.style.right = `${window.innerWidth - botonRect.right}px`;
+            menu.style.left = 'auto';
+            menu.style.top = `${botonRect.bottom + separacion}px`;
+            menu.style.zIndex = '1090';
+
+            const menuRect = menu.getBoundingClientRect();
+
+            if (menuRect.bottom > window.innerHeight - 8) {
+                menu.style.top = `${Math.max(8, botonRect.top - menuRect.height - separacion)}px`;
+            }
+        };
+
+        const restaurarMenu = function () {
+            if (marcador?.parentNode) {
+                marcador.parentNode.insertBefore(menu, marcador);
+                marcador.remove();
+            }
+
+            marcador = null;
+            menu.removeAttribute('style');
+        };
+
+        dropdown.addEventListener('shown.bs.dropdown', function () {
+            marcador = document.createComment('toolbox-menu');
+            menu.parentNode.insertBefore(marcador, menu);
+            document.body.appendChild(menu);
+            posicionarMenu();
+
+            window.addEventListener('resize', posicionarMenu);
+            window.addEventListener('scroll', posicionarMenu, true);
+        });
+
+        dropdown.addEventListener('hidden.bs.dropdown', function () {
+            window.removeEventListener('resize', posicionarMenu);
+            window.removeEventListener('scroll', posicionarMenu, true);
+            restaurarMenu();
+        });
+    });
+});
+</script>
+    @endpush
 </x-app-layout>

@@ -6,6 +6,7 @@ use App\Http\Requests\StorePrestamoArchivoRequest;
 use App\Models\LoteArchivo;
 use App\Models\LoteMensual;
 use App\Models\LotePrestamoRegistro;
+use App\Services\ProcesamientoMensual\EstadoLoteMensualService;
 use App\Services\ProcesamientoMensual\PrestamoExcelImportService;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
@@ -22,7 +23,8 @@ class PrestamoArchivoController extends Controller
     public function store(
         StorePrestamoArchivoRequest $request,
         LoteMensual $lote,
-        PrestamoExcelImportService $importador
+        PrestamoExcelImportService $importador,
+        EstadoLoteMensualService $estadoLote
     ): RedirectResponse {
         /** @var array<int, UploadedFile> $archivos */
         $archivos = $request->file('archivos', []);
@@ -169,6 +171,8 @@ class PrestamoArchivoController extends Controller
             'filas_importadas'
         ));
 
+        $estadoLote->sincronizar($lote->fresh());
+
         return redirect()
             ->route('procesamiento-mensual.lotes.archivos.index', $lote)
             ->with(
@@ -178,7 +182,10 @@ class PrestamoArchivoController extends Controller
             );
     }
 
-    public function limpiar(LoteMensual $lote): RedirectResponse
+    public function limpiar(
+        LoteMensual $lote,
+        EstadoLoteMensualService $estadoLote
+    ): RedirectResponse
     {
         if (DB::table('lote_prestamo_procesamientos')
             ->where('lote_mensual_id', $lote->id)
@@ -234,6 +241,8 @@ class PrestamoArchivoController extends Controller
         if ($rutas !== []) {
             Storage::disk('local')->delete($rutas);
         }
+
+        $estadoLote->sincronizar($lote->fresh());
 
         return redirect()
             ->route('procesamiento-mensual.lotes.archivos.index', $lote)

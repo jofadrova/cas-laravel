@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\LoteArchivo;
 use App\Models\LoteMensual;
+use App\Rules\NombreArchivoProcesamientoMensual;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
@@ -29,6 +30,9 @@ class StoreCertificadoAporteArchivoRequest extends FormRequest
                 'required',
                 'file',
                 'mimes:xlsx,xls',
+                new NombreArchivoProcesamientoMensual(
+                    NombreArchivoProcesamientoMensual::GRUPO_CERTIFICADOS
+                ),
                 'max:10240',
             ],
         ];

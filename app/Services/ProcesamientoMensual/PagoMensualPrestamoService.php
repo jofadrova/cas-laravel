@@ -205,6 +205,7 @@ class PagoMensualPrestamoService
                     'monto' => $monto,
                     'estado' => 'AC',
                     'idlog' => $usuarioId,
+                    'fecha' => now(),
                 ]);
 
                 DB::table('lote_prestamo_pagos')->insert([

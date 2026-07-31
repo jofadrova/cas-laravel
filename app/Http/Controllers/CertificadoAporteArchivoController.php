@@ -243,7 +243,10 @@ class CertificadoAporteArchivoController extends Controller
             );
     }
 
-    public function limpiar(LoteMensual $lote): RedirectResponse
+    public function limpiar(
+        LoteMensual $lote,
+        EstadoLoteMensualService $estadoLote
+    ): RedirectResponse
     {
         if (in_array($lote->estado, [
             LoteMensual::ESTADO_PROCESADO,
@@ -292,6 +295,8 @@ class CertificadoAporteArchivoController extends Controller
         if ($rutas !== []) {
             Storage::disk('local')->delete($rutas);
         }
+
+        $estadoLote->sincronizar($lote->fresh());
 
         return redirect()
             ->route('procesamiento-mensual.lotes.certificados.index', $lote)

@@ -10,9 +10,6 @@ class LoteMensual extends Model
 {
     public const ESTADO_BORRADOR = 'BORRADOR';
     public const ESTADO_CARGADO = 'CARGADO';
-    public const ESTADO_VALIDANDO = 'VALIDANDO';
-    public const ESTADO_OBSERVADO = 'OBSERVADO';
-    public const ESTADO_VALIDADO = 'VALIDADO';
     public const ESTADO_PROCESADO = 'PROCESADO';
     public const ESTADO_CERRADO = 'CERRADO';
     public const ESTADO_ANULADO = 'ANULADO';
@@ -20,9 +17,6 @@ class LoteMensual extends Model
     public const ESTADOS = [
         self::ESTADO_BORRADOR,
         self::ESTADO_CARGADO,
-        self::ESTADO_VALIDANDO,
-        self::ESTADO_OBSERVADO,
-        self::ESTADO_VALIDADO,
         self::ESTADO_PROCESADO,
         self::ESTADO_CERRADO,
         self::ESTADO_ANULADO,
@@ -88,9 +82,6 @@ class LoteMensual extends Model
         return match ($this->estado) {
             self::ESTADO_BORRADOR => 'bg-secondary',
             self::ESTADO_CARGADO => 'bg-primary',
-            self::ESTADO_VALIDANDO => 'bg-info text-dark',
-            self::ESTADO_OBSERVADO => 'bg-warning text-dark',
-            self::ESTADO_VALIDADO => 'bg-success',
             self::ESTADO_PROCESADO => 'bg-dark',
             self::ESTADO_CERRADO => 'bg-success',
             self::ESTADO_ANULADO => 'bg-danger',
@@ -132,7 +123,11 @@ class LoteMensual extends Model
     {
         return ! in_array(
             $this->estado,
-            [self::ESTADO_CERRADO, self::ESTADO_ANULADO],
+            [
+                self::ESTADO_PROCESADO,
+                self::ESTADO_CERRADO,
+                self::ESTADO_ANULADO,
+            ],
             true
         );
     }
