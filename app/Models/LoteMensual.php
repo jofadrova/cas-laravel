@@ -9,9 +9,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class LoteMensual extends Model
 {
     public const ESTADO_BORRADOR = 'BORRADOR';
+
     public const ESTADO_CARGADO = 'CARGADO';
+
     public const ESTADO_PROCESADO = 'PROCESADO';
+
     public const ESTADO_CERRADO = 'CERRADO';
+
     public const ESTADO_ANULADO = 'ANULADO';
 
     public const ESTADOS = [
@@ -124,6 +128,7 @@ class LoteMensual extends Model
         return ! in_array(
             $this->estado,
             [
+                self::ESTADO_CARGADO,
                 self::ESTADO_PROCESADO,
                 self::ESTADO_CERRADO,
                 self::ESTADO_ANULADO,

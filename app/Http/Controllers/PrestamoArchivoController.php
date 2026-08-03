@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StorePrestamoArchivoRequest;
 use App\Models\LoteArchivo;
 use App\Models\LoteMensual;
+use App\Models\LotePrestamoConciliacion;
 use App\Models\LotePrestamoRegistro;
 use App\Services\ProcesamientoMensual\EstadoLoteMensualService;
 use App\Services\ProcesamientoMensual\PrestamoExcelImportService;
@@ -37,14 +38,14 @@ class PrestamoArchivoController extends Controller
             } catch (InvalidArgumentException $exception) {
                 throw ValidationException::withMessages([
                     "archivos.{$indice}" => $archivo->getClientOriginalName()
-                        . ': ' . $exception->getMessage(),
+                        .': '.$exception->getMessage(),
                 ]);
             }
 
             if (isset($hashesDelGrupo[$lectura['hash_sha256']])) {
                 throw ValidationException::withMessages([
                     "archivos.{$indice}" => $archivo->getClientOriginalName()
-                        . ': este mismo archivo fue seleccionado más de una vez.',
+                        .': este mismo archivo fue seleccionado más de una vez.',
                 ]);
             }
 
@@ -57,7 +58,7 @@ class PrestamoArchivoController extends Controller
             if ($yaExiste) {
                 throw ValidationException::withMessages([
                     "archivos.{$indice}" => $archivo->getClientOriginalName()
-                        . ': este archivo ya fue cargado anteriormente en el lote.',
+                        .': este archivo ya fue cargado anteriormente en el lote.',
                 ]);
             }
 
@@ -87,7 +88,7 @@ class PrestamoArchivoController extends Controller
                     ->exists()) {
                     throw ValidationException::withMessages([
                         'archivos' => 'El pago mensual de Préstamos ya fue '
-                            . 'consolidado. No se admiten nuevas cargas.',
+                            .'consolidado. No se admiten nuevas cargas.',
                     ]);
                 }
 
@@ -95,7 +96,7 @@ class PrestamoArchivoController extends Controller
                     /** @var UploadedFile $archivoSubido */
                     $archivoSubido = $item['archivo'];
                     $datos = $item['datos'];
-                    $nombreGuardado = Str::uuid() . '.' . $datos['extension'];
+                    $nombreGuardado = Str::uuid().'.'.$datos['extension'];
                     $directorio = "procesamiento-mensual/lotes/{$lote->id}/prestamos";
                     $ruta = $archivoSubido->storeAs(
                         $directorio,
@@ -177,16 +178,15 @@ class PrestamoArchivoController extends Controller
             ->route('procesamiento-mensual.lotes.archivos.index', $lote)
             ->with(
                 'success',
-                count($lecturas) . ' archivo(s) de préstamos cargado(s). '
-                . "{$filas} fila(s) fueron incorporadas a la tabla consolidada."
+                count($lecturas).' archivo(s) de préstamos cargado(s). '
+                ."{$filas} fila(s) fueron incorporadas a la tabla consolidada."
             );
     }
 
     public function limpiar(
         LoteMensual $lote,
         EstadoLoteMensualService $estadoLote
-    ): RedirectResponse
-    {
+    ): RedirectResponse {
         if (DB::table('lote_prestamo_procesamientos')
             ->where('lote_mensual_id', $lote->id)
             ->exists()) {
@@ -195,7 +195,7 @@ class PrestamoArchivoController extends Controller
                 ->with(
                     'error',
                     'No es posible limpiar Préstamos porque el pago mensual '
-                    . 'ya fue consolidado. El grupo permanece solo para consulta.'
+                    .'ya fue consolidado. El grupo permanece solo para consulta.'
                 );
         }
 
@@ -215,6 +215,7 @@ class PrestamoArchivoController extends Controller
         $archivos = LoteArchivo::query()
             ->where('lote_mensual_id', $lote->id)
             ->where('tipo', LoteArchivo::TIPO_PRESTAMOS)
+            ->where('ruta', 'not like', '%/otros/%')
             ->get(['id', 'ruta']);
 
         if ($archivos->isEmpty()) {
@@ -227,6 +228,10 @@ class PrestamoArchivoController extends Controller
         $rutas = $archivos->pluck('ruta')->filter()->values()->all();
 
         DB::transaction(function () use ($lote, $idsArchivos): void {
+            LotePrestamoConciliacion::query()
+                ->where('lote_mensual_id', $lote->id)
+                ->delete();
+
             LotePrestamoRegistro::query()
                 ->where('lote_mensual_id', $lote->id)
                 ->whereIn('lote_archivo_id', $idsArchivos)
@@ -248,7 +253,7 @@ class PrestamoArchivoController extends Controller
             ->route('procesamiento-mensual.lotes.archivos.index', $lote)
             ->with(
                 'success',
-                'La importación de préstamos fue limpiada. Ya puede cargar otros archivos.'
+                'Los archivos Excel principales de préstamos fueron eliminados.'
             );
     }
 }

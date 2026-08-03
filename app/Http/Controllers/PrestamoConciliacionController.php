@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\LoteMensual;
 use App\Models\LoteArchivo;
 use App\Models\LoteGaranteRegistro;
+use App\Models\LoteMensual;
 use App\Models\LotePrestamoConciliacion;
 use App\Models\LotePrestamoRegistro;
 use App\Services\ProcesamientoMensual\PagoMensualPrestamoService;
@@ -41,6 +41,7 @@ class PrestamoConciliacionController extends Controller
                 'garanteRegistro:id,lote_archivo_id,fila_origen,codigo_titular,nombre_titular,tipo_garante,codigo_garante,nombre_garante,monto_bs,id_solicitud,id_cuota_solicitud,monto_aplicable,monto_acumulado,saldo_pendiente,estado_conciliacion,estado_aplicacion,observacion_excel,observacion_sistema',
             ])
             ->where('lote_mensual_id', $lote->id)
+            ->soloAplicables()
             ->when(
                 $clasificacion !== '',
                 fn ($query) => $query->where(
@@ -89,6 +90,7 @@ SQL,
 
         $conteos = LotePrestamoConciliacion::query()
             ->where('lote_mensual_id', $lote->id)
+            ->soloAplicables()
             ->selectRaw('clasificacion, COUNT(*) AS total')
             ->groupBy('clasificacion')
             ->pluck('total', 'clasificacion');
@@ -122,8 +124,7 @@ SQL,
         $resumenGarantes = [
             'total' => $registrosGarantes->count(),
             'monto_bs' => $registrosGarantes->sum(
-                fn (LoteGaranteRegistro $registro): float =>
-                    (float) $registro->monto_bs
+                fn (LoteGaranteRegistro $registro): float => (float) $registro->monto_bs
             ),
             'pendientes' => $registrosGarantes
                 ->where(
@@ -144,43 +145,29 @@ SQL,
                 )
                 ->count(),
         ];
-        $consultaCuotasPropias = LotePrestamoConciliacion::query()
-            ->where('lote_mensual_id', $lote->id)
-            ->where(function ($query): void {
-                $query
-                    ->whereNull('concepto')
-                    ->orWhere(
-                        'concepto',
-                        LotePrestamoConciliacion::CONCEPTO_CUOTA
-                    );
-            });
-
-        $totalCuotasPropias = (clone $consultaCuotasPropias)->count();
-        $cuotasCoinciden = (clone $consultaCuotasPropias)
-            ->where('clasificacion', LotePrestamoConciliacion::COINCIDE)
-            ->count();
-        $cuotasPendientes = (clone $consultaCuotasPropias)
-            ->where('clasificacion', LotePrestamoConciliacion::FALTA)
-            ->count();
-        $cuotasObservadas =
-            $totalCuotasPropias - $cuotasCoinciden - $cuotasPendientes;
         $montoInformadoGlobal = (float) LotePrestamoRegistro::query()
             ->where('lote_mensual_id', $lote->id)
             ->sum('monto_descuento');
 
         /*
-         * Resumen único de operaciones propias y descuentos a garantes.
-         * El monto proviene solo del Excel general: el archivo de garantes
-         * distribuye ese mismo descuento y sumarlo duplicaría el total.
+         * Usa exactamente las mismas operaciones aplicables del detalle.
+         * Los garantes PENDIENTES u OBSERVADOS permanecen en seguimiento,
+         * pero no forman parte de este resumen ni de la comparación.
          */
         $resumenGlobal = [
-            'total' => $totalCuotasPropias + $resumenGarantes['total'],
+            'total' => $totalOperacionesClasificadas,
             'monto_bs' => $montoInformadoGlobal,
-            'pendientes' =>
-                $cuotasPendientes + $resumenGarantes['pendientes'],
-            'listos' => $cuotasCoinciden + $resumenGarantes['listos'],
-            'observados' =>
-                $cuotasObservadas + $resumenGarantes['observados'],
+            'pendientes' => (int) $resumen->get(
+                LotePrestamoConciliacion::FALTA,
+                0
+            ),
+            'listos' => (int) $resumen->get(
+                LotePrestamoConciliacion::COINCIDE,
+                0
+            ),
+            'observados' => $totalOperacionesClasificadas
+                - (int) $resumen->get(LotePrestamoConciliacion::COINCIDE, 0)
+                - (int) $resumen->get(LotePrestamoConciliacion::FALTA, 0),
         ];
         $procesamientoPago = DB::table('lote_prestamo_procesamientos')
             ->where('lote_mensual_id', $lote->id)
@@ -191,10 +178,10 @@ SQL,
             ]);
         $puedeCargarGarantes = $procesamientoPago === null
             && ! in_array($lote->estado, [
-            LoteMensual::ESTADO_PROCESADO,
-            LoteMensual::ESTADO_CERRADO,
-            LoteMensual::ESTADO_ANULADO,
-        ], true);
+                LoteMensual::ESTADO_PROCESADO,
+                LoteMensual::ESTADO_CERRADO,
+                LoteMensual::ESTADO_ANULADO,
+            ], true);
         $puedeRealizarPago = $procesamientoPago === null
             && ! in_array($lote->estado, [
                 LoteMensual::ESTADO_PROCESADO,
@@ -217,7 +204,7 @@ SQL,
             })
             ->selectRaw(
                 "COALESCE(clasificacion, 'SIN_CLASIFICAR') AS estado, "
-                . 'COUNT(*) AS total'
+                .'COUNT(*) AS total'
             )
             ->groupByRaw(
                 "COALESCE(clasificacion, 'SIN_CLASIFICAR')"
@@ -227,11 +214,9 @@ SQL,
         $etiquetasInconsistencias = [
             LotePrestamoConciliacion::FALTA => 'Falta',
             LotePrestamoConciliacion::DEMASIA => 'Demasía',
-            LotePrestamoConciliacion::SOCIO_NO_ENCONTRADO =>
-                'Socio no encontrado',
+            LotePrestamoConciliacion::SOCIO_NO_ENCONTRADO => 'Socio no encontrado',
             LotePrestamoConciliacion::SIN_CUOTA => 'Sin cuota',
-            LotePrestamoConciliacion::TIPO_NO_CLASIFICADO =>
-                'Tipo no clasificado',
+            LotePrestamoConciliacion::TIPO_NO_CLASIFICADO => 'Tipo no clasificado',
             'SIN_CLASIFICAR' => 'Sin clasificar',
         ];
 
@@ -266,18 +251,15 @@ SQL,
             [
                 'lote' => $lote,
                 'conciliaciones' => $conciliaciones,
-                'clasificaciones' =>
-                    LotePrestamoConciliacion::CLASIFICACIONES,
+                'clasificaciones' => LotePrestamoConciliacion::CLASIFICACIONES,
                 'clasificacionSeleccionada' => $clasificacion,
                 'papeletaBuscada' => $papeleta,
                 'nombreBuscado' => $nombre,
                 'resumen' => $resumen,
                 'totalImportados' => $totalImportados,
-                'totalOperacionesClasificadas' =>
-                    $totalOperacionesClasificadas,
+                'totalOperacionesClasificadas' => $totalOperacionesClasificadas,
                 'totalRegistrosAtendidos' => $totalRegistrosAtendidos,
-                'integridadCompleta' =>
-                    $totalImportados === $totalRegistrosAtendidos,
+                'integridadCompleta' => $totalImportados === $totalRegistrosAtendidos,
                 'archivosGarantes' => $archivosGarantes,
                 'registrosGarantes' => $registrosGarantes,
                 'resumenGarantes' => $resumenGarantes,
@@ -285,10 +267,8 @@ SQL,
                 'puedeCargarGarantes' => $puedeCargarGarantes,
                 'procesamientoPago' => $procesamientoPago,
                 'puedeRealizarPago' => $puedeRealizarPago,
-                'resumenInconsistenciasPago' =>
-                    $resumenInconsistenciasPago,
-                'totalInconsistenciasPago' =>
-                    $totalInconsistenciasPago,
+                'resumenInconsistenciasPago' => $resumenInconsistenciasPago,
+                'totalInconsistenciasPago' => $totalInconsistenciasPago,
                 'garantesPendientesPago' => $garantesPendientesPago,
             ]
         );
@@ -311,7 +291,7 @@ SQL,
                 ->with(
                     'error',
                     'El pago mensual de Préstamos ya fue consolidado. '
-                    . 'La información permanece disponible solo para consulta.'
+                    .'La información permanece disponible solo para consulta.'
                 );
         }
 
@@ -350,7 +330,7 @@ SQL,
             ->with(
                 'success',
                 'La comparación terminó correctamente. Se clasificaron '
-                . 'las cuotas propias y los descuentos a garantes.'
+                .'las cuotas propias y los descuentos a garantes.'
             );
     }
 
@@ -370,27 +350,27 @@ SQL,
         }
 
         $mensaje = 'Pago mensual consolidado correctamente. Se generaron '
-            . number_format($resultado['cantidad_pagos'])
-            . ' pagos por un total de '
-            . number_format(
+            .number_format($resultado['cantidad_pagos'])
+            .' pagos por un total de '
+            .number_format(
                 (float) $resultado['monto_total'],
                 2,
                 ',',
                 '.'
             )
-            . '.';
+            .'.';
 
         if ($resultado['operaciones_ignoradas'] > 0) {
             $mensaje .= ' Se ignoraron '
-                . number_format($resultado['operaciones_ignoradas'])
-                . ' operaciones que no coincidían; deberán resolverse '
-                . 'individualmente desde “Realizar pago”.';
+                .number_format($resultado['operaciones_ignoradas'])
+                .' operaciones que no coincidían; deberán resolverse '
+                .'individualmente desde “Realizar pago”.';
         }
 
         if ($resultado['garantes_pendientes'] > 0) {
             $mensaje .= ' Permanecen '
-                . number_format($resultado['garantes_pendientes'])
-                . ' descuentos a garantes pendientes de completar una cuota.';
+                .number_format($resultado['garantes_pendientes'])
+                .' descuentos a garantes pendientes de completar una cuota.';
         }
 
         return redirect()
@@ -402,6 +382,7 @@ SQL,
     }
 
     public function resumen(
+        Request $request,
         LoteMensual $lote
     ): View|RedirectResponse {
         $procesamiento = DB::table('lote_prestamo_procesamientos')
@@ -420,7 +401,14 @@ SQL,
                 );
         }
 
-        $pagos = DB::table('lote_prestamo_pagos AS lp')
+        $papeletaPago = trim($request->string('papeleta_pago')->toString());
+        $nombrePago = trim($request->string('nombre_pago')->toString());
+
+        $instituciones = DB::table('socio_institucion')
+            ->selectRaw('id_socio, MAX(papeleta) AS papeleta')
+            ->groupBy('id_socio');
+
+        $consultaPagos = DB::table('lote_prestamo_pagos AS lp')
             ->join('pagos AS p', 'p.id', '=', 'lp.pago_id')
             ->join(
                 'cuotas_solicitud AS cs',
@@ -440,12 +428,35 @@ SQL,
                 '=',
                 's.tipo_prestamo'
             )
+            ->leftJoin('socios AS so', 'so.id', '=', 's.ide_per')
+            ->leftJoinSub(
+                $instituciones,
+                'si',
+                fn ($join) => $join->on('si.id_socio', '=', 's.ide_per')
+            )
             ->where(
                 'lp.lote_prestamo_procesamiento_id',
                 $procesamiento->id
             )
+            ->when(
+                $papeletaPago !== '',
+                fn ($query) => $query->where(
+                    'si.papeleta',
+                    'like',
+                    "%{$papeletaPago}%"
+                )
+            )
+            ->when(
+                $nombrePago !== '',
+                fn ($query) => $query->whereRaw(
+                    "CONCAT_WS(' ', so.paterno, so.materno, so.nombres) LIKE ?",
+                    ["%{$nombrePago}%"]
+                )
+            );
+
+        $pagos = $consultaPagos
             ->orderBy('p.id')
-            ->get([
+            ->paginate(50, [
                 'p.id AS pago_id',
                 'p.anexo',
                 'p.monto',
@@ -462,15 +473,49 @@ SQL,
                 's.saldo_actual',
                 's.estado AS estado_solicitud',
                 't.descripcion_tasa',
-            ]);
+                'si.papeleta',
+                'so.paterno',
+                'so.materno',
+                'so.nombres',
+            ], 'pagos_page')
+            ->withQueryString();
 
-        $solicitudes = DB::table('lote_prestamo_solicitudes')
+        $conteosPagos = DB::table('lote_prestamo_pagos')
+            ->where('lote_prestamo_procesamiento_id', $procesamiento->id)
+            ->selectRaw('concepto, COUNT(*) AS total')
+            ->groupBy('concepto')
+            ->pluck('total', 'concepto');
+
+        $idSolicitudPago = trim(
+            $request->string('id_solicitud_pago')->toString()
+        );
+
+        $consultaSolicitudes = DB::table('lote_prestamo_solicitudes')
             ->where(
                 'lote_prestamo_procesamiento_id',
                 $procesamiento->id
             )
+            ->when(
+                $idSolicitudPago !== '',
+                fn ($query) => $query->where(
+                    'id_solicitud',
+                    $idSolicitudPago
+                )
+            );
+
+        $solicitudes = $consultaSolicitudes
             ->orderBy('id_solicitud')
-            ->get();
+            ->paginate(50, ['*'], 'solicitudes_page')
+            ->withQueryString();
+
+        $resumenSolicitudes = DB::table('lote_prestamo_solicitudes')
+            ->where(
+                'lote_prestamo_procesamiento_id',
+                $procesamiento->id
+            )
+            ->selectRaw('COUNT(*) AS total')
+            ->selectRaw("SUM(CASE WHEN estado_nuevo = 'PA' THEN 1 ELSE 0 END) AS finalizadas")
+            ->first();
 
         $inconsistencias = DB::table(
             'lote_prestamo_conciliaciones'
@@ -487,7 +532,7 @@ SQL,
             })
             ->selectRaw(
                 "COALESCE(clasificacion, 'SIN_CLASIFICAR') AS estado, "
-                . 'COUNT(*) AS total'
+                .'COUNT(*) AS total'
             )
             ->groupByRaw(
                 "COALESCE(clasificacion, 'SIN_CLASIFICAR')"
@@ -508,22 +553,14 @@ SQL,
             ->count();
 
         $resumenPago = [
-            'pagos_normales' => $pagos
-                ->where(
-                    'concepto',
-                    LotePrestamoConciliacion::CONCEPTO_CUOTA
-                )
-                ->count(),
-            'pagos_garantes' => $pagos
-                ->where(
-                    'concepto',
-                    LotePrestamoConciliacion::CONCEPTO_GARANTE
-                )
-                ->count(),
-            'solicitudes_actualizadas' => $solicitudes->count(),
-            'solicitudes_finalizadas' => $solicitudes
-                ->where('estado_nuevo', 'PA')
-                ->count(),
+            'pagos_normales' => (int) ($conteosPagos[
+                LotePrestamoConciliacion::CONCEPTO_CUOTA
+            ] ?? 0),
+            'pagos_garantes' => (int) ($conteosPagos[
+                LotePrestamoConciliacion::CONCEPTO_GARANTE
+            ] ?? 0),
+            'solicitudes_actualizadas' => (int) $resumenSolicitudes->total,
+            'solicitudes_finalizadas' => (int) $resumenSolicitudes->finalizadas,
             'operaciones_ignoradas' => $inconsistencias->sum('total'),
             'garantes_pendientes' => $garantesPendientes,
         ];

@@ -40,6 +40,11 @@ class CertificadoAporteExcelImportService
         'COMISION',
     ];
 
+    public function leerAdicional(UploadedFile $archivo, LoteMensual $lote): array
+    {
+        return app(FvsExcelImportService::class)->leerAdicionalAporte($archivo, $lote);
+    }
+
     public function leer(UploadedFile $archivo, LoteMensual $lote): array
     {
         try {
@@ -104,7 +109,7 @@ class CertificadoAporteExcelImportService
         if ($cantidadColumnas !== count(self::COLUMNAS)) {
             throw new InvalidArgumentException(
                 'La estructura del Excel no coincide: se esperaban '
-                . count(self::COLUMNAS) . " columnas y se encontraron {$cantidadColumnas}."
+                .count(self::COLUMNAS)." columnas y se encontraron {$cantidadColumnas}."
             );
         }
 
@@ -136,7 +141,7 @@ class CertificadoAporteExcelImportService
         }
 
         throw new InvalidArgumentException(
-            'La estructura del Excel no coincide. ' . implode('; ', $diferencias) . '.'
+            'La estructura del Excel no coincide. '.implode('; ', $diferencias).'.'
         );
     }
 
@@ -179,14 +184,14 @@ class CertificadoAporteExcelImportService
             if ($gestion !== $lote->gestion) {
                 throw new InvalidArgumentException(
                     "La fila {$fila} pertenece a la gestión {$gestion}; "
-                    . "el lote corresponde a {$lote->gestion}."
+                    ."el lote corresponde a {$lote->gestion}."
                 );
             }
 
             if ($this->normalizarMes($mes) !== $mesEsperado) {
                 throw new InvalidArgumentException(
                     "La fila {$fila} pertenece al mes {$mes}; "
-                    . "el lote corresponde a {$lote->nombre_mes}."
+                    ."el lote corresponde a {$lote->nombre_mes}."
                 );
             }
 
@@ -197,7 +202,7 @@ class CertificadoAporteExcelImportService
             if ($montoDescuento === null || $tot2 === null || $comision === null) {
                 throw new InvalidArgumentException(
                     "La fila {$fila} contiene un importe no válido en "
-                    . 'MONTO_DESCUENTO, TOT_2 o COMISION.'
+                    .'MONTO_DESCUENTO, TOT_2 o COMISION.'
                 );
             }
 
@@ -339,7 +344,7 @@ class CertificadoAporteExcelImportService
 
         while ($numero > 0) {
             $numero--;
-            $letra = chr(65 + ($numero % 26)) . $letra;
+            $letra = chr(65 + ($numero % 26)).$letra;
             $numero = intdiv($numero, 26);
         }
 

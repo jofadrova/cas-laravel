@@ -125,12 +125,48 @@
                 </div>
             </div>
 
+            <div class="card-body border-bottom">
+                <form method="GET" action="{{ route('procesamiento-mensual.lotes.archivos.prestamos.conciliacion.resumen', $lote) }}">
+                    @if(request('id_solicitud_pago'))
+                        <input type="hidden" name="id_solicitud_pago" value="{{ request('id_solicitud_pago') }}">
+                    @endif
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-4">
+                            <label for="papeleta_pago" class="form-label fw-semibold">Papeleta</label>
+                            <input type="text" class="form-control" id="papeleta_pago" name="papeleta_pago"
+                                value="{{ request('papeleta_pago') }}" placeholder="Buscar por número de papeleta">
+                        </div>
+                        <div class="col-md-5">
+                            <label for="nombre_pago" class="form-label fw-semibold">Nombre del socio</label>
+                            <input type="text" class="form-control" id="nombre_pago" name="nombre_pago"
+                                value="{{ request('nombre_pago') }}" placeholder="Buscar por apellido o nombre">
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary flex-fill">
+                                    <i class="bi bi-search me-1"></i> Buscar
+                                </button>
+                                <a href="{{ route('procesamiento-mensual.lotes.archivos.prestamos.conciliacion.resumen', [
+                                        'lote' => $lote,
+                                        'id_solicitud_pago' => request('id_solicitud_pago'),
+                                    ]) }}"
+                                    class="btn btn-outline-secondary" title="Limpiar búsqueda">
+                                    <i class="bi bi-arrow-counterclockwise"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
             <div class="table-responsive">
                 <table class="table table-sm table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
                             <th>Pago</th>
                             <th>Solicitud</th>
+                            <th>Papeleta</th>
+                            <th>Nombre del socio</th>
                             <th>Tipo</th>
                             <th>Cuota</th>
                             <th>Concepto</th>
@@ -145,6 +181,14 @@
                             <tr>
                                 <td class="fw-semibold">#{{ $pago->pago_id }}</td>
                                 <td>{{ $pago->id_solicitud }}</td>
+                                <td>{{ $pago->papeleta ?: 'Sin papeleta' }}</td>
+                                <td>
+                                    {{ trim(implode(' ', array_filter([
+                                        $pago->paterno,
+                                        $pago->materno,
+                                        $pago->nombres,
+                                    ]))) ?: 'Sin nombre' }}
+                                </td>
                                 <td>{{ $pago->descripcion_tasa ?: 'Sin descripción' }}</td>
                                 <td>
                                     N.º {{ $pago->nro_cuota }}
@@ -179,15 +223,15 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="text-center text-muted py-4">
-                                    No existen pagos para mostrar.
+                                <td colspan="11" class="text-center text-muted py-4">
+                                    No existen pagos que coincidan con la búsqueda.
                                 </td>
                             </tr>
                         @endforelse
                     </tbody>
                     <tfoot class="table-light">
                         <tr class="fw-bold">
-                            <td colspan="6" class="text-end">Total consolidado</td>
+                            <td colspan="8" class="text-end">Total consolidado</td>
                             <td class="text-end">
                                 {{ number_format((float) $procesamiento->monto_total, 2, ',', '.') }}
                             </td>
@@ -196,6 +240,12 @@
                     </tfoot>
                 </table>
             </div>
+
+            @if($pagos->hasPages())
+                <div class="card-footer bg-white">
+                    {{ $pagos->links() }}
+                </div>
+            @endif
         </div>
 
         <div class="card border-0 shadow-sm rounded-4 mb-4">
@@ -207,6 +257,39 @@
                 <div class="text-muted small">
                     Cambios aplicados en última cuota, saldo actual y estado.
                 </div>
+            </div>
+
+            <div class="card-body border-bottom">
+                <form method="GET" action="{{ route('procesamiento-mensual.lotes.archivos.prestamos.conciliacion.resumen', $lote) }}">
+                    @if(request('papeleta_pago'))
+                        <input type="hidden" name="papeleta_pago" value="{{ request('papeleta_pago') }}">
+                    @endif
+                    @if(request('nombre_pago'))
+                        <input type="hidden" name="nombre_pago" value="{{ request('nombre_pago') }}">
+                    @endif
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-9">
+                            <label for="id_solicitud_pago" class="form-label fw-semibold">ID de solicitud</label>
+                            <input type="number" min="1" class="form-control" id="id_solicitud_pago"
+                                name="id_solicitud_pago" value="{{ request('id_solicitud_pago') }}"
+                                placeholder="Ingrese el ID exacto de la solicitud">
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary flex-fill">
+                                    <i class="bi bi-search me-1"></i> Buscar
+                                </button>
+                                <a href="{{ route('procesamiento-mensual.lotes.archivos.prestamos.conciliacion.resumen', [
+                                        'lote' => $lote,
+                                        'papeleta_pago' => request('papeleta_pago'),
+                                        'nombre_pago' => request('nombre_pago'),
+                                    ]) }}" class="btn btn-outline-secondary" title="Limpiar búsqueda de solicitudes">
+                                    <i class="bi bi-arrow-counterclockwise"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
             </div>
 
             <div class="table-responsive">
@@ -223,7 +306,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($solicitudes as $solicitud)
+                        @forelse($solicitudes as $solicitud)
                             <tr>
                                 <td class="fw-semibold">
                                     {{ $solicitud->id_solicitud }}
@@ -255,10 +338,22 @@
                                     </span>
                                 </td>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-4">
+                                    No existe una solicitud con el ID indicado.
+                                </td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
+
+            @if($solicitudes->hasPages())
+                <div class="card-footer bg-white">
+                    {{ $solicitudes->links() }}
+                </div>
+            @endif
         </div>
 
         <div class="d-flex justify-content-end">

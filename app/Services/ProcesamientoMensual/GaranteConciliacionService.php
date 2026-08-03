@@ -10,7 +10,9 @@ use Illuminate\Support\Facades\DB;
 class GaranteConciliacionService
 {
     private const TIPO_PRESTAMO_REGULAR = 1;
+
     private const FACTOR_REGULAR = 6.96;
+
     private const TOLERANCIA_CENTAVOS = 1;
 
     public function ejecutar(LoteMensual $lote, ?int $usuarioId): Collection
@@ -47,13 +49,6 @@ class GaranteConciliacionService
                 );
             }
 
-            $this->actualizarAcumulados(
-                $registros
-                    ->pluck('id_cuota_solicitud')
-                    ->filter()
-                    ->unique()
-                    ->values()
-            );
         });
 
         return LoteGaranteRegistro::query()
@@ -92,6 +87,7 @@ class GaranteConciliacionService
 
             if ($garante === null) {
                 $codigosNoEncontrados[] = $codigo;
+
                 continue;
             }
 
@@ -102,8 +98,8 @@ class GaranteConciliacionService
             $this->observarGrupo(
                 $grupo,
                 'No se encontraron las papeletas de garante: '
-                . implode(', ', array_unique($codigosNoEncontrados))
-                . '.',
+                .implode(', ', array_unique($codigosNoEncontrados))
+                .'.',
                 $usuarioId,
                 (int) $titular->id_socio
             );
@@ -145,7 +141,7 @@ class GaranteConciliacionService
             $this->observarGrupo(
                 $grupo,
                 'No se encontró un préstamo REGULAR AC/DI del titular '
-                . 'que tenga registrados los garantes del archivo.',
+                .'que tenga registrados los garantes del archivo.',
                 $usuarioId,
                 (int) $titular->id_socio,
                 $garantes
@@ -158,7 +154,7 @@ class GaranteConciliacionService
             $this->observarGrupo(
                 $grupo,
                 'Se encontraron varios préstamos REGULARES con los mismos '
-                . 'garantes. La solicitud debe seleccionarse manualmente.',
+                .'garantes. La solicitud debe seleccionarse manualmente.',
                 $usuarioId,
                 (int) $titular->id_socio,
                 $garantes
@@ -212,14 +208,60 @@ class GaranteConciliacionService
                     ((float) $registro->monto_bs) / self::FACTOR_REGULAR,
                     6
                 ),
-                'estado_aplicacion' =>
-                    LoteGaranteRegistro::APLICACION_PENDIENTE,
-                'observacion_sistema' =>
-                    'Préstamo REGULAR y cuota PE más antigua identificados.',
+                'estado_aplicacion' => LoteGaranteRegistro::APLICACION_PENDIENTE,
+                'observacion_sistema' => 'Préstamo REGULAR y cuota PE más antigua identificados.',
                 'procesado_por' => $usuarioId,
                 'fecha_procesamiento' => now(),
             ])->save();
         }
+    }
+
+    public function actualizarMontosDesdeExcel(
+        Collection $registros,
+        array $montosExcelCentavos
+    ): void {
+        $cuotaIds = collect();
+
+        foreach ($registros as $registro) {
+            if ($registro->id_cuota_solicitud === null
+                || $registro->estado_aplicacion
+                    === LoteGaranteRegistro::APLICACION_ANULADO
+                || $registro->estado_aplicacion
+                    === LoteGaranteRegistro::APLICACION_APLICADO) {
+                continue;
+            }
+
+            $montoExcelCentavos = (int) ($montosExcelCentavos[$registro->id] ?? 0);
+            $factor = (float) ($registro->factor_conversion ?: self::FACTOR_REGULAR);
+
+            if ($montoExcelCentavos > 0) {
+                $registro->forceFill([
+                    'monto_aplicable' => $this->desdeCentavos(
+                        (int) round($montoExcelCentavos / $factor)
+                    ),
+                    'estado_aplicacion' => LoteGaranteRegistro::APLICACION_PENDIENTE,
+                    'observacion_sistema' => 'Descuento del garante verificado en los archivos Excel principales.',
+                    'updated_at' => now(),
+                ])->save();
+
+                $cuotaIds->push($registro->id_cuota_solicitud);
+
+                continue;
+            }
+
+            $registro->forceFill([
+                'monto_aplicable' => 0,
+                'monto_acumulado' => 0,
+                'saldo_pendiente' => 0,
+                'estado_aplicacion' => LoteGaranteRegistro::APLICACION_OBSERVADO,
+                'observacion_sistema' => 'La papeleta del garante no tiene un descuento asignable en los archivos Excel principales.',
+                'updated_at' => now(),
+            ])->save();
+
+            $cuotaIds->push($registro->id_cuota_solicitud);
+        }
+
+        $this->actualizarAcumulados($cuotaIds->unique()->values());
     }
 
     private function actualizarAcumulados(Collection $cuotaIds): void
@@ -237,12 +279,11 @@ class GaranteConciliacionService
                         LoteGaranteRegistro::APLICACION_ANULADO,
                     ])
                     ->update([
-                        'estado_aplicacion' =>
-                            LoteGaranteRegistro::APLICACION_OBSERVADO,
-                        'observacion_sistema' =>
-                            'La cuota asociada ya no se encuentra pendiente.',
+                        'estado_aplicacion' => LoteGaranteRegistro::APLICACION_OBSERVADO,
+                        'observacion_sistema' => 'La cuota asociada ya no se encuentra pendiente.',
                         'updated_at' => now(),
                     ]);
+
                 continue;
             }
 
@@ -257,8 +298,7 @@ class GaranteConciliacionService
                 ->get();
 
             $acumuladoCentavos = $pendientes->sum(
-                fn (LoteGaranteRegistro $registro): int =>
-                    $this->aCentavos($registro->monto_aplicable)
+                fn (LoteGaranteRegistro $registro): int => $this->aCentavos($registro->monto_aplicable)
             );
             $cuotaCentavos = $this->aCentavos($cuota->cuota_fija);
             $diferencia = $acumuladoCentavos - $cuotaCentavos;
@@ -269,8 +309,12 @@ class GaranteConciliacionService
                     'El acumulado completa la cuota. Está listo para aplicar.';
             } elseif ($diferencia < 0) {
                 $estado = LoteGaranteRegistro::APLICACION_PENDIENTE;
-                $observacion =
-                    'El descuento acumulado aún no completa la cuota.';
+                $observacion = 'CUOTA INCOMPLETA · PENDIENTE PARA EL PRÓXIMO MES. '
+                    .'El acumulado verificado es '
+                    .$this->desdeCentavos($acumuladoCentavos)
+                    .' y falta '
+                    .$this->desdeCentavos(-$diferencia)
+                    .'. Se conservará para combinarlo con el siguiente descuento.';
             } else {
                 $estado = LoteGaranteRegistro::APLICACION_OBSERVADO;
                 $observacion =
@@ -280,10 +324,8 @@ class GaranteConciliacionService
             LoteGaranteRegistro::query()
                 ->whereIn('id', $pendientes->pluck('id'))
                 ->update([
-                    'monto_acumulado' =>
-                        $this->desdeCentavos($acumuladoCentavos),
-                    'saldo_pendiente' =>
-                        $this->desdeCentavos(max(0, -$diferencia)),
+                    'monto_acumulado' => $this->desdeCentavos($acumuladoCentavos),
+                    'saldo_pendiente' => $this->desdeCentavos(max(0, -$diferencia)),
                     'estado_aplicacion' => $estado,
                     'observacion_sistema' => $observacion,
                     'updated_at' => now(),
@@ -301,8 +343,7 @@ class GaranteConciliacionService
     ): void {
         foreach ($grupo as $registro) {
             $garante = $garantes?->first(
-                fn (object $item): bool =>
-                    $this->normalizarCodigo($item->papeleta)
+                fn (object $item): bool => $this->normalizarCodigo($item->papeleta)
                     === $this->normalizarCodigo($registro->codigo_garante)
             );
 
@@ -317,8 +358,7 @@ class GaranteConciliacionService
                     ((float) $registro->monto_bs) / self::FACTOR_REGULAR,
                     6
                 ),
-                'estado_aplicacion' =>
-                    LoteGaranteRegistro::APLICACION_OBSERVADO,
+                'estado_aplicacion' => LoteGaranteRegistro::APLICACION_OBSERVADO,
                 'observacion_sistema' => $observacion,
                 'procesado_por' => $usuarioId,
                 'fecha_procesamiento' => now(),
@@ -352,8 +392,7 @@ SQL;
             ->orderByDesc('id')
             ->get()
             ->groupBy(
-                fn (object $item): string =>
-                    $this->normalizarCodigo($item->papeleta)
+                fn (object $item): string => $this->normalizarCodigo($item->papeleta)
             )
             ->map(fn (Collection $items): ?object => $items->first());
     }

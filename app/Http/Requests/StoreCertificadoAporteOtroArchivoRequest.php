@@ -5,10 +5,9 @@ namespace App\Http\Requests;
 use App\Models\LoteArchivo;
 use App\Models\LoteMensual;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Validator;
 
-class StorePrestamoOtroArchivoRequest extends FormRequest
+class StoreCertificadoAporteOtroArchivoRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -18,12 +17,7 @@ class StorePrestamoOtroArchivoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'archivo' => [
-                'required',
-                'file',
-                'mimes:xlsx,xls',
-                'max:10240',
-            ],
+            'archivo' => ['required', 'file', 'mimes:xlsx,xls', 'max:10240'],
         ];
     }
 
@@ -38,17 +32,6 @@ class StorePrestamoOtroArchivoRequest extends FormRequest
                     return;
                 }
 
-                if (DB::table('lote_prestamo_procesamientos')
-                    ->where('lote_mensual_id', $lote->id)
-                    ->exists()) {
-                    $validator->errors()->add(
-                        'archivo',
-                        'El pago mensual de Préstamos ya fue consolidado.'
-                    );
-
-                    return;
-                }
-
                 if (in_array($lote->estado, [
                     LoteMensual::ESTADO_PROCESADO,
                     LoteMensual::ESTADO_CERRADO,
@@ -60,16 +43,17 @@ class StorePrestamoOtroArchivoRequest extends FormRequest
                     );
                 }
 
-                $tieneArchivosPrincipales = LoteArchivo::query()
+                $principales = LoteArchivo::query()
                     ->where('lote_mensual_id', $lote->id)
-                    ->where('tipo', LoteArchivo::TIPO_PRESTAMOS)
+                    ->where('tipo', LoteArchivo::TIPO_CERTIFICADOS)
                     ->where('ruta', 'not like', '%/otros/%')
-                    ->exists();
+                    ->count();
 
-                if (! $tieneArchivosPrincipales) {
+                if ($principales < 3) {
                     $validator->errors()->add(
                         'archivo',
-                        'Primero debe cargar los archivos principales de Préstamos.'
+                        'Primero debe cargar el grupo principal de al menos 3 archivos '
+                        .'de Certificados de Aportes.'
                     );
                 }
             },

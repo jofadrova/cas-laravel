@@ -57,8 +57,8 @@ class StoreCertificadoAporteArchivoRequest extends FormRequest
                     $validator->errors()->add(
                         'archivos',
                         'No se pueden cargar archivos de Certificados de Aportes '
-                        . 'porque el lote se encuentra '
-                        . strtolower($lote->estado) . '.'
+                        .'porque el lote se encuentra '
+                        .strtolower($lote->estado).'.'
                     );
 
                     return;
@@ -67,6 +67,7 @@ class StoreCertificadoAporteArchivoRequest extends FormRequest
                 $existentes = LoteArchivo::query()
                     ->where('lote_mensual_id', $lote->id)
                     ->where('tipo', LoteArchivo::TIPO_CERTIFICADOS)
+                    ->where('ruta', 'not like', '%/otros/%')
                     ->count();
                 $nuevos = count($this->file('archivos', []));
                 $total = $existentes + $nuevos;
@@ -75,8 +76,8 @@ class StoreCertificadoAporteArchivoRequest extends FormRequest
                     $validator->errors()->add(
                         'archivos',
                         'El lote debe contener entre 3 y 10 archivos de '
-                        . "Certificados de Aportes. "
-                        . "Con esta selección tendría {$total}."
+                        .'Certificados de Aportes. '
+                        ."Con esta selección tendría {$total}."
                     );
                 }
 
@@ -84,8 +85,8 @@ class StoreCertificadoAporteArchivoRequest extends FormRequest
                     $validator->errors()->add(
                         'archivos',
                         'El lote admite como máximo 10 archivos de '
-                        . "Certificados de Aportes. "
-                        . "Actualmente tiene {$existentes}."
+                        .'Certificados de Aportes. '
+                        ."Actualmente tiene {$existentes}."
                     );
                 }
             },

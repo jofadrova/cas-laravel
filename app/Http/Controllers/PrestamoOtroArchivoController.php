@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StorePrestamoOtroArchivoRequest;
 use App\Models\LoteArchivo;
 use App\Models\LoteMensual;
+use App\Models\LotePrestamoConciliacion;
 use App\Models\LotePrestamoRegistro;
-use App\Services\ProcesamientoMensual\PrestamoConciliacionService;
 use App\Services\ProcesamientoMensual\PrestamoOtroArchivoImportService;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
@@ -44,7 +44,7 @@ class PrestamoOtroArchivoController extends Controller
         if ($nuevos->isEmpty()) {
             throw ValidationException::withMessages([
                 'archivo' => 'Todas las papeletas de la planilla ya se encuentran '
-                    . 'en los archivos de Préstamos del lote.',
+                    .'en los archivos de Préstamos del lote.',
             ]);
         }
 
@@ -77,8 +77,7 @@ class PrestamoOtroArchivoController extends Controller
     public function store(
         StorePrestamoOtroArchivoRequest $request,
         LoteMensual $lote,
-        PrestamoOtroArchivoImportService $importador,
-        PrestamoConciliacionService $conciliador
+        PrestamoOtroArchivoImportService $importador
     ): RedirectResponse {
         $request->validate([
             'hash_preview' => ['required', 'string', 'size:64'],
@@ -101,7 +100,7 @@ class PrestamoOtroArchivoController extends Controller
         )) {
             throw ValidationException::withMessages([
                 'archivo' => 'El archivo cambió después de la vista previa. '
-                    . 'Vuelva a previsualizarlo antes de confirmar.',
+                    .'Vuelva a previsualizarlo antes de confirmar.',
             ]);
         }
 
@@ -112,10 +111,9 @@ class PrestamoOtroArchivoController extends Controller
                 $request,
                 $lote,
                 $datos,
-                $conciliador,
                 &$rutaGuardada
             ): void {
-                $loteBloqueado = LoteMensual::query()
+                LoteMensual::query()
                     ->whereKey($lote->id)
                     ->lockForUpdate()
                     ->firstOrFail();
@@ -125,6 +123,19 @@ class PrestamoOtroArchivoController extends Controller
                     ->exists()) {
                     throw ValidationException::withMessages([
                         'archivo' => 'El pago mensual ya fue consolidado.',
+                    ]);
+                }
+
+                $tieneArchivosPrincipales = LoteArchivo::query()
+                    ->where('lote_mensual_id', $lote->id)
+                    ->where('tipo', LoteArchivo::TIPO_PRESTAMOS)
+                    ->where('ruta', 'not like', '%/otros/%')
+                    ->lockForUpdate()
+                    ->exists();
+
+                if (! $tieneArchivosPrincipales) {
+                    throw ValidationException::withMessages([
+                        'archivo' => 'Primero debe cargar los archivos Excel principales de Préstamos.',
                     ]);
                 }
 
@@ -140,7 +151,7 @@ class PrestamoOtroArchivoController extends Controller
                     ]);
                 }
 
-                $nombreGuardado = Str::uuid() . '.' . $datos['extension'];
+                $nombreGuardado = Str::uuid().'.'.$datos['extension'];
                 $directorio = "procesamiento-mensual/lotes/{$lote->id}/prestamos/otros";
                 $rutaGuardada = $request->file('archivo')->storeAs(
                     $directorio,
@@ -183,7 +194,6 @@ class PrestamoOtroArchivoController extends Controller
                     LotePrestamoRegistro::insert($bloque);
                 }
 
-                $conciliador->ejecutar($loteBloqueado, $request->user()?->id);
             });
         } catch (Throwable $exception) {
             if ($rutaGuardada) {
@@ -199,7 +209,7 @@ class PrestamoOtroArchivoController extends Controller
             if ($exception instanceof LogicException) {
                 throw ValidationException::withMessages([
                     'archivo' => 'La planilla no pudo incorporarse a la comparación: '
-                        . $exception->getMessage(),
+                        .$exception->getMessage(),
                 ]);
             }
 
@@ -207,15 +217,61 @@ class PrestamoOtroArchivoController extends Controller
         }
 
         return redirect()
-            ->route(
-                'procesamiento-mensual.lotes.archivos.prestamos.conciliacion.index',
-                $lote
-            )
+            ->route('procesamiento-mensual.lotes.archivos.index', $lote)
             ->with(
                 'success',
-                'La planilla adicional fue incorporada y la comparación '
-                . 'de Préstamos se recalculó correctamente.'
+                'La planilla adicional fue incorporada correctamente. '
+                .'Puede continuar para ejecutar la comparación de Préstamos.'
             );
+    }
+
+    public function limpiar(LoteMensual $lote): RedirectResponse
+    {
+        if (DB::table('lote_prestamo_procesamientos')
+            ->where('lote_mensual_id', $lote->id)
+            ->exists()) {
+            return back()->with('error', 'El pago mensual ya fue consolidado y no admite cambios.');
+        }
+
+        if (in_array($lote->estado, [
+            LoteMensual::ESTADO_PROCESADO,
+            LoteMensual::ESTADO_CERRADO,
+            LoteMensual::ESTADO_ANULADO,
+        ], true)) {
+            return back()->with('error', "El lote se encuentra {$lote->estado} y no admite cambios.");
+        }
+
+        $archivos = LoteArchivo::query()
+            ->where('lote_mensual_id', $lote->id)
+            ->where('tipo', LoteArchivo::TIPO_PRESTAMOS)
+            ->where('ruta', 'like', '%/otros/%')
+            ->get(['id', 'ruta']);
+
+        if ($archivos->isEmpty()) {
+            return back()->with('info', 'No existen otros archivos para limpiar.');
+        }
+
+        $ids = $archivos->pluck('id');
+        $rutas = $archivos->pluck('ruta')->filter()->values()->all();
+
+        DB::transaction(function () use ($lote, $ids): void {
+            LotePrestamoConciliacion::query()
+                ->where('lote_mensual_id', $lote->id)
+                ->delete();
+
+            LotePrestamoRegistro::query()
+                ->where('lote_mensual_id', $lote->id)
+                ->whereIn('lote_archivo_id', $ids)
+                ->delete();
+
+            LoteArchivo::query()
+                ->whereIn('id', $ids)
+                ->delete();
+        });
+
+        Storage::disk('local')->delete($rutas);
+
+        return back()->with('success', 'Los otros archivos de Préstamos fueron eliminados.');
     }
 
     private function separarRegistrosNuevos(

@@ -1,5 +1,71 @@
+<div class="card border-0 shadow-sm rounded-4 mb-4">
+    <div class="card-header bg-white py-3">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div>
+                <h5 class="mb-1"><i class="bi bi-folder2-open text-primary me-2"></i>Otros archivos de Préstamos</h5>
+                <div class="text-muted small">Planilla adicional de MinDef con PRESTAMO y SER ADM.</div>
+            </div>
+            @if($puedeCargar && $archivosOtros->isNotEmpty())
+                <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal"
+                    data-bs-target="#modalLimpiarOtrosArchivos">
+                    <i class="bi bi-trash3-fill me-1"></i> Limpiar otros archivos
+                </button>
+            @endif
+        </div>
+    </div>
+    <div class="card-body">
+        @if($puedeCargar && $archivosPrincipales->isNotEmpty())
+            <div class="row g-3 align-items-end">
+                <div class="col-xl-9">
+                    <label class="form-label fw-semibold">Planilla adicional de MinDef</label>
+                    <div class="form-control bg-light text-muted">planilla_mindef_MM_AAAA.xlsx</div>
+                    <div class="form-text">Debe corresponder al periodo <strong>{{ $lote->codigo_periodo }}</strong>.</div>
+                </div>
+                <div class="col-xl-3">
+                    <button type="button" class="btn btn-success w-100" data-bs-toggle="modal"
+                        data-bs-target="#modalOtrosArchivosPrestamos">
+                        <i class="bi bi-cloud-arrow-up-fill me-1"></i> Seleccionar y previsualizar
+                    </button>
+                </div>
+            </div>
+        @else
+            <div class="alert alert-warning mb-0">
+                <i class="bi bi-lock-fill me-2"></i>
+                Primero debe cargar los archivos Excel principales o el lote no admite nuevas cargas.
+            </div>
+        @endif
+    </div>
+</div>
+
+@if($puedeCargar && $archivosOtros->isNotEmpty())
+    <div class="modal fade" id="modalLimpiarOtrosArchivos" tabindex="-1"
+        aria-labelledby="modalLimpiarOtrosArchivosLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="modalLimpiarOtrosArchivosLabel">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> Limpiar otros archivos
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    Se eliminarán únicamente las planillas adicionales de MinDef y sus registros.
+                    Los archivos principales y los archivos de garantes se conservarán.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <form method="POST" action="{{ route('procesamiento-mensual.lotes.archivos.prestamos.otros.limpiar', $lote) }}">
+                        @csrf @method('DELETE')
+                        <button type="submit" class="btn btn-danger"><i class="bi bi-trash3-fill me-1"></i> Sí, limpiar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+@endif
+
 {{-- Modal exclusivo para incorporar planilla_mindef_MM_AAAA.xlsx en Préstamos. --}}
-@if(! $procesamientoPago)
+@if($puedeCargar && $archivosPrincipales->isNotEmpty())
     <div
         class="modal fade"
         id="modalOtrosArchivosPrestamos"
@@ -11,6 +77,8 @@
             <div class="modal-content border-0 shadow">
                 <form
                     id="formOtroArchivoPrestamos"
+                    class="d-flex flex-column overflow-hidden"
+                    style="max-height: calc(100vh - 2rem); max-height: calc(100dvh - 2rem); min-height: 0;"
                     method="POST"
                     action="{{ route('procesamiento-mensual.lotes.archivos.prestamos.otros.store', $lote) }}"
                     enctype="multipart/form-data"
@@ -18,7 +86,7 @@
                     @csrf
                     <input type="hidden" name="hash_preview" id="hashPreviewOtroArchivo">
 
-                    <div class="modal-header bg-success text-white">
+                    <div class="modal-header bg-success text-white flex-shrink-0">
                         <h5 class="modal-title" id="modalOtrosArchivosPrestamosLabel">
                             <i class="bi bi-file-earmark-spreadsheet-fill me-2"></i>
                             Otros archivos de Préstamos
@@ -31,7 +99,7 @@
                         ></button>
                     </div>
 
-                    <div class="modal-body">
+                    <div class="modal-body flex-grow-1 overflow-y-auto" style="min-height: 0;">
                         <div class="alert alert-info">
                             <i class="bi bi-info-circle-fill me-2"></i>
                             Seleccione la planilla adicional
@@ -101,8 +169,8 @@
                                 </div>
                                 <div class="col-sm-6 col-xl-3">
                                     <div class="border rounded-3 p-3 h-100 bg-light">
-                                        <div class="small text-muted">Total neto</div>
-                                        <div class="fs-5 fw-bold" id="previewNetoOtroArchivo">Bs 0,00</div>
+                                        <div class="small text-muted">Total aplicado</div>
+                                        <div class="fs-5 fw-bold" id="previewTotalAplicadoOtroArchivo">Bs 0,00</div>
                                     </div>
                                 </div>
                             </div>
@@ -121,7 +189,7 @@
                                             <th>Destino</th>
                                             <th class="text-end">Préstamo</th>
                                             <th class="text-end">Ser. Adm.</th>
-                                            <th class="text-end">Neto</th>
+                                            <th class="text-end">Total aplicado</th>
                                         </tr>
                                     </thead>
                                     <tbody id="tablaPreviewOtroArchivo"></tbody>
@@ -130,14 +198,14 @@
 
                             <div class="alert alert-warning mt-3 mb-0">
                                 <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                                Revise los datos antes de confirmar. Al incorporarlos se
-                                recalculará toda la comparación de Préstamos y se buscará
-                                la deuda correspondiente de cada papeleta en la base de datos.
+                                Revise los datos antes de confirmar. La planilla se incorporará
+                                al lote y luego podrá ejecutar la comparación de Préstamos
+                                mediante el botón Continuar.
                             </div>
                         </div>
                     </div>
 
-                    <div class="modal-footer">
+                    <div class="modal-footer flex-shrink-0 bg-white">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                             Cancelar
                         </button>
@@ -245,7 +313,7 @@
                         document.getElementById('previewFilasOtroArchivo').textContent = datos.filas;
                         document.getElementById('previewPrestamoOtroArchivo').textContent = 'Bs ' + moneda.format(datos.total_prestamo);
                         document.getElementById('previewComisionOtroArchivo').textContent = 'Bs ' + moneda.format(datos.total_comision);
-                        document.getElementById('previewNetoOtroArchivo').textContent = 'Bs ' + moneda.format(datos.total_neto);
+                        document.getElementById('previewTotalAplicadoOtroArchivo').textContent = 'Bs ' + moneda.format(datos.total_aplicado);
 
                         datos.registros.forEach(function (registro) {
                             const fila = document.createElement('tr');
@@ -257,7 +325,7 @@
                             agregarCelda(fila, registro.destino);
                             agregarCelda(fila, moneda.format(registro.prestamo), 'text-end');
                             agregarCelda(fila, moneda.format(registro.ser_adm), 'text-end');
-                            agregarCelda(fila, moneda.format(registro.neto), 'text-end');
+                            agregarCelda(fila, moneda.format(registro.total_aplicado), 'text-end');
                             tabla.appendChild(fila);
                         });
 

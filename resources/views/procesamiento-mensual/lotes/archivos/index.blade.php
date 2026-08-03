@@ -64,10 +64,27 @@
 
         <div class="card border-0 shadow-sm rounded-4 mb-4">
             <div class="card-header bg-white py-3">
-                <h5 class="mb-0">
-                    <i class="bi bi-bank text-success me-2"></i>
-                    Préstamos
-                </h5>
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <div>
+                        <h5 class="mb-1">
+                            <i class="bi bi-bank text-success me-2"></i>
+                            Archivos Excel principales de Préstamos
+                        </h5>
+                        <div class="text-muted small">Archivos base para consolidar los descuentos mensuales.</div>
+                    </div>
+
+                    @if($puedeCargar && $archivosPrincipales->isNotEmpty())
+                        <button
+                            type="button"
+                            class="btn btn-outline-danger"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modalLimpiarImportacion"
+                        >
+                            <i class="bi bi-trash3-fill me-1"></i>
+                            Limpiar préstamos
+                        </button>
+                    @endif
+                </div>
             </div>
             <div class="card-body">
                 @if($puedeCargar)
@@ -128,12 +145,18 @@
             </div>
         </div>
 
+        @include('procesamiento-mensual.lotes.archivos._otros-archivos')
+
+        @include('procesamiento-mensual.lotes.archivos._garantes')
+
         <div class="row g-3 mb-4">
             <div class="col-sm-6 col-xl">
                 <div class="card border-0 shadow-sm rounded-4 h-100">
                     <div class="card-body">
                         <div class="text-muted small">Archivos cargados</div>
-                        <div class="fs-4 fw-bold">{{ $archivos->count() }}</div>
+                        <div class="fs-4 fw-bold">
+                            {{ $archivosPrincipales->count() + $archivosOtros->count() + $archivosGarantes->count() }}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -177,69 +200,21 @@
             </div>
         </div>
 
-        <div class="card border-0 shadow-sm rounded-4 mb-4">
-            <div class="card-header bg-white py-3">
-                <h5 class="mb-0">
-                    <i class="bi bi-files text-primary me-2"></i>
-                    Archivos incorporados
-                </h5>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Archivo</th>
-                            <th class="text-center">Filas</th>
-                            <th class="text-end">Monto descuento</th>
-                            <th class="text-end">Total neto</th>
-                            <th class="text-end">Comisión</th>
-                            <th class="text-center">Estado</th>
-                            <th>Fecha de carga</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($archivos as $archivo)
-                            <tr>
-                                <td>
-                                    <i class="bi bi-file-earmark-excel text-success me-1"></i>
-                                    {{ $archivo->nombre_original }}
-                                </td>
-                                <td class="text-center">{{ $archivo->filas_importadas }}</td>
-                                <td class="text-end">
-                                    {{ number_format((float) $archivo->total_monto_descuento, 2, ',', '.') }}
-                                </td>
-                                <td class="text-end">
-                                    {{ number_format((float) $archivo->total_tot_2, 2, ',', '.') }}
-                                </td>
-                                <td class="text-end">
-                                    {{ number_format((float) $archivo->total_comision, 2, ',', '.') }}
-                                </td>
-                                <td class="text-center">
-                                    <span class="badge bg-success">{{ $archivo->estado }}</span>
-                                </td>
-                                <td>{{ $archivo->created_at?->format('d/m/Y H:i') }}</td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" class="text-center text-muted py-4">
-                                    Aún no se cargaron archivos de préstamos.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        @include('procesamiento-mensual.lotes.archivos._tabla-archivos', [
+            'titulo' => 'Archivos incorporados',
+            'icono' => 'bi-files text-primary',
+            'coleccion' => $archivos->concat($archivosGarantes),
+        ])
 
         <div class="card border-0 shadow-sm rounded-4">
             <div class="card-header bg-white py-3">
                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
                     <h5 class="mb-0">
                         <i class="bi bi-table text-success me-2"></i>
-                        Tabla consolidada de préstamos
+                        Registros de archivos Excel principales
                     </h5>
                     <span class="text-muted small">
-                        {{ number_format((int) $resumen->filas) }} registros
+                        {{ number_format($registros->total()) }} registros
                     </span>
                 </div>
             </div>
@@ -312,10 +287,11 @@
                         @empty
                             <tr>
                                 <td colspan="25" class="text-center text-muted py-4">
-                                    La tabla consolidada está vacía.
+                                    No existen registros de los archivos Excel principales.
                                 </td>
                             </tr>
                         @endforelse
+
                     </tbody>
                 </table>
             </div>
@@ -327,20 +303,83 @@
             @endif
         </div>
 
+        <div class="card border-0 shadow-sm rounded-4 mt-4">
+            <div class="card-header bg-white py-3">
+                <div class="d-flex justify-content-between align-items-center gap-2">
+                    <h5 class="mb-0"><i class="bi bi-folder2-open text-primary me-2"></i>Registros de otros archivos</h5>
+                    <span class="text-muted small">{{ number_format($registrosOtros->count()) }} registros</span>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0 text-nowrap">
+                    <thead class="table-light"><tr>
+                        <th>Archivo</th><th>Fila</th><th>Papeleta</th><th>CI</th><th>Grado</th><th>Nombres</th>
+                        <th>Destino</th><th class="text-end">Préstamo</th><th class="text-end">Ser. Adm.</th>
+                        <th class="text-end">Total aplicado</th>
+                    </tr></thead>
+                    <tbody>
+                        @forelse($registrosOtros as $registro)
+                            <tr>
+                                <td>{{ $registro->archivo?->nombre_original }}</td><td>{{ $registro->fila_origen }}</td>
+                                <td>{{ $registro->codigo_personal_normalizado }}</td><td>{{ $registro->carnet }}</td>
+                                <td>{{ $registro->grado }}</td><td>{{ $registro->nombres }}</td><td>{{ $registro->organismos }}</td>
+                                <td class="text-end">{{ number_format((float) $registro->tot_2, 2, ',', '.') }}</td>
+                                <td class="text-end">{{ number_format((float) $registro->comision, 2, ',', '.') }}</td>
+                                <td class="text-end fw-semibold">{{ number_format((float) $registro->monto_descuento, 2, ',', '.') }}</td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="10" class="text-center text-muted py-4">No existen registros de otros archivos.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-4 mt-4">
+            <div class="card-header bg-white py-3">
+                <div class="d-flex justify-content-between align-items-center gap-2">
+                    <h5 class="mb-0"><i class="bi bi-people-fill text-info me-2"></i>Titulares y garantes que realizan el pago</h5>
+                    <span class="text-muted small">{{ number_format($registrosGarantes->count()) }} registros</span>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0">
+                    <thead class="table-light"><tr>
+                        <th>Archivo / fila</th><th>Titular beneficiado</th><th>Garante que paga</th>
+                        <th>Solicitud / cuota</th><th class="text-end">Informado Bs</th>
+                        <th class="text-end">Verificado / acumulado</th><th>Estado</th>
+                    </tr></thead>
+                    <tbody>
+                        @forelse($registrosGarantes as $registroGarante)
+                            <tr>
+                                <td><div>{{ $registroGarante->archivo?->nombre_original }}</div><small class="text-muted">Fila {{ $registroGarante->fila_origen }}</small></td>
+                                <td><strong>{{ $registroGarante->nombre_titular ?: 'Sin identificar' }}</strong><div class="text-muted small">Papeleta {{ $registroGarante->codigo_titular }}</div></td>
+                                <td><strong>{{ $registroGarante->nombre_garante ?: 'Sin identificar' }}</strong><div class="text-muted small">Papeleta {{ $registroGarante->codigo_garante }}</div></td>
+                                <td>{{ $registroGarante->id_solicitud ?: 'Sin identificar' }} @if($registroGarante->id_cuota_solicitud)<div class="text-muted small">Cuota {{ $registroGarante->id_cuota_solicitud }}</div>@endif</td>
+                                <td class="text-end fw-semibold">Bs {{ number_format((float) $registroGarante->monto_bs, 2, ',', '.') }}</td>
+                                <td class="text-end">
+                                    <div>{{ number_format((float) $registroGarante->monto_aplicable, 2, ',', '.') }}</div>
+                                    <div class="text-muted small">Acum. {{ number_format((float) $registroGarante->monto_acumulado, 2, ',', '.') }}</div>
+                                </td>
+                                <td>
+                                    <span class="badge {{ $registroGarante->clase_aplicacion }}">{{ str_replace('_', ' ', $registroGarante->estado_aplicacion) }}</span>
+                                    @if($registroGarante->estado_aplicacion === \App\Models\LoteGaranteRegistro::APLICACION_PENDIENTE)
+                                        <div class="small text-warning-emphasis mt-1">
+                                            <i class="bi bi-calendar-plus me-1"></i>Completar el próximo mes
+                                        </div>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="7" class="text-center text-muted py-4">No existen pagos realizados por garantes.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         @if($archivos->isNotEmpty())
             <div class="d-flex flex-wrap justify-content-end gap-2 mt-4">
-                @if($puedeCargar)
-                    <button
-                        type="button"
-                        class="btn btn-outline-danger"
-                        data-bs-toggle="modal"
-                        data-bs-target="#modalLimpiarImportacion"
-                    >
-                        <i class="bi bi-trash3-fill me-1"></i>
-                        Limpiar importación
-                    </button>
-                @endif
-
                 @if($puedeCargar)
                     <form
                         id="formCompararPrestamos"
@@ -382,7 +421,7 @@
         @endif
     </div>
 
-    @if($archivos->isNotEmpty() && $puedeCargar)
+    @if($archivosPrincipales->isNotEmpty() && $puedeCargar)
         <div
             class="modal fade"
             id="modalLimpiarImportacion"
@@ -395,7 +434,7 @@
                     <div class="modal-header bg-danger text-white">
                         <h5 class="modal-title" id="modalLimpiarImportacionLabel">
                             <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                            Limpiar importación de préstamos
+                            Limpiar archivos Excel principales
                         </h5>
                         <button
                             type="button"
@@ -407,8 +446,8 @@
 
                     <div class="modal-body">
                         <p class="mb-3">
-                            Se eliminarán los archivos de préstamos cargados y todos
-                            sus registros de la tabla consolidada.
+                            Se eliminarán únicamente los archivos Excel principales
+                            y sus registros. Los otros archivos y garantes se conservarán.
                         </p>
 
                         <div class="alert alert-warning mb-0">

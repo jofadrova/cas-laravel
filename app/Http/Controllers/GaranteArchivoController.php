@@ -37,18 +37,16 @@ class GaranteArchivoController extends Controller
                 $lectura = $importador->leer($archivo, $lote);
             } catch (InvalidArgumentException $exception) {
                 throw ValidationException::withMessages([
-                    "archivos_garantes.{$indice}" =>
-                        $archivo->getClientOriginalName()
-                        . ': '
-                        . $exception->getMessage(),
+                    "archivos_garantes.{$indice}" => $archivo->getClientOriginalName()
+                        .': '
+                        .$exception->getMessage(),
                 ]);
             }
 
             if (isset($hashesDelGrupo[$lectura['hash_sha256']])) {
                 throw ValidationException::withMessages([
-                    "archivos_garantes.{$indice}" =>
-                        $archivo->getClientOriginalName()
-                        . ': este archivo fue seleccionado más de una vez.',
+                    "archivos_garantes.{$indice}" => $archivo->getClientOriginalName()
+                        .': este archivo fue seleccionado más de una vez.',
                 ]);
             }
 
@@ -69,9 +67,8 @@ class GaranteArchivoController extends Controller
 
         if ($tieneAplicados) {
             throw ValidationException::withMessages([
-                'archivos_garantes' =>
-                    'No se puede reemplazar el archivo porque el lote ya '
-                    . 'contiene descuentos a garantes aplicados.',
+                'archivos_garantes' => 'No se puede reemplazar el archivo porque el lote ya '
+                    .'contiene descuentos a garantes aplicados.',
             ]);
         }
 
@@ -152,7 +149,7 @@ class GaranteArchivoController extends Controller
                     /** @var UploadedFile $archivoSubido */
                     $archivoSubido = $item['archivo'];
                     $datos = $item['datos'];
-                    $nombreGuardado = Str::uuid() . '.' . $datos['extension'];
+                    $nombreGuardado = Str::uuid().'.'.$datos['extension'];
                     $directorio =
                         "procesamiento-mensual/lotes/{$lote->id}/garantes";
                     $ruta = $archivoSubido->storeAs(
@@ -177,8 +174,7 @@ class GaranteArchivoController extends Controller
                         'mime_type' => $datos['mime_type'],
                         'hash_sha256' => $datos['hash_sha256'],
                         'filas_importadas' => $datos['filas_importadas'],
-                        'total_monto_descuento' =>
-                            $datos['total_monto_descuento'],
+                        'total_monto_descuento' => $datos['total_monto_descuento'],
                         'total_tot_2' => 0,
                         'total_comision' => 0,
                         'estado' => LoteArchivo::ESTADO_CARGADO,
@@ -216,9 +212,8 @@ class GaranteArchivoController extends Controller
 
             if ($exception instanceof LogicException) {
                 throw ValidationException::withMessages([
-                    'archivos_garantes' =>
-                        'El archivo fue validado, pero no pudo compararse: '
-                        . $exception->getMessage(),
+                    'archivos_garantes' => 'El archivo fue validado, pero no pudo compararse: '
+                        .$exception->getMessage(),
                 ]);
             }
 
@@ -235,16 +230,13 @@ class GaranteArchivoController extends Controller
         ));
 
         return redirect()
-            ->route(
-                'procesamiento-mensual.lotes.archivos.prestamos.conciliacion.index',
-                $lote
-            )
+            ->route('procesamiento-mensual.lotes.archivos.index', $lote)
             ->with(
                 'success',
                 count($lecturas)
-                . ' archivo(s) de descuentos a garantes cargado(s) y '
-                . "comparado(s) automáticamente. {$filas} descuento(s) "
-                . 'fueron recalculados.'
+                .' archivo(s) de descuentos a garantes cargado(s) y '
+                ."comparado(s) automáticamente. {$filas} descuento(s) "
+                .'fueron recalculados.'
             );
     }
 
@@ -256,7 +248,7 @@ class GaranteArchivoController extends Controller
             return back()->with(
                 'error',
                 'No se puede limpiar garantes porque el pago mensual de '
-                . 'Préstamos ya fue consolidado.'
+                .'Préstamos ya fue consolidado.'
             );
         }
 

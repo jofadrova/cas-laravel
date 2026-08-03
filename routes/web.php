@@ -1,36 +1,38 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\UsuarioController;
-use App\Http\Controllers\RoleController;
+use App\Http\Controllers\AmortizacionCapitalController;
+use App\Http\Controllers\CertificadoAporteArchivoController;
+use App\Http\Controllers\CertificadoAporteOtroArchivoController;
+use App\Http\Controllers\FvsArchivoController;
+use App\Http\Controllers\FvsOtroArchivoController;
+use App\Http\Controllers\GaranteArchivoController;
+use App\Http\Controllers\LoteArchivoController;
+use App\Http\Controllers\LoteMensualController;
+use App\Http\Controllers\PagoController;
 use App\Http\Controllers\PermissionController;
-
+use App\Http\Controllers\PrestamoArchivoController;
+use App\Http\Controllers\PrestamoConciliacionController;
+use App\Http\Controllers\PrestamoController;
+use App\Http\Controllers\PrestamoOtroArchivoController;
+use App\Http\Controllers\PrestamoReporteController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProyeccionPrestamoController;
+use App\Http\Controllers\RefinanciamientoController;
+use App\Http\Controllers\ReprogramacionPrestamoController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SocioController;
 use App\Http\Controllers\SocioInformacionController;
 use App\Http\Controllers\SocioReporteController;
-use App\Http\Controllers\PrestamoController;
 use App\Http\Controllers\TipoPrestamoController;
+use App\Http\Controllers\UsuarioController;
 use App\Services\ExchangeRateService;
-use App\Http\Controllers\PagoController;
-use App\Http\Controllers\AmortizacionCapitalController;
-use App\Http\Controllers\RefinanciamientoController;
-use App\Http\Controllers\ReprogramacionPrestamoController;
-use App\Http\Controllers\PrestamoReporteController;
-use App\Http\Controllers\ProyeccionPrestamoController;
-use App\Http\Controllers\LoteMensualController;
-use App\Http\Controllers\LoteArchivoController;
-use App\Http\Controllers\PrestamoArchivoController;
-use App\Http\Controllers\PrestamoConciliacionController;
-use App\Http\Controllers\GaranteArchivoController;
-use App\Http\Controllers\PrestamoOtroArchivoController;
-use App\Http\Controllers\FvsArchivoController;
-use App\Http\Controllers\CertificadoAporteArchivoController;
-
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    if (Auth::check()) { return redirect('/dashboard');
+    if (Auth::check()) {
+        return redirect('/dashboard');
     }
+
     return redirect('/login');
 });
 /*
@@ -41,11 +43,11 @@ Route::get('/dashboard', function () {
 Route::get('/dashboard', function (ExchangeRateService $exchangeRateService) {
 
     return view('dashboard', [
-    'exchangeRate'   => $exchangeRateService->getLatest(),
-    'monthlyAverage' => $exchangeRateService->getMonthlyAverages(),
-    'history'        => $exchangeRateService->getHistory(30),
+        'exchangeRate' => $exchangeRateService->getLatest(),
+        'monthlyAverage' => $exchangeRateService->getMonthlyAverages(),
+        'history' => $exchangeRateService->getHistory(30),
 
-]);
+    ]);
 
 })->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -53,19 +55,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    /////////////// recien agregados
-   // Route::resource('usuarios', UsuarioController::class);
-    Route::resource('usuarios',UsuarioController::class)->middleware('permission:usuarios.ver');
+    // ///////////// recien agregados
+    // Route::resource('usuarios', UsuarioController::class);
+    Route::resource('usuarios', UsuarioController::class)->middleware('permission:usuarios.ver');
     Route::put('/usuarios/{usuario}', [UsuarioController::class, 'update'])->name('usuarios.update');
-    Route::patch('/usuarios/{usuario}/estado',[UsuarioController::class, 'cambiarEstado'])->name('usuarios.estado');
-    Route::patch('/usuarios/{usuario}/password',[UsuarioController::class, 'resetPassword'])->name('usuarios.password');
-    //Route::resource('roles',RoleController::class);
-    Route::resource('roles',RoleController::class)->middleware('permission:roles.ver');
-    Route::get('/roles/{role}/usuarios',[RoleController::class, 'usuarios'])->name('roles.usuarios');
-    Route::post('/roles/{role}/usuarios',[RoleController::class, 'guardarUsuarios'])->name('roles.guardarUsuarios');
-    Route::get('/roles/{role}/permisos',[RoleController::class, 'permisos'])->name('roles.permisos');
-    Route::post('/roles/{role}/permisos',[RoleController::class, 'guardarPermisos'])->name('roles.guardarPermisos');
-    Route::resource('permisos',PermissionController::class)->middleware('permission:permisos.ver');
+    Route::patch('/usuarios/{usuario}/estado', [UsuarioController::class, 'cambiarEstado'])->name('usuarios.estado');
+    Route::patch('/usuarios/{usuario}/password', [UsuarioController::class, 'resetPassword'])->name('usuarios.password');
+    // Route::resource('roles',RoleController::class);
+    Route::resource('roles', RoleController::class)->middleware('permission:roles.ver');
+    Route::get('/roles/{role}/usuarios', [RoleController::class, 'usuarios'])->name('roles.usuarios');
+    Route::post('/roles/{role}/usuarios', [RoleController::class, 'guardarUsuarios'])->name('roles.guardarUsuarios');
+    Route::get('/roles/{role}/permisos', [RoleController::class, 'permisos'])->name('roles.permisos');
+    Route::post('/roles/{role}/permisos', [RoleController::class, 'guardarPermisos'])->name('roles.guardarPermisos');
+    Route::resource('permisos', PermissionController::class)->middleware('permission:permisos.ver');
     /*
     |--------------------------------------------------------------------------
     | SOCIOS
@@ -75,23 +77,23 @@ Route::middleware('auth')->group(function () {
     Route::get('/socios/validar-ci', [SocioController::class, 'validarCi'])->name('socios.validar-ci')->middleware('permission:socios.ver');
     Route::get('/socios/validar-papeleta', [SocioController::class, 'validarPapeleta'])->name('socios.validar-papeleta')->middleware('permission:socios.ver');
     Route::resource('socios', SocioController::class)->middleware('permission:socios.ver');
-    Route::get('/socios-informacion',[SocioInformacionController::class, 'index'])->name('socios.informacion')->middleware('permission:socios.informacion');
-    Route::get('/socios-reportes',[SocioReporteController::class, 'index'])->name('socios.reportes')->middleware('permission:socios.reportes');
-    Route::patch('/socios/{socio}/estado',[SocioController::class, 'cambiarEstado'])->name('socios.estado');
-    Route::get('/socios/{socio}/kardex',[SocioController::class, 'kardex'])->name('socios.kardex');
-    Route::get('/socios/{socio}/revincular',[SocioController::class,'revincular'])->name('socios.revincular');
+    Route::get('/socios-informacion', [SocioInformacionController::class, 'index'])->name('socios.informacion')->middleware('permission:socios.informacion');
+    Route::get('/socios-reportes', [SocioReporteController::class, 'index'])->name('socios.reportes')->middleware('permission:socios.reportes');
+    Route::patch('/socios/{socio}/estado', [SocioController::class, 'cambiarEstado'])->name('socios.estado');
+    Route::get('/socios/{socio}/kardex', [SocioController::class, 'kardex'])->name('socios.kardex');
+    Route::get('/socios/{socio}/revincular', [SocioController::class, 'revincular'])->name('socios.revincular');
 
     /*
     |--------------------------------------------------------------------------
     | PRESTAMOS
     |--------------------------------------------------------------------------
     */
-   /*
+    /*
 |--------------------------------------------------------------------------
 | PRESTAMOS
 |--------------------------------------------------------------------------
 */
-Route::prefix('prestamos')->name('prestamos.')->group(function () {
+    Route::prefix('prestamos')->name('prestamos.')->group(function () {
 
         /*
         |--------------------------------------------------------------------------
@@ -105,15 +107,15 @@ Route::prefix('prestamos')->name('prestamos.')->group(function () {
         Route::put('/tipos/{tasa}', [TipoPrestamoController::class, 'update'])->name('tipos.update');
         Route::patch('/tipos/{tasa}/estado', [TipoPrestamoController::class, 'estado'])->name('tipos.estado');
 
-          /*
+        /*
         |--------------------------------------------------------------------------
         | Reportes
         |--------------------------------------------------------------------------
         */
         Route::prefix('reportes')->name('reportes.')->group(function () {
-                Route::get('/', [PrestamoReporteController::class, 'index'])->name('index');
-                Route::get('/tipos-prestamo', [PrestamoReporteController::class, 'tiposPrestamo'])->name('tipos-prestamo');
-            });
+            Route::get('/', [PrestamoReporteController::class, 'index'])->name('index');
+            Route::get('/tipos-prestamo', [PrestamoReporteController::class, 'tiposPrestamo'])->name('tipos-prestamo');
+        });
 
         /*
         |--------------------------------------------------------------------------
@@ -137,7 +139,7 @@ Route::prefix('prestamos')->name('prestamos.')->group(function () {
         Route::get('/depositos', [PrestamoController::class, 'depositos'])
             ->name('depositos');
 
-         Route::get('tipo-cambio/{fecha}',[PrestamoController::class, 'buscarTipoCambio'])->name('tipo-cambio');
+        Route::get('tipo-cambio/{fecha}', [PrestamoController::class, 'buscarTipoCambio'])->name('tipo-cambio');
 
         /*
         |--------------------------------------------------------------------------
@@ -161,10 +163,10 @@ Route::prefix('prestamos')->name('prestamos.')->group(function () {
 
         Route::get('/{prestamo}/detalle', [PrestamoController::class, 'detalle'])->name('detalle');
         Route::get('/{prestamo}/detalle/pdf', [PrestamoController::class, 'detallePdf'])->name('detalle.pdf');
-        Route::patch('/{prestamo}/bloquear-edicion',[PrestamoController::class, 'bloquearEdicion'])->name('bloquear-edicion');
-        Route::patch('/{prestamo}/habilitar-edicion',[PrestamoController::class, 'habilitarEdicion'])->name('habilitar-edicion');
+        Route::patch('/{prestamo}/bloquear-edicion', [PrestamoController::class, 'bloquearEdicion'])->name('bloquear-edicion');
+        Route::patch('/{prestamo}/habilitar-edicion', [PrestamoController::class, 'habilitarEdicion'])->name('habilitar-edicion');
         Route::get('/{prestamo}/garantes', [PrestamoController::class, 'garantes'])->name('garantes');
-        Route::patch('/{prestamo}/garantes',[PrestamoController::class, 'actualizarGarantes'])->name('garantes.update');
+        Route::patch('/{prestamo}/garantes', [PrestamoController::class, 'actualizarGarantes'])->name('garantes.update');
         Route::get('garantes/{historial}/pdf', [PrestamoController::class, 'pdfCambioGarantes'])->name('garantes.pdf');
 
         Route::get('/{prestamo}', [PrestamoController::class, 'show'])->name('show');
@@ -236,6 +238,11 @@ Route::prefix('prestamos')->name('prestamos.')->group(function () {
                 [PrestamoOtroArchivoController::class, 'store']
             )->name('lotes.archivos.prestamos.otros.store');
 
+            Route::delete(
+                'lotes/{lote}/archivos/prestamos/otros',
+                [PrestamoOtroArchivoController::class, 'limpiar']
+            )->name('lotes.archivos.prestamos.otros.limpiar');
+
             Route::post(
                 'lotes/{lote}/archivos/prestamos/conciliacion/garantes',
                 [GaranteArchivoController::class, 'store']
@@ -261,6 +268,21 @@ Route::prefix('prestamos')->name('prestamos.')->group(function () {
                 [FvsArchivoController::class, 'limpiar']
             )->name('lotes.fvs.limpiar');
 
+            Route::post(
+                'lotes/{lote}/fvs/otros/previsualizar',
+                [FvsOtroArchivoController::class, 'previsualizar']
+            )->name('lotes.fvs.otros.preview');
+
+            Route::post(
+                'lotes/{lote}/fvs/otros',
+                [FvsOtroArchivoController::class, 'store']
+            )->name('lotes.fvs.otros.store');
+
+            Route::delete(
+                'lotes/{lote}/fvs/otros',
+                [FvsOtroArchivoController::class, 'limpiar']
+            )->name('lotes.fvs.otros.limpiar');
+
             Route::get(
                 'lotes/{lote}/certificados',
                 [CertificadoAporteArchivoController::class, 'index']
@@ -275,6 +297,21 @@ Route::prefix('prestamos')->name('prestamos.')->group(function () {
                 'lotes/{lote}/certificados',
                 [CertificadoAporteArchivoController::class, 'limpiar']
             )->name('lotes.certificados.limpiar');
+
+            Route::post(
+                'lotes/{lote}/certificados/otros/previsualizar',
+                [CertificadoAporteOtroArchivoController::class, 'previsualizar']
+            )->name('lotes.certificados.otros.preview');
+
+            Route::post(
+                'lotes/{lote}/certificados/otros',
+                [CertificadoAporteOtroArchivoController::class, 'store']
+            )->name('lotes.certificados.otros.store');
+
+            Route::delete(
+                'lotes/{lote}/certificados/otros',
+                [CertificadoAporteOtroArchivoController::class, 'limpiar']
+            )->name('lotes.certificados.otros.limpiar');
 
             Route::resource('lotes', LoteMensualController::class)
                 ->parameters(['lotes' => 'lote'])

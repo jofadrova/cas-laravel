@@ -1,12 +1,17 @@
 <?php
 
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Model;
+
 class Prestamo extends Model
 {
-        protected $table = 'solicitudes';
+    protected $table = 'solicitudes';
+
     protected $primaryKey = 'id_solicitud';
+
     public $timestamps = false;
+
     protected $fillable = [
         'nro_solicitud',
         'ide_per',
@@ -49,6 +54,7 @@ class Prestamo extends Model
             'id'
         );
     }
+
     public function tipo()
     {
         return $this->belongsTo(
@@ -66,6 +72,7 @@ class Prestamo extends Model
             'id'
         );
     }
+
     public function garante2()
     {
         return $this->belongsTo(
@@ -88,19 +95,23 @@ class Prestamo extends Model
     {
         return match ($this->estado) {
             'AC' => 'ACTIVO',
+            'DI' => 'DIFERIDO',
             'PA' => 'CANCELADO',
             'CE' => 'CERRADO POR REFINANCIAMIENTO',
             default => $this->estado,
         };
     }
+
     public function getMontoFormateadoAttribute()
     {
         return number_format($this->monto, 2, '.', ',');
     }
+
     public function getSaldoActualFormateadoAttribute()
     {
         return number_format($this->saldo_actual, 2, '.', ',');
     }
+
     public function getInteresFormateadoAttribute()
     {
         return number_format($this->interes, 2);

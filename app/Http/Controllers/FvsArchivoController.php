@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreFvsArchivoRequest;
 use App\Models\LoteArchivo;
-use App\Models\LoteMensual;
 use App\Models\LoteFvsRegistro;
-use App\Services\ProcesamientoMensual\FvsExcelImportService;
+use App\Models\LoteMensual;
 use App\Services\ProcesamientoMensual\EstadoLoteMensualService;
+use App\Services\ProcesamientoMensual\FvsExcelImportService;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -24,11 +24,17 @@ class FvsArchivoController extends Controller
 {
     public function index(Request $request, LoteMensual $lote): View
     {
-        $archivos = LoteArchivo::query()
+        $todosLosArchivos = LoteArchivo::query()
             ->where('lote_mensual_id', $lote->id)
             ->where('tipo', LoteArchivo::TIPO_FVS)
             ->orderBy('id')
             ->get();
+        $archivos = $todosLosArchivos
+            ->reject(fn (LoteArchivo $archivo): bool => str_contains((string) $archivo->ruta, '/otros/'))
+            ->values();
+        $otrosArchivos = $todosLosArchivos
+            ->filter(fn (LoteArchivo $archivo): bool => str_contains((string) $archivo->ruta, '/otros/'))
+            ->values();
 
         $buscar = trim((string) $request->query('buscar', ''));
 
@@ -42,14 +48,9 @@ class FvsArchivoController extends Controller
                         ->orWhere('eit_item', 'like', "%{$buscar}%")
                         ->orWhere('carnet', 'like', "%{$buscar}%")
                         ->orWhere('nombres', 'like', "%{$buscar}%")
-                        ->orWhereHas(
-                            'archivo',
-                            fn ($archivo) => $archivo->where(
+                        ->orWhereHas('archivo', fn ($archivo) => $archivo->where(
                                 'nombre_original',
-                                'like',
-                                "%{$buscar}%"
-                            )
-                        );
+                                'like', "%{$buscar}%"));
                 });
             })
             ->orderBy('lote_archivo_id')
@@ -74,6 +75,7 @@ class FvsArchivoController extends Controller
         return view('procesamiento-mensual.lotes.fvs.index', [
             'lote' => $lote,
             'archivos' => $archivos,
+            'otrosArchivos' => $otrosArchivos,
             'registros' => $registros,
             'resumen' => $resumen,
             'buscar' => $buscar,
@@ -101,14 +103,14 @@ class FvsArchivoController extends Controller
             } catch (InvalidArgumentException $exception) {
                 throw ValidationException::withMessages([
                     "archivos.{$indice}" => $archivo->getClientOriginalName()
-                        . ': ' . $exception->getMessage(),
+                        .': '.$exception->getMessage(),
                 ]);
             }
 
             if (isset($hashesDelGrupo[$lectura['hash_sha256']])) {
                 throw ValidationException::withMessages([
                     "archivos.{$indice}" => $archivo->getClientOriginalName()
-                        . ': este mismo archivo fue seleccionado más de una vez.',
+                        .': este mismo archivo fue seleccionado más de una vez.',
                 ]);
             }
 
@@ -121,7 +123,7 @@ class FvsArchivoController extends Controller
             if ($yaExiste) {
                 throw ValidationException::withMessages([
                     "archivos.{$indice}" => $archivo->getClientOriginalName()
-                        . ': este archivo FVS ya fue cargado en el lote.',
+                        .': este archivo FVS ya fue cargado en el lote.',
                 ]);
             }
 
@@ -146,13 +148,14 @@ class FvsArchivoController extends Controller
                 $cantidadActual = LoteArchivo::query()
                     ->where('lote_mensual_id', $lote->id)
                     ->where('tipo', LoteArchivo::TIPO_FVS)
+                    ->where('ruta', 'not like', '%/otros/%')
                     ->count();
                 $cantidadFinal = $cantidadActual + count($lecturas);
 
                 if ($cantidadFinal < 3 || $cantidadFinal > 10) {
                     throw ValidationException::withMessages([
-                        'archivos' => "El lote debe contener entre 3 y 10 archivos FVS; "
-                            . "con esta carga tendría {$cantidadFinal}.",
+                        'archivos' => 'El lote debe contener entre 3 y 10 archivos FVS; '
+                            ."con esta carga tendría {$cantidadFinal}.",
                     ]);
                 }
 
@@ -160,7 +163,7 @@ class FvsArchivoController extends Controller
                     /** @var UploadedFile $archivoSubido */
                     $archivoSubido = $item['archivo'];
                     $datos = $item['datos'];
-                    $nombreGuardado = Str::uuid() . '.' . $datos['extension'];
+                    $nombreGuardado = Str::uuid().'.'.$datos['extension'];
                     $directorio = "procesamiento-mensual/lotes/{$lote->id}/fvs";
                     $ruta = $archivoSubido->storeAs(
                         $directorio,
@@ -235,16 +238,15 @@ class FvsArchivoController extends Controller
             ->route('procesamiento-mensual.lotes.fvs.index', $lote)
             ->with(
                 'success',
-                count($lecturas) . ' archivo(s) FVS cargado(s). '
-                . "{$filas} fila(s) fueron incorporadas a la tabla consolidada."
+                count($lecturas).' archivo(s) FVS cargado(s). '
+                ."{$filas} fila(s) fueron incorporadas a la tabla consolidada."
             );
     }
 
     public function limpiar(
         LoteMensual $lote,
         EstadoLoteMensualService $estadoLote
-    ): RedirectResponse
-    {
+    ): RedirectResponse {
         if (in_array($lote->estado, [
             LoteMensual::ESTADO_PROCESADO,
             LoteMensual::ESTADO_CERRADO,
@@ -261,6 +263,7 @@ class FvsArchivoController extends Controller
         $archivos = LoteArchivo::query()
             ->where('lote_mensual_id', $lote->id)
             ->where('tipo', LoteArchivo::TIPO_FVS)
+            ->where('ruta', 'not like', '%/otros/%')
             ->get(['id', 'ruta']);
 
         if ($archivos->isEmpty()) {
@@ -281,6 +284,7 @@ class FvsArchivoController extends Controller
             LoteArchivo::query()
                 ->where('lote_mensual_id', $lote->id)
                 ->where('tipo', LoteArchivo::TIPO_FVS)
+                ->where('ruta', 'not like', '%/otros/%')
                 ->whereIn('id', $idsArchivos)
                 ->delete();
         });

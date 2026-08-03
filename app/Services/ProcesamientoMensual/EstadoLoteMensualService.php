@@ -8,11 +8,16 @@ use Illuminate\Support\Facades\DB;
 class EstadoLoteMensualService
 {
     private const TIPO_PRESTAMOS = 'PRESTAMOS';
+
     // Valor físico existente en lote_archivos.tipo; funcionalmente es FVS.
     private const TIPO_FVS = 'UFV';
+
     private const TIPO_CERTIFICADOS = 'CERTIFICADOS';
+
     private const MINIMO_ARCHIVOS_PRESTAMOS = 1;
+
     private const MINIMO_ARCHIVOS_FVS = 3;
+
     private const MINIMO_ARCHIVOS_CERTIFICADOS = 3;
 
     /**
@@ -43,11 +48,13 @@ class EstadoLoteMensualService
         $fvsCompletos = DB::table('lote_archivos')
             ->where('lote_mensual_id', $lote->id)
             ->where('tipo', self::TIPO_FVS)
+            ->where('ruta', 'not like', '%/otros/%')
             ->count() >= self::MINIMO_ARCHIVOS_FVS;
 
         $certificadosCompletos = DB::table('lote_archivos')
             ->where('lote_mensual_id', $lote->id)
             ->where('tipo', self::TIPO_CERTIFICADOS)
+            ->where('ruta', 'not like', '%/otros/%')
             ->count() >= self::MINIMO_ARCHIVOS_CERTIFICADOS;
 
         $cargaCompleta = $prestamosCompletos

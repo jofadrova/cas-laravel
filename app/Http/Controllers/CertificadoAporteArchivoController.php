@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCertificadoAporteArchivoRequest;
 use App\Models\LoteArchivo;
-use App\Models\LoteMensual;
 use App\Models\LoteCertificadoAporteRegistro;
+use App\Models\LoteMensual;
 use App\Services\ProcesamientoMensual\CertificadoAporteExcelImportService;
 use App\Services\ProcesamientoMensual\EstadoLoteMensualService;
 use Illuminate\Database\QueryException;
@@ -24,11 +24,23 @@ class CertificadoAporteArchivoController extends Controller
 {
     public function index(Request $request, LoteMensual $lote): View
     {
-        $archivos = LoteArchivo::query()
+        $todosLosArchivos = LoteArchivo::query()
             ->where('lote_mensual_id', $lote->id)
             ->where('tipo', LoteArchivo::TIPO_CERTIFICADOS)
             ->orderBy('id')
             ->get();
+        $archivos = $todosLosArchivos
+            ->reject(fn (LoteArchivo $archivo): bool => str_contains(
+                (string) $archivo->ruta,
+                '/otros/'
+            ))
+            ->values();
+        $otrosArchivos = $todosLosArchivos
+            ->filter(fn (LoteArchivo $archivo): bool => str_contains(
+                (string) $archivo->ruta,
+                '/otros/'
+            ))
+            ->values();
 
         $buscar = trim((string) $request->query('buscar', ''));
 
@@ -74,6 +86,7 @@ class CertificadoAporteArchivoController extends Controller
         return view('procesamiento-mensual.lotes.certificados.index', [
             'lote' => $lote,
             'archivos' => $archivos,
+            'otrosArchivos' => $otrosArchivos,
             'registros' => $registros,
             'resumen' => $resumen,
             'buscar' => $buscar,
@@ -101,14 +114,14 @@ class CertificadoAporteArchivoController extends Controller
             } catch (InvalidArgumentException $exception) {
                 throw ValidationException::withMessages([
                     "archivos.{$indice}" => $archivo->getClientOriginalName()
-                        . ': ' . $exception->getMessage(),
+                        .': '.$exception->getMessage(),
                 ]);
             }
 
             if (isset($hashesDelGrupo[$lectura['hash_sha256']])) {
                 throw ValidationException::withMessages([
                     "archivos.{$indice}" => $archivo->getClientOriginalName()
-                        . ': este mismo archivo fue seleccionado más de una vez.',
+                        .': este mismo archivo fue seleccionado más de una vez.',
                 ]);
             }
 
@@ -121,7 +134,7 @@ class CertificadoAporteArchivoController extends Controller
             if ($yaExiste) {
                 throw ValidationException::withMessages([
                     "archivos.{$indice}" => $archivo->getClientOriginalName()
-                        . ': este archivo de Certificados de Aportes ya fue cargado en el lote.',
+                        .': este archivo de Certificados de Aportes ya fue cargado en el lote.',
                 ]);
             }
 
@@ -146,14 +159,15 @@ class CertificadoAporteArchivoController extends Controller
                 $cantidadActual = LoteArchivo::query()
                     ->where('lote_mensual_id', $lote->id)
                     ->where('tipo', LoteArchivo::TIPO_CERTIFICADOS)
+                    ->where('ruta', 'not like', '%/otros/%')
                     ->count();
                 $cantidadFinal = $cantidadActual + count($lecturas);
 
                 if ($cantidadFinal < 3 || $cantidadFinal > 10) {
                     throw ValidationException::withMessages([
                         'archivos' => 'El lote debe contener entre 3 y 10 archivos '
-                            . 'de Certificados de Aportes; '
-                            . "con esta carga tendría {$cantidadFinal}.",
+                            .'de Certificados de Aportes; '
+                            ."con esta carga tendría {$cantidadFinal}.",
                     ]);
                 }
 
@@ -161,7 +175,7 @@ class CertificadoAporteArchivoController extends Controller
                     /** @var UploadedFile $archivoSubido */
                     $archivoSubido = $item['archivo'];
                     $datos = $item['datos'];
-                    $nombreGuardado = Str::uuid() . '.' . $datos['extension'];
+                    $nombreGuardado = Str::uuid().'.'.$datos['extension'];
                     $directorio = "procesamiento-mensual/lotes/{$lote->id}/certificados";
                     $ruta = $archivoSubido->storeAs(
                         $directorio,
@@ -172,7 +186,7 @@ class CertificadoAporteArchivoController extends Controller
                     if (! $ruta) {
                         throw new \RuntimeException(
                             'No fue posible guardar uno de los archivos '
-                            . 'de Certificados de Aportes.'
+                            .'de Certificados de Aportes.'
                         );
                     }
 
@@ -220,7 +234,7 @@ class CertificadoAporteArchivoController extends Controller
                 && str_contains($exception->getMessage(), 'lote_archivos_lote_tipo_hash_unique')) {
                 throw ValidationException::withMessages([
                     'archivos' => 'Uno de los archivos de Certificados de Aportes '
-                        . 'ya fue cargado en este lote.',
+                        .'ya fue cargado en este lote.',
                 ]);
             }
 
@@ -238,16 +252,15 @@ class CertificadoAporteArchivoController extends Controller
             ->route('procesamiento-mensual.lotes.certificados.index', $lote)
             ->with(
                 'success',
-                count($lecturas) . ' archivo(s) de Certificados de Aportes cargado(s). '
-                . "{$filas} fila(s) fueron incorporadas a la tabla consolidada."
+                count($lecturas).' archivo(s) de Certificados de Aportes cargado(s). '
+                ."{$filas} fila(s) fueron incorporadas a la tabla consolidada."
             );
     }
 
     public function limpiar(
         LoteMensual $lote,
         EstadoLoteMensualService $estadoLote
-    ): RedirectResponse
-    {
+    ): RedirectResponse {
         if (in_array($lote->estado, [
             LoteMensual::ESTADO_PROCESADO,
             LoteMensual::ESTADO_CERRADO,
@@ -258,13 +271,14 @@ class CertificadoAporteArchivoController extends Controller
                 ->with(
                     'error',
                     'No es posible limpiar Certificados de Aportes porque el lote '
-                    . "se encuentra {$lote->estado}."
+                    ."se encuentra {$lote->estado}."
                 );
         }
 
         $archivos = LoteArchivo::query()
             ->where('lote_mensual_id', $lote->id)
             ->where('tipo', LoteArchivo::TIPO_CERTIFICADOS)
+            ->where('ruta', 'not like', '%/otros/%')
             ->get(['id', 'ruta']);
 
         if ($archivos->isEmpty()) {
@@ -288,6 +302,7 @@ class CertificadoAporteArchivoController extends Controller
             LoteArchivo::query()
                 ->where('lote_mensual_id', $lote->id)
                 ->where('tipo', LoteArchivo::TIPO_CERTIFICADOS)
+                ->where('ruta', 'not like', '%/otros/%')
                 ->whereIn('id', $idsArchivos)
                 ->delete();
         });
@@ -303,7 +318,7 @@ class CertificadoAporteArchivoController extends Controller
             ->with(
                 'success',
                 'La importación de Certificados de Aportes fue limpiada. '
-                . 'Ya puede cargar un nuevo grupo.'
+                .'Ya puede cargar un nuevo grupo.'
             );
     }
 }

@@ -15,8 +15,7 @@ class PagoMensualPrestamoService
 
     public function __construct(
         private readonly EstadoLoteMensualService $estadoLote
-    ) {
-    }
+    ) {}
 
     public function ejecutar(LoteMensual $lote, ?int $usuarioId): array
     {
@@ -42,7 +41,7 @@ class PagoMensualPrestamoService
                 ], true)) {
                 throw new LogicException(
                     'El pago mensual de este lote ya fue consolidado. '
-                    . 'No se generó ningún registro duplicado.'
+                    .'No se generó ningún registro duplicado.'
                 );
             }
 
@@ -54,10 +53,9 @@ class PagoMensualPrestamoService
 
             $this->validarConciliacionDisponible($loteBloqueado);
 
-            $operacionesNoCoinciden = DB::table(
-                'lote_prestamo_conciliaciones'
-            )
+            $operacionesNoCoinciden = LotePrestamoConciliacion::query()
                 ->where('lote_mensual_id', $loteBloqueado->id)
+                ->soloAplicables()
                 ->where(function ($query): void {
                     $query
                         ->whereNull('clasificacion')
@@ -100,9 +98,9 @@ class PagoMensualPrestamoService
             if ($duplicadas->isNotEmpty()) {
                 throw new LogicException(
                     'Una misma cuota fue identificada simultáneamente como '
-                    . 'pago normal y descuento a garantes. Revise las cuotas ID: '
-                    . $duplicadas->keys()->implode(', ')
-                    . '. No se creó ningún pago.'
+                    .'pago normal y descuento a garantes. Revise las cuotas ID: '
+                    .$duplicadas->keys()->implode(', ')
+                    .'. No se creó ningún pago.'
                 );
             }
 
@@ -149,8 +147,8 @@ class PagoMensualPrestamoService
             if ($pagosExistentes->isNotEmpty()) {
                 throw new LogicException(
                     'Las siguientes cuotas ya tienen un pago activo: '
-                    . $pagosExistentes->implode(', ')
-                    . '. El lote no fue procesado.'
+                    .$pagosExistentes->implode(', ')
+                    .'. El lote no fue procesado.'
                 );
             }
 
@@ -210,12 +208,9 @@ class PagoMensualPrestamoService
 
                 DB::table('lote_prestamo_pagos')->insert([
                     'lote_prestamo_procesamiento_id' => $procesamientoId,
-                    'lote_prestamo_conciliacion_id' =>
-                        $candidato['lote_prestamo_conciliacion_id'],
-                    'lote_prestamo_conciliacion_detalle_id' =>
-                        $candidato['lote_prestamo_conciliacion_detalle_id'],
-                    'lote_garante_registro_id' =>
-                        $candidato['lote_garante_registro_id'],
+                    'lote_prestamo_conciliacion_id' => $candidato['lote_prestamo_conciliacion_id'],
+                    'lote_prestamo_conciliacion_detalle_id' => $candidato['lote_prestamo_conciliacion_detalle_id'],
+                    'lote_garante_registro_id' => $candidato['lote_garante_registro_id'],
                     'id_cuota_solicitud' => $cuota->id,
                     'pago_id' => $pagoId,
                     'concepto' => $candidato['concepto'],
@@ -229,8 +224,7 @@ class PagoMensualPrestamoService
                     LoteGaranteRegistro::query()
                         ->whereIn('id', $candidato['garantes']->pluck('id'))
                         ->update([
-                            'estado_aplicacion' =>
-                                LoteGaranteRegistro::APLICACION_APLICADO,
+                            'estado_aplicacion' => LoteGaranteRegistro::APLICACION_APLICADO,
                             'pago_id' => $pagoId,
                             'updated_at' => $ahora,
                         ]);
@@ -244,8 +238,7 @@ class PagoMensualPrestamoService
                 ->where('id', $procesamientoId)
                 ->update([
                     'cantidad_pagos' => $cantidadPagos,
-                    'monto_total' =>
-                        $this->desdeCentavos($montoTotalCentavos),
+                    'monto_total' => $this->desdeCentavos($montoTotalCentavos),
                     'updated_at' => $ahora,
                 ]);
 
@@ -257,14 +250,11 @@ class PagoMensualPrestamoService
                 DB::table('lote_prestamo_solicitudes')->insert([
                     'lote_prestamo_procesamiento_id' => $procesamientoId,
                     'id_solicitud' => $solicitud['id_solicitud'],
-                    'ultima_cuota_anterior' =>
-                        $solicitud['ultima_cuota_anterior'],
-                    'saldo_actual_anterior' =>
-                        $solicitud['saldo_actual_anterior'],
+                    'ultima_cuota_anterior' => $solicitud['ultima_cuota_anterior'],
+                    'saldo_actual_anterior' => $solicitud['saldo_actual_anterior'],
                     'estado_anterior' => $solicitud['estado_anterior'],
                     'ultima_cuota_nueva' => $solicitud['ultima_cuota_nueva'],
-                    'saldo_actual_nuevo' =>
-                        $solicitud['saldo_actual_nuevo'],
+                    'saldo_actual_nuevo' => $solicitud['saldo_actual_nuevo'],
                     'estado_nuevo' => $solicitud['estado_nuevo'],
                     'created_at' => $ahora,
                     'updated_at' => $ahora,
@@ -290,10 +280,8 @@ class PagoMensualPrestamoService
                         $solicitud['id_solicitud']
                     )
                     ->update([
-                        'ultima_cuota' =>
-                            $solicitud['ultima_cuota_nueva'],
-                        'saldo_actual' =>
-                            $solicitud['saldo_actual_nuevo'],
+                        'ultima_cuota' => $solicitud['ultima_cuota_nueva'],
+                        'saldo_actual' => $solicitud['saldo_actual_nuevo'],
                         'estado' => $solicitud['estado_nuevo'],
                     ]);
             }
@@ -325,7 +313,7 @@ class PagoMensualPrestamoService
         if ($totalRegistros === 0 || $totalRegistros !== $totalAtendidos) {
             throw new LogicException(
                 'La conciliación está incompleta. Ejecute “Volver a comparar” '
-                . 'antes de realizar el pago mensual.'
+                .'antes de realizar el pago mensual.'
             );
         }
     }
@@ -358,10 +346,8 @@ class PagoMensualPrestamoService
             ->map(fn (object $fila): array => [
                 'concepto' => LotePrestamoConciliacion::CONCEPTO_CUOTA,
                 'id_cuota_solicitud' => (int) $fila->id_cuota_solicitud,
-                'lote_prestamo_conciliacion_id' =>
-                    (int) $fila->conciliacion_id,
-                'lote_prestamo_conciliacion_detalle_id' =>
-                    (int) $fila->detalle_id,
+                'lote_prestamo_conciliacion_id' => (int) $fila->conciliacion_id,
+                'lote_prestamo_conciliacion_detalle_id' => (int) $fila->detalle_id,
                 'lote_garante_registro_id' => null,
                 'garantes' => collect(),
             ]);
@@ -420,19 +406,15 @@ class PagoMensualPrestamoService
                 /** @var LoteGaranteRegistro $primero */
                 $primero = $grupo->first();
                 $conciliacion = $grupo
-                    ->map(fn (LoteGaranteRegistro $registro) =>
-                        $conciliaciones->get($registro->id))
+                    ->map(fn (LoteGaranteRegistro $registro) => $conciliaciones->get($registro->id))
                     ->filter()
                     ->first();
 
                 return [
-                    'concepto' =>
-                        LotePrestamoConciliacion::CONCEPTO_GARANTE,
+                    'concepto' => LotePrestamoConciliacion::CONCEPTO_GARANTE,
                     'id_cuota_solicitud' => (int) $idCuota,
-                    'lote_prestamo_conciliacion_id' =>
-                        $conciliacion?->id,
-                    'lote_prestamo_conciliacion_detalle_id' =>
-                        $conciliacion?->detalles?->first()?->id,
+                    'lote_prestamo_conciliacion_id' => $conciliacion?->id,
+                    'lote_prestamo_conciliacion_detalle_id' => $conciliacion?->detalles?->first()?->id,
                     'lote_garante_registro_id' => $primero->id,
                     'garantes' => $grupo,
                 ];
@@ -453,23 +435,22 @@ class PagoMensualPrestamoService
         if ($faltantes->isNotEmpty()) {
             throw new LogicException(
                 'No se encontraron las cuotas ID: '
-                . $faltantes->implode(', ')
-                . '. No se creó ningún pago.'
+                .$faltantes->implode(', ')
+                .'. No se creó ningún pago.'
             );
         }
 
         $noPendientes = $cuotas
             ->filter(
-                fn (object $cuota): bool =>
-                    strtoupper(trim((string) $cuota->estado)) !== 'PE'
+                fn (object $cuota): bool => strtoupper(trim((string) $cuota->estado)) !== 'PE'
             )
             ->keys();
 
         if ($noPendientes->isNotEmpty()) {
             throw new LogicException(
                 'Las siguientes cuotas ya no están pendientes: '
-                . $noPendientes->implode(', ')
-                . '. Ejecute nuevamente la comparación.'
+                .$noPendientes->implode(', ')
+                .'. Ejecute nuevamente la comparación.'
             );
         }
 
@@ -479,8 +460,7 @@ class PagoMensualPrestamoService
         ) as $candidato) {
             $cuota = $cuotas->get($candidato['id_cuota_solicitud']);
             $acumulado = $candidato['garantes']->sum(
-                fn (LoteGaranteRegistro $registro): int =>
-                    $this->aCentavos($registro->monto_aplicable)
+                fn (LoteGaranteRegistro $registro): int => $this->aCentavos($registro->monto_aplicable)
             );
             $diferencia =
                 $acumulado - $this->aCentavos($cuota->cuota_fija);
@@ -488,9 +468,9 @@ class PagoMensualPrestamoService
             if (abs($diferencia) > self::TOLERANCIA_CENTAVOS) {
                 throw new LogicException(
                     'El acumulado de garantes para la cuota ID '
-                    . $cuota->id
-                    . ' ya no coincide con el monto de la cuota. '
-                    . 'Vuelva a comparar antes de consolidar.'
+                    .$cuota->id
+                    .' ya no coincide con el monto de la cuota. '
+                    .'Vuelva a comparar antes de consolidar.'
                 );
             }
         }
@@ -504,8 +484,7 @@ class PagoMensualPrestamoService
             ->map(function (Collection $cuotasSolicitud): array {
                 $cuotaFinal = $cuotasSolicitud
                     ->sortByDesc(
-                        fn (object $cuota): int =>
-                            (int) $cuota->nro_cuota
+                        fn (object $cuota): int => (int) $cuota->nro_cuota
                     )
                     ->first();
 
@@ -514,21 +493,16 @@ class PagoMensualPrestamoService
 
                 return [
                     'id_solicitud' => (int) $cuotaFinal->id_solicitud,
-                    'ultima_cuota_anterior' =>
-                        (int) $cuotaFinal->ultima_cuota_solicitud,
-                    'saldo_actual_anterior' =>
-                        $this->desdeCentavos(
-                            $this->aCentavos($cuotaFinal->saldo_actual)
-                        ),
-                    'estado_anterior' =>
-                        trim((string) $cuotaFinal->estado_solicitud),
+                    'ultima_cuota_anterior' => (int) $cuotaFinal->ultima_cuota_solicitud,
+                    'saldo_actual_anterior' => $this->desdeCentavos(
+                        $this->aCentavos($cuotaFinal->saldo_actual)
+                    ),
+                    'estado_anterior' => trim((string) $cuotaFinal->estado_solicitud),
                     'ultima_cuota_nueva' => $ultimaCuota,
-                    'saldo_actual_nuevo' =>
-                        $this->desdeCentavos(
-                            $this->aCentavos($cuotaFinal->saldo)
-                        ),
-                    'estado_nuevo' =>
-                        $periodo === $ultimaCuota
+                    'saldo_actual_nuevo' => $this->desdeCentavos(
+                        $this->aCentavos($cuotaFinal->saldo)
+                    ),
+                    'estado_nuevo' => $periodo === $ultimaCuota
                             ? 'PA'
                             : trim(
                                 (string) $cuotaFinal->estado_solicitud
@@ -542,8 +516,7 @@ class PagoMensualPrestamoService
         Collection $garantes,
         int $mes,
         int $gestion
-    ): string
-    {
+    ): string {
         $papeletas = $garantes
             ->pluck('codigo_garante')
             ->map(fn ($codigo): string => trim((string) $codigo))
@@ -552,10 +525,10 @@ class PagoMensualPrestamoService
             ->values();
 
         return 'Descuento a garantes MinDef'
-            . ($papeletas->isEmpty()
+            .($papeletas->isEmpty()
                 ? ''
-                : ' - ' . $papeletas->implode(' - '))
-            . sprintf(' %02d/%04d', $mes, $gestion);
+                : ' - '.$papeletas->implode(' - '))
+            .sprintf(' %02d/%04d', $mes, $gestion);
     }
 
     private function tipoMoneda(mixed $tipoMoneda): string

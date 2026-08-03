@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\LoteArchivo;
 use App\Models\LoteMensual;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
@@ -55,7 +56,7 @@ class StoreGaranteArchivoRequest extends FormRequest
                     $validator->errors()->add(
                         'archivos_garantes',
                         'No se pueden cargar descuentos a garantes porque '
-                        . 'el pago mensual de Préstamos ya fue consolidado.'
+                        .'el pago mensual de Préstamos ya fue consolidado.'
                     );
 
                     return;
@@ -69,7 +70,20 @@ class StoreGaranteArchivoRequest extends FormRequest
                     $validator->errors()->add(
                         'archivos_garantes',
                         'No se pueden cargar descuentos a garantes porque el lote se encuentra '
-                        . strtolower($lote->estado) . '.'
+                        .strtolower($lote->estado).'.'
+                    );
+                }
+
+                $tieneArchivosPrestamos = LoteArchivo::query()
+                    ->where('lote_mensual_id', $lote->id)
+                    ->where('tipo', LoteArchivo::TIPO_PRESTAMOS)
+                    ->where('ruta', 'not like', '%/otros/%')
+                    ->exists();
+
+                if (! $tieneArchivosPrestamos) {
+                    $validator->errors()->add(
+                        'archivos_garantes',
+                        'Primero debe cargar los archivos principales de Préstamos.'
                     );
                 }
             },
@@ -79,18 +93,12 @@ class StoreGaranteArchivoRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'archivos_garantes.required' =>
-                'Seleccione el archivo Excel de descuentos a garantes.',
-            'archivos_garantes.array' =>
-                'La selección del archivo de garantes no es válida.',
-            'archivos_garantes.min' =>
-                'Seleccione al menos un archivo Excel de garantes.',
-            'archivos_garantes.max' =>
-                'Puede cargar como máximo 5 archivos de garantes a la vez.',
-            'archivos_garantes.*.mimes' =>
-                'Solo se permiten archivos de garantes .xlsx o .xls.',
-            'archivos_garantes.*.max' =>
-                'Cada archivo de garantes debe pesar como máximo 10 MB.',
+            'archivos_garantes.required' => 'Seleccione el archivo Excel de descuentos a garantes.',
+            'archivos_garantes.array' => 'La selección del archivo de garantes no es válida.',
+            'archivos_garantes.min' => 'Seleccione al menos un archivo Excel de garantes.',
+            'archivos_garantes.max' => 'Puede cargar como máximo 5 archivos de garantes a la vez.',
+            'archivos_garantes.*.mimes' => 'Solo se permiten archivos de garantes .xlsx o .xls.',
+            'archivos_garantes.*.max' => 'Cada archivo de garantes debe pesar como máximo 10 MB.',
         ];
     }
 }

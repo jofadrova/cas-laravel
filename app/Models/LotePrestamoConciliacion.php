@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,13 +10,19 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class LotePrestamoConciliacion extends Model
 {
     public const CONCEPTO_CUOTA = 'CUOTA_PRESTAMO';
+
     public const CONCEPTO_GARANTE = 'DESCUENTO_GARANTE';
 
     public const COINCIDE = 'COINCIDE';
+
     public const FALTA = 'FALTA';
+
     public const DEMASIA = 'DEMASIA';
+
     public const SOCIO_NO_ENCONTRADO = 'SOCIO_NO_ENCONTRADO';
+
     public const SIN_CUOTA = 'SIN_CUOTA';
+
     public const TIPO_NO_CLASIFICADO = 'TIPO_NO_CLASIFICADO';
 
     public const CLASIFICACIONES = [
@@ -87,6 +94,26 @@ class LotePrestamoConciliacion extends Model
             LoteGaranteRegistro::class,
             'lote_garante_registro_id'
         );
+    }
+
+    public function scopeSoloAplicables(Builder $query): Builder
+    {
+        return $query->where(function (Builder $consulta): void {
+            $consulta
+                ->whereNull('concepto')
+                ->orWhere('concepto', self::CONCEPTO_CUOTA)
+                ->orWhere(function (Builder $garantes): void {
+                    $garantes
+                        ->where('concepto', self::CONCEPTO_GARANTE)
+                        ->whereHas(
+                            'garanteRegistro',
+                            fn (Builder $registro): Builder => $registro->where(
+                                'estado_aplicacion',
+                                LoteGaranteRegistro::APLICACION_LISTO
+                            )
+                        );
+                });
+        });
     }
 
     public function getConceptoTextoAttribute(): string

@@ -18,28 +18,18 @@
     {{-- Buscador --}}
     <form method="GET">
         <div class="row mb-3 align-items-end">
-            {{-- Buscar por --}}
-            <div class="col-md-2">
-                <label class="form-label">Buscar por</label>
-                <select name="campo" class="form-select">
-                    <option value="solicitud"
-                        {{ request('campo', 'solicitud') == 'solicitud' ? 'selected' : '' }}>
-                        Nro. Solicitud
-                    </option>
-                    <option value="papeleta"
-                        {{ request('campo') == 'papeleta' ? 'selected' : '' }}>
-                        Nro. Papeleta
-                    </option>
-                    <option value="asociado"
-                        {{ request('campo') == 'asociado' ? 'selected' : '' }}>
-                        Asociado
-                    </option>
-                </select>
-            </div>
-            {{-- Criterio --}}
-            <div class="col-md-3">
-                <label class="form-label">Criterio</label>
-                <input type="text" name="buscar" class="form-control" placeholder="Ingrese el criterio..." value="{{ request('buscar') }}">
+            {{-- Búsqueda unificada --}}
+            <div class="col-md-5">
+                <label for="buscarPrestamo" class="form-label">Buscar</label>
+                <input
+                    type="search"
+                    id="buscarPrestamo"
+                    name="buscar"
+                    class="form-control"
+                    placeholder="Nro. solicitud, papeleta, nombres o apellidos"
+                    value="{{ request('buscar') }}"
+                    autocomplete="off"
+                >
             </div>
             {{-- Estado --}}
             <div class="col-md-2">
@@ -53,6 +43,10 @@
                     <option value="IN"
                         {{ request('estado') == 'IN' ? 'selected' : '' }}>
                         Inactivo
+                    </option>
+                    <option value="DI"
+                        {{ request('estado') == 'DI' ? 'selected' : '' }}>
+                        Diferido
                     </option>
                     <option value="PA"
                         {{ request('estado') == 'PA' ? 'selected' : '' }}>
@@ -70,8 +64,7 @@
                 <select name="tipo_prestamo" class="form-select">
                     <option value="">Todos</option>
                     @foreach($tipos as $tipo)
-                        <option
-                            value="{{ $tipo->id_tasa }}"
+                        <option value="{{ $tipo->id_tasa }}"
                             {{ request('tipo_prestamo') == $tipo->id_tasa ? 'selected' : '' }}>
                             {{ $tipo->descripcion_tasa }}
                         </option>
@@ -143,6 +136,8 @@
                             <td class="text-center">
                                 @if($prestamo->estado=='AC')
                                     <span class="badge bg-success">ACTIVO</span>
+                                @elseif($prestamo->estado === 'DI')
+                                    <span class="badge" style="background-color: #7c3aed;">DIFERIDO</span>
                                 @elseif($prestamo->estado === 'PA')
                                     <span class="badge bg-info">CANCELADO</span>
                                 @elseif($prestamo->estado === 'CE')
@@ -180,8 +175,7 @@
                                         </li>
                                         @if(!$prestamoCerrado && !$tieneCuotasPagadas && $prestamo->editable)
                                         <li>
-                                            <a class="dropdown-item"
-                                            href="{{ route('prestamos.edit',$prestamo) }}">
+                                            <a class="dropdown-item" href="{{ route('prestamos.edit',$prestamo) }}">
                                                 <i class="bi bi-pencil-square me-2 text-warning"></i>
                                                 Editar préstamo
                                             </a>
@@ -199,8 +193,7 @@
                                         @endif
                                         @if($prestamo->editable)
                                         <li>
-                                            <form method="POST"
-                                                action="{{ route('prestamos.bloquear-edicion', $prestamo) }}"
+                                            <form method="POST" action="{{ route('prestamos.bloquear-edicion', $prestamo) }}"
                                                 data-confirm-title="Confirmar bloqueo de edición"
                                                 data-confirm-message="Se bloqueará la edición del préstamo N.º {{ $prestamo->nro_solicitud }}."
                                                 data-confirm-button="Bloquear edición">
@@ -215,8 +208,7 @@
                                         </li>
                                         @else
                                         <li>
-                                            <form method="POST"
-                                                action="{{ route('prestamos.habilitar-edicion', $prestamo) }}"
+                                            <form method="POST" action="{{ route('prestamos.habilitar-edicion', $prestamo) }}"
                                                 data-confirm-title="Confirmar habilitación de edición"
                                                 data-confirm-message="Se habilitará nuevamente la edición del préstamo N.º {{ $prestamo->nro_solicitud }}."
                                                 data-confirm-button="Habilitar edición">
@@ -261,8 +253,7 @@
                                             @endif
                                         </li>
                                         <li>
-                                            <a class="dropdown-item btn-reporte-pagos"
-                                            href="{{ route('prestamos.pagos.reporte', $prestamo) }}">
+                                            <a class="dropdown-item btn-reporte-pagos" href="{{ route('prestamos.pagos.reporte', $prestamo) }}">
                                                 <i class="bi bi-receipt me-2 text-info"></i>
                                                 Reporte de pagos
                                             </a>
@@ -326,34 +317,6 @@
     <div id="contenedorDetallePrestamo"></div>
     @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-
-    const campo = document.querySelector('select[name="campo"]');
-    const buscar = document.querySelector('input[name="buscar"]');
-
-    function actualizarPlaceholder() {
-        switch (campo.value) {
-            case 'solicitud':
-                buscar.placeholder = 'Ej.: 10548';
-                break;
-
-            case 'papeleta':
-                buscar.placeholder = 'Ej.: 000022125';
-                break;
-
-            case 'asociado':
-                buscar.placeholder = 'Nombre o apellido del asociado';
-                break;
-
-            default:
-                buscar.placeholder = 'Ingrese el criterio...';
-        }
-    }
-    actualizarPlaceholder();
-    campo.addEventListener('change', actualizarPlaceholder);
-
-});
-
 document.addEventListener('click', async function (e) {
     const boton = e.target.closest('.btn-detalle');
     if (!boton) return;

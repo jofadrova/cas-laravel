@@ -114,6 +114,8 @@
             </div>
         </div>
 
+        @include('procesamiento-mensual.lotes.fvs._otros-archivos')
+
         <div class="row g-3 mb-4">
             <div class="col-sm-6 col-xl">
                 <div class="card border-0 shadow-sm rounded-4 h-100">

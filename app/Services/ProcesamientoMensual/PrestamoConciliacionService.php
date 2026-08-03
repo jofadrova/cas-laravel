@@ -28,8 +28,7 @@ class PrestamoConciliacionService
 
     public function __construct(
         private readonly GaranteConciliacionService $conciliadorGarantes
-    ) {
-    }
+    ) {}
 
     public function ejecutar(LoteMensual $lote, ?int $usuarioId): void
     {
@@ -51,9 +50,16 @@ class PrestamoConciliacionService
         $this->conciliadorGarantes->ejecutar($lote, $usuarioId);
         $garantes = $this->cargarDescuentosGarantes($lote);
         $garantesPorPapeleta = $garantes->groupBy(
-            fn (LoteGaranteRegistro $registro): string =>
-                $this->normalizarCodigoPersonal($registro->codigo_garante)
+            fn (LoteGaranteRegistro $registro): string => $this->normalizarCodigoPersonal($registro->codigo_garante)
         );
+        $idsRegistrosPrincipales = LotePrestamoRegistro::query()
+            ->where('lote_mensual_id', $lote->id)
+            ->whereHas(
+                'archivo',
+                fn ($query) => $query->where('ruta', 'not like', '%/otros/%')
+            )
+            ->pluck('id')
+            ->flip();
         $cuotasObjetivoGarantes = $this->cargarCuotasObjetivoGarantes(
             $garantes
         );
@@ -66,6 +72,7 @@ class PrestamoConciliacionService
         $resultados = [];
         $detalles = [];
         $clasificacionesGarantes = [];
+        $montosExcelGarantes = [];
 
         foreach ($registros as $registro) {
             $clave = $this->normalizarCodigoPersonal(
@@ -87,6 +94,7 @@ class PrestamoConciliacionService
                 $resultado['observacion'] =
                     'CODIGO_PERSONAL no fue encontrado en socio_institucion.papeleta.';
                 $resultados[] = $resultado;
+
                 continue;
             }
 
@@ -113,9 +121,9 @@ class PrestamoConciliacionService
                         $cuotas->first()->id_socio
                     ) ?? $institucion
                 );
-            $descuentosGarante = $garantesPorPapeleta
-                ->get($clave, collect())
-                ->values();
+            $descuentosGarante = $idsRegistrosPrincipales->has($registro->id)
+                ? $garantesPorPapeleta->get($clave, collect())->values()
+                : collect();
             $operaciones = $this->crearOperaciones(
                 $cuotas,
                 $descuentosGarante,
@@ -138,8 +146,9 @@ class PrestamoConciliacionService
                     LotePrestamoConciliacion::SIN_CUOTA;
                 $resultado['observacion'] =
                     'El socio no tiene cuotas PE del periodo ni descuentos '
-                    . 'a garante registrados en el lote.';
+                    .'a garante registrados en el lote.';
                 $resultados[] = $resultado;
+
                 continue;
             }
 
@@ -211,6 +220,9 @@ class PrestamoConciliacionService
                 if ($operacion['garante'] !== null) {
                     $clasificacionesGarantes[$operacion['garante']->id] =
                         $resultado['clasificacion'];
+                    $montosExcelGarantes[$operacion['garante']->id] =
+                        ($montosExcelGarantes[$operacion['garante']->id] ?? 0)
+                        + $montoAsignadoOrigen;
                 }
 
                 $detalle = $this->crearDetalleOperacion(
@@ -228,7 +240,9 @@ class PrestamoConciliacionService
         }
 
         $this->validarDescuentosGarantesAsignados(
-            $registros,
+            $registros->filter(
+                fn (LotePrestamoRegistro $registro): bool => $idsRegistrosPrincipales->has($registro->id)
+            ),
             $garantes,
             $clasificacionesGarantes
         );
@@ -239,7 +253,8 @@ class PrestamoConciliacionService
             $resultados,
             $detalles,
             $garantes,
-            $clasificacionesGarantes
+            $clasificacionesGarantes,
+            $montosExcelGarantes
         ): void {
             LotePrestamoConciliacion::query()
                 ->where('lote_mensual_id', $lote->id)
@@ -257,11 +272,10 @@ class PrestamoConciliacionService
                     'orden_operacion',
                 ])
                 ->keyBy(
-                    fn (LotePrestamoConciliacion $conciliacion): string =>
-                        $this->claveResultado(
-                            $conciliacion->lote_prestamo_registro_id,
-                            $conciliacion->orden_operacion
-                        )
+                    fn (LotePrestamoConciliacion $conciliacion): string => $this->claveResultado(
+                        $conciliacion->lote_prestamo_registro_id,
+                        $conciliacion->orden_operacion
+                    )
                 );
 
             $filasDetalle = [];
@@ -288,8 +302,7 @@ class PrestamoConciliacionService
             LoteGaranteRegistro::query()
                 ->whereIn('id', $garantes->pluck('id'))
                 ->update([
-                    'estado_conciliacion' =>
-                        LoteGaranteRegistro::CONCILIACION_SIN_DESCUENTO,
+                    'estado_conciliacion' => LoteGaranteRegistro::CONCILIACION_SIN_DESCUENTO,
                     'updated_at' => now(),
                 ]);
 
@@ -301,6 +314,11 @@ class PrestamoConciliacionService
                         'updated_at' => now(),
                     ]);
             }
+
+            $this->conciliadorGarantes->actualizarMontosDesdeExcel(
+                $garantes,
+                $montosExcelGarantes
+            );
         });
     }
 
@@ -316,12 +334,10 @@ class PrestamoConciliacionService
             $montoBase = $this->aCentavos($cuota->monto_cuota_pagar);
 
             $operaciones->push([
-                'concepto' =>
-                    LotePrestamoConciliacion::CONCEPTO_CUOTA,
+                'concepto' => LotePrestamoConciliacion::CONCEPTO_CUOTA,
                 'factor' => $factor,
                 'monto_base_centavos' => $montoBase,
-                'monto_origen_centavos' =>
-                    $this->montoOrigenCentavos($montoBase, $factor),
+                'monto_origen_centavos' => $this->montoOrigenCentavos($montoBase, $factor),
                 'cuota' => $cuota,
                 'garante' => null,
                 'cuota_objetivo' => null,
@@ -332,17 +348,15 @@ class PrestamoConciliacionService
             $montoBs = $this->aCentavos($descuento->monto_bs);
 
             $operaciones->push([
-                'concepto' =>
-                    LotePrestamoConciliacion::CONCEPTO_GARANTE,
+                'concepto' => LotePrestamoConciliacion::CONCEPTO_GARANTE,
                 'factor' => 1.00,
                 'monto_base_centavos' => $montoBs,
                 'monto_origen_centavos' => $montoBs,
                 'cuota' => null,
                 'garante' => $descuento,
-                'cuota_objetivo' =>
-                    $cuotasObjetivoGarantes->get(
-                        (int) $descuento->id_cuota_solicitud
-                    ),
+                'cuota_objetivo' => $cuotasObjetivoGarantes->get(
+                    (int) $descuento->id_cuota_solicitud
+                ),
             ]);
         }
 
@@ -375,8 +389,7 @@ class PrestamoConciliacionService
         $codigosExcel = $registros
             ->pluck('codigo_personal')
             ->map(
-                fn ($codigo): string =>
-                    $this->normalizarCodigoPersonal($codigo)
+                fn ($codigo): string => $this->normalizarCodigoPersonal($codigo)
             )
             ->filter(fn (string $codigo): bool => $codigo !== '')
             ->unique()
@@ -384,12 +397,11 @@ class PrestamoConciliacionService
 
         $omitidos = $garantes
             ->filter(
-                fn (LoteGaranteRegistro $registro): bool =>
-                    $codigosExcel->has(
-                        $this->normalizarCodigoPersonal(
-                            $registro->codigo_garante
-                        )
+                fn (LoteGaranteRegistro $registro): bool => $codigosExcel->has(
+                    $this->normalizarCodigoPersonal(
+                        $registro->codigo_garante
                     )
+                )
                     && ! array_key_exists(
                         $registro->id,
                         $clasificacionesGarantes
@@ -403,8 +415,7 @@ class PrestamoConciliacionService
         $papeletas = $omitidos
             ->pluck('codigo_garante')
             ->map(
-                fn ($codigo): string =>
-                    $this->normalizarCodigoPersonal($codigo)
+                fn ($codigo): string => $this->normalizarCodigoPersonal($codigo)
             )
             ->unique()
             ->sort()
@@ -412,9 +423,9 @@ class PrestamoConciliacionService
 
         throw new LogicException(
             'No fue posible incorporar como DESCUENTO A GARANTE los '
-            . "registros de las papeletas: {$papeletas}. "
-            . 'La comparación fue cancelada para evitar clasificarlos '
-            . 'incorrectamente como demasía.'
+            ."registros de las papeletas: {$papeletas}. "
+            .'La comparación fue cancelada para evitar clasificarlos '
+            .'incorrectamente como demasía.'
         );
     }
 
@@ -430,8 +441,8 @@ class PrestamoConciliacionService
                 LotePrestamoConciliacion::TIPO_NO_CLASIFICADO;
             $resultado['observacion'] =
                 'El tipo de préstamo '
-                . ($operacion['cuota']->tipo_prestamo ?? 'no definido')
-                . ' no tiene una regla de conversión configurada.';
+                .($operacion['cuota']->tipo_prestamo ?? 'no definido')
+                .' no tiene una regla de conversión configurada.';
 
             return;
         }
@@ -450,37 +461,31 @@ class PrestamoConciliacionService
         if ($operacion['concepto']
             === LotePrestamoConciliacion::CONCEPTO_GARANTE) {
             $resultado['observacion'] = match ($resultado['clasificacion']) {
-                LotePrestamoConciliacion::COINCIDE =>
-                    'La porción del Excel general coincide con el '
-                    . 'DESCUENTO A GARANTE informado por Cartera de Crédito.',
-                LotePrestamoConciliacion::FALTA =>
-                    'La porción del Excel general es menor que el '
-                    . 'DESCUENTO A GARANTE informado.',
-                default =>
-                    'El remanente del Excel general es mayor que el '
-                    . 'DESCUENTO A GARANTE informado.',
+                LotePrestamoConciliacion::COINCIDE => 'La porción del Excel general coincide con el '
+                    .'DESCUENTO A GARANTE informado por Cartera de Crédito.',
+                LotePrestamoConciliacion::FALTA => 'La porción del Excel general es menor que el '
+                    .'DESCUENTO A GARANTE informado.',
+                default => 'El remanente del Excel general es mayor que el '
+                    .'DESCUENTO A GARANTE informado.',
             };
 
             return;
         }
 
         $resultado['observacion'] = match ($resultado['clasificacion']) {
-            LotePrestamoConciliacion::COINCIDE =>
-                'La porción asignada del total Excel coincide con '
-                . 'cuotas_solicitud.cuota_fija.'
-                . $this->descripcionConversion(
+            LotePrestamoConciliacion::COINCIDE => 'La porción asignada del total Excel coincide con '
+                .'cuotas_solicitud.cuota_fija.'
+                .$this->descripcionConversion(
                     $operacion['cuota']->id_tasa
                 ),
-            LotePrestamoConciliacion::FALTA =>
-                'La porción asignada del total Excel es menor que '
-                . 'cuotas_solicitud.cuota_fija.'
-                . $this->descripcionConversion(
+            LotePrestamoConciliacion::FALTA => 'La porción asignada del total Excel es menor que '
+                .'cuotas_solicitud.cuota_fija.'
+                .$this->descripcionConversion(
                     $operacion['cuota']->id_tasa
                 ),
-            default =>
-                'El remanente asignado a la última operación es mayor '
-                . 'que cuotas_solicitud.cuota_fija.'
-                . $this->descripcionConversion(
+            default => 'El remanente asignado a la última operación es mayor '
+                .'que cuotas_solicitud.cuota_fija.'
+                .$this->descripcionConversion(
                     $operacion['cuota']->id_tasa
                 ),
         };
@@ -541,8 +546,7 @@ class PrestamoConciliacionService
         $papeletas = $registros
             ->pluck('codigo_personal')
             ->map(
-                fn ($valor): string =>
-                    $this->normalizarCodigoPersonal($valor)
+                fn ($valor): string => $this->normalizarCodigoPersonal($valor)
             )
             ->filter(fn (string $valor): bool => $valor !== '')
             ->unique()
@@ -564,8 +568,7 @@ SQL;
             ->whereIn(DB::raw($expresion), $papeletas->all())
             ->get()
             ->groupBy(
-                fn (object $institucion): string =>
-                    $this->normalizarCodigoPersonal($institucion->papeleta)
+                fn (object $institucion): string => $this->normalizarCodigoPersonal($institucion->papeleta)
             );
     }
 
@@ -577,11 +580,10 @@ SQL;
 
         return $instituciones
             ->sortByDesc(
-                fn (object $institucion): string =>
-                    (strtoupper(trim((string) $institucion->estado)) === 'AC'
+                fn (object $institucion): string => (strtoupper(trim((string) $institucion->estado)) === 'AC'
                         ? '1'
                         : '0')
-                    . str_pad((string) $institucion->id, 20, '0', STR_PAD_LEFT)
+                    .str_pad((string) $institucion->id, 20, '0', STR_PAD_LEFT)
             )
             ->first();
     }
@@ -599,15 +601,13 @@ SQL;
             'lote_mensual_id' => $lote->id,
             'lote_prestamo_registro_id' => $registro->id,
             'orden_operacion' => $ordenOperacion,
-            'concepto' =>
-                LotePrestamoConciliacion::CONCEPTO_CUOTA,
+            'concepto' => LotePrestamoConciliacion::CONCEPTO_CUOTA,
             'lote_garante_registro_id' => null,
             'eit_item' => null,
             'socio_institucion_id' => null,
             'id_socio' => null,
             'monto_excel' => $this->desdeCentavos($montoExcelCentavos),
-            'monto_excel_asignado' =>
-                $this->desdeCentavos($montoExcelCentavos),
+            'monto_excel_asignado' => $this->desdeCentavos($montoExcelCentavos),
             'monto_base_datos' => '0.00',
             'diferencia' => $this->desdeCentavos($montoExcelCentavos),
             'clasificacion' => null,
@@ -673,8 +673,7 @@ SQL;
             ->orderBy('cs.nro_cuota')
             ->get()
             ->groupBy(
-                fn (object $cuota): string =>
-                    $this->normalizarCodigoPersonal($cuota->papeleta)
+                fn (object $cuota): string => $this->normalizarCodigoPersonal($cuota->papeleta)
             );
     }
 
@@ -844,17 +843,17 @@ SQL;
         }
 
         return ' La porción asignada fue dividida entre '
-            . number_format($factor, 2, '.', '')
-            . ' por corresponder al tipo de préstamo '
-            . $idTasa
-            . '.';
+            .number_format($factor, 2, '.', '')
+            .' por corresponder al tipo de préstamo '
+            .$idTasa
+            .'.';
     }
 
     private function claveResultado(
         mixed $registroId,
         mixed $ordenOperacion
     ): string {
-        return (string) $registroId . ':' . (string) $ordenOperacion;
+        return (string) $registroId.':'.(string) $ordenOperacion;
     }
 
     private function aCentavos(mixed $monto): int

@@ -66,6 +66,7 @@ class StoreFvsArchivoRequest extends FormRequest
                 $existentes = LoteArchivo::query()
                     ->where('lote_mensual_id', $lote->id)
                     ->where('tipo', LoteArchivo::TIPO_FVS)
+                    ->where('ruta', 'not like', '%/otros/%')
                     ->count();
                 $nuevos = count($this->file('archivos', []));
                 $total = $existentes + $nuevos;
