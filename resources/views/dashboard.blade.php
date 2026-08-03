@@ -1,9 +1,5 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-white leading-tight">
-            Datos financieros
-        </h2>
-    </x-slot>
+    <x-slot name="header"><h2 class="font-semibold text-xl text-white leading-tight">Datos financieros</h2></x-slot>
     <div class="row g-4 mb-4">
     <!-- USD -->
     <div class="col-md-6 col-xl-3">
@@ -85,9 +81,10 @@
 </div>
 <div class="row mt-4">
     <div class="col-lg-8">
-        <div class="card shadow-sm border-0 rounded-4">
-            <div class="card-header bg-white">
+        <div class="card shadow-sm border-0 rounded-4 h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center gap-2 flex-wrap">
                 <strong>Evolución del USD</strong>
+                <span id="chartMonthLabel" class="small text-muted"></span>
             </div>
             <div class="card-body" style="height:350px">
                 <canvas id="usdChart"></canvas>
@@ -98,22 +95,22 @@
     <div class="card shadow-sm border-0 rounded-4 h-100">
         <div class="card-header bg-white">
             <strong>Últimas cotizaciones</strong>
+            <div class="d-flex gap-2 mt-2">
+                <select id="quotationMonth" class="form-select form-select-sm" aria-label="Mes de las cotizaciones"></select>
+                <button id="downloadQuotations" type="button" class="btn btn-sm btn-outline-success text-nowrap">
+                    <i class="bi bi-download me-1"></i>Descargar
+                </button>
+            </div>
         </div>
         <div class="cotizaciones-scroll">
             <table class="table table-sm table-hover align-middle mb-0">
-                <tbody>
-                @foreach($history->sortByDesc('rate_date') as $item)
+                <thead>
                     <tr>
-                        <td>
-                            {{ $item->rate_date->format('d/m') }}
-                        </td>
-
-                        <td class="text-end fw-bold">
-                            {{ number_format($item->usd_bob,2) }}
-                        </td>
+                        <th>Fecha</th>
+                        <th class="text-end">USD/BOB</th>
                     </tr>
-                @endforeach
-                </tbody>
+                </thead>
+                <tbody id="quotationTableBody"></tbody>
             </table>
         </div>
     </div>
@@ -123,10 +120,10 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
-    initDashboard(
-        @json($history->pluck('rate_date')->map->format('d/m')),
-        @json($history->pluck('usd_bob'))
-    );
+    initDashboard(@json($history->map(fn ($item) => [
+        'date' => $item->rate_date->format('Y-m-d'),
+        'usd' => (float) $item->usd_bob,
+    ])->values()));
 
 });
 </script>

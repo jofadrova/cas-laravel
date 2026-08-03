@@ -135,12 +135,15 @@ class ExchangeRateService
             ->values();
     }
 
-    public function getHistory(int $days = 30)
+    public function getHistory(?int $days = null)
     {
-        return ExchangeRate::query()
-            ->orderByDesc('rate_date')
-            ->limit($days)
-            ->get()
+        $query = ExchangeRate::query()->orderByDesc('rate_date');
+
+        if ($days !== null) {
+            $query->limit($days);
+        }
+
+        return $query->get()
             ->sortBy('rate_date')
             ->values();
     }

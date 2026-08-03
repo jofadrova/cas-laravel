@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\AmortizacionCapitalController;
 use App\Http\Controllers\CertificadoAporteArchivoController;
+use App\Http\Controllers\ContaCuentaController;
+use App\Http\Controllers\EnvioMensualController;
 use App\Http\Controllers\CertificadoAporteOtroArchivoController;
 use App\Http\Controllers\FvsArchivoController;
 use App\Http\Controllers\FvsOtroArchivoController;
@@ -45,7 +47,7 @@ Route::get('/dashboard', function (ExchangeRateService $exchangeRateService) {
     return view('dashboard', [
         'exchangeRate' => $exchangeRateService->getLatest(),
         'monthlyAverage' => $exchangeRateService->getMonthlyAverages(),
-        'history' => $exchangeRateService->getHistory(30),
+        'history' => $exchangeRateService->getHistory(),
 
     ]);
 
@@ -82,6 +84,15 @@ Route::middleware('auth')->group(function () {
     Route::patch('/socios/{socio}/estado', [SocioController::class, 'cambiarEstado'])->name('socios.estado');
     Route::get('/socios/{socio}/kardex', [SocioController::class, 'kardex'])->name('socios.kardex');
     Route::get('/socios/{socio}/revincular', [SocioController::class, 'revincular'])->name('socios.revincular');
+
+    Route::prefix('contabilidad')->name('contabilidad.')->group(function () {
+        Route::get('cuentas', [ContaCuentaController::class, 'index'])->name('cuentas.index');
+        Route::get('cuentas/create', [ContaCuentaController::class, 'create'])->name('cuentas.create');
+        Route::post('cuentas', [ContaCuentaController::class, 'store'])->name('cuentas.store');
+        Route::get('cuentas/{cuenta}/edit', [ContaCuentaController::class, 'edit'])->name('cuentas.edit');
+        Route::put('cuentas/{cuenta}', [ContaCuentaController::class, 'update'])->name('cuentas.update');
+        Route::patch('cuentas/{cuenta}/estado', [ContaCuentaController::class, 'estado'])->name('cuentas.estado');
+    });
 
     /*
     |--------------------------------------------------------------------------
@@ -193,6 +204,11 @@ Route::middleware('auth')->group(function () {
     Route::prefix('procesamiento-mensual')
         ->name('procesamiento-mensual.')
         ->group(function () {
+            Route::get(
+                'envios-mensuales',
+                [EnvioMensualController::class, 'index']
+            )->name('envios-mensuales.index');
+
             Route::get(
                 'lotes/{lote}/archivos',
                 [LoteArchivoController::class, 'index']
