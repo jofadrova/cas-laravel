@@ -66,7 +66,15 @@ class FvsArchivoController extends Controller
             ->selectRaw('COALESCE(SUM(comision), 0) AS comision')
             ->first();
 
-        $puedeModificar = ! in_array($lote->estado, [
+        $registrosComparados = LoteFvsRegistro::query()
+            ->where('lote_mensual_id', $lote->id)
+            ->whereIn('estado', LoteFvsRegistro::ESTADOS_COMPARACION)
+            ->count();
+
+        $procesamientoFvs = DB::table('lote_fvs_procesamientos')
+            ->where('lote_mensual_id', $lote->id)
+            ->first();
+        $puedeModificar = $procesamientoFvs === null && ! in_array($lote->estado, [
             LoteMensual::ESTADO_PROCESADO,
             LoteMensual::ESTADO_CERRADO,
             LoteMensual::ESTADO_ANULADO,
@@ -83,6 +91,8 @@ class FvsArchivoController extends Controller
             'puedeCargar' => $puedeModificar && $archivos->count() < 10,
             'cantidadMinimaPendiente' => max(1, 3 - $archivos->count()),
             'cantidadDisponible' => max(0, 10 - $archivos->count()),
+            'registrosComparados' => $registrosComparados,
+            'procesamientoFvs' => $procesamientoFvs,
         ]);
     }
 
@@ -92,6 +102,15 @@ class FvsArchivoController extends Controller
         FvsExcelImportService $importador,
         EstadoLoteMensualService $estadoLote
     ): RedirectResponse {
+        if ($this->estaFvsFinalizado($lote)) {
+            return redirect()
+                ->route('procesamiento-mensual.lotes.fvs.index', $lote)
+                ->with(
+                    'error',
+                    'FVS ya fue finalizado y no admite nuevas cargas mientras está pendiente para Contabilidad.'
+                );
+        }
+
         /** @var array<int, UploadedFile> $archivos */
         $archivos = $request->file('archivos', []);
         $lecturas = [];
@@ -144,6 +163,12 @@ class FvsArchivoController extends Controller
                 &$rutasGuardadas
             ): void {
                 LoteMensual::query()->lockForUpdate()->findOrFail($lote->id);
+
+                if ($this->estaFvsFinalizado($lote)) {
+                    throw ValidationException::withMessages([
+                        'archivos' => 'FVS ya fue finalizado y no admite nuevas cargas.',
+                    ]);
+                }
 
                 $cantidadActual = LoteArchivo::query()
                     ->where('lote_mensual_id', $lote->id)
@@ -247,6 +272,15 @@ class FvsArchivoController extends Controller
         LoteMensual $lote,
         EstadoLoteMensualService $estadoLote
     ): RedirectResponse {
+        if ($this->estaFvsFinalizado($lote)) {
+            return redirect()
+                ->route('procesamiento-mensual.lotes.fvs.index', $lote)
+                ->with(
+                    'error',
+                    'FVS ya fue finalizado; los archivos permanecen bloqueados para consulta.'
+                );
+        }
+
         if (in_array($lote->estado, [
             LoteMensual::ESTADO_PROCESADO,
             LoteMensual::ESTADO_CERRADO,
@@ -301,5 +335,12 @@ class FvsArchivoController extends Controller
                 'success',
                 'La importación FVS fue limpiada. Ya puede cargar un nuevo grupo.'
             );
+    }
+
+    private function estaFvsFinalizado(LoteMensual $lote): bool
+    {
+        return DB::table('lote_fvs_procesamientos')
+            ->where('lote_mensual_id', $lote->id)
+            ->exists();
     }
 }

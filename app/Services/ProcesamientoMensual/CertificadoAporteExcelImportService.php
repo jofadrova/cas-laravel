@@ -195,14 +195,28 @@ class CertificadoAporteExcelImportService
                 );
             }
 
-            $montoDescuento = $this->decimal($valores[21]);
+            $montoDescuentoOriginal = $this->decimal($valores[21]);
             $tot2 = $this->decimal($valores[22]);
-            $comision = $this->decimal($valores[23]);
+            $tasaRegulacion = $this->decimal($valores[23]);
 
-            if ($montoDescuento === null || $tot2 === null || $comision === null) {
+            if ($montoDescuentoOriginal === null
+                || $tot2 === null
+                || $tasaRegulacion === null) {
                 throw new InvalidArgumentException(
                     "La fila {$fila} contiene un importe no válido en "
                     .'MONTO_DESCUENTO, TOT_2 o COMISION.'
+                );
+            }
+
+            $montoDescuento = $this->calcularMontoAporte(
+                $montoDescuentoOriginal,
+                $tasaRegulacion
+            );
+
+            if ($montoDescuento < 0) {
+                throw new InvalidArgumentException(
+                    "La fila {$fila} genera un aporte negativo: la TASA REGULACION "
+                    .'no puede ser mayor que MONTO_DESCUENTO.'
                 );
             }
 
@@ -232,13 +246,20 @@ class CertificadoAporteExcelImportService
                 'nombres' => $this->nuloSiVacio($valores[20]),
                 'monto_descuento' => $montoDescuento,
                 'tot_2' => $tot2,
-                'comision' => $comision,
+                'comision' => $tasaRegulacion,
                 'estado' => 'IMPORTADO',
                 'observacion' => null,
             ];
         }
 
         return $registros;
+    }
+
+    public function calcularMontoAporte(
+        float $montoDescuento,
+        float $tasaRegulacion
+    ): float {
+        return round($montoDescuento - $tasaRegulacion, 6);
     }
 
     private function textoCelda(Cell $celda): string

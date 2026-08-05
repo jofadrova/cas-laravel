@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class LoteCertificadoAporteRegistro extends Model
 {
@@ -79,5 +80,13 @@ class LoteCertificadoAporteRegistro extends Model
     public function archivo(): BelongsTo
     {
         return $this->belongsTo(LoteArchivo::class, 'lote_archivo_id');
+    }
+
+    public function separacion(): HasOne
+    {
+        return $this->hasOne(
+            LoteCertificadoAporteSeparacion::class,
+            'lote_certificado_aporte_registro_id'
+        );
     }
 }

@@ -2,10 +2,12 @@
 
 use App\Http\Controllers\AmortizacionCapitalController;
 use App\Http\Controllers\CertificadoAporteArchivoController;
+use App\Http\Controllers\CertificadoAporteSeparacionController;
 use App\Http\Controllers\ContaCuentaController;
 use App\Http\Controllers\EnvioMensualController;
 use App\Http\Controllers\CertificadoAporteOtroArchivoController;
 use App\Http\Controllers\FvsArchivoController;
+use App\Http\Controllers\FvsComparacionController;
 use App\Http\Controllers\FvsOtroArchivoController;
 use App\Http\Controllers\GaranteArchivoController;
 use App\Http\Controllers\LoteArchivoController;
@@ -284,6 +286,21 @@ Route::middleware('auth')->group(function () {
                 [FvsArchivoController::class, 'limpiar']
             )->name('lotes.fvs.limpiar');
 
+            Route::get(
+                'lotes/{lote}/fvs/comparacion',
+                [FvsComparacionController::class, 'index']
+            )->name('lotes.fvs.comparacion.index');
+
+            Route::post(
+                'lotes/{lote}/fvs/comparacion',
+                [FvsComparacionController::class, 'comparar']
+            )->name('lotes.fvs.comparacion.comparar');
+
+            Route::post(
+                'lotes/{lote}/fvs/comparacion/finalizar',
+                [FvsComparacionController::class, 'finalizar']
+            )->name('lotes.fvs.comparacion.finalizar');
+
             Route::post(
                 'lotes/{lote}/fvs/otros/previsualizar',
                 [FvsOtroArchivoController::class, 'previsualizar']
@@ -313,6 +330,16 @@ Route::middleware('auth')->group(function () {
                 'lotes/{lote}/certificados',
                 [CertificadoAporteArchivoController::class, 'limpiar']
             )->name('lotes.certificados.limpiar');
+
+            Route::get(
+                'lotes/{lote}/certificados/separacion',
+                [CertificadoAporteSeparacionController::class, 'index']
+            )->name('lotes.certificados.separacion.index');
+
+            Route::post(
+                'lotes/{lote}/certificados/separacion',
+                [CertificadoAporteSeparacionController::class, 'separar']
+            )->name('lotes.certificados.separacion.separar');
 
             Route::post(
                 'lotes/{lote}/certificados/otros/previsualizar',

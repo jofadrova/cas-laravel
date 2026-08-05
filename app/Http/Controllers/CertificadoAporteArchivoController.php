@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreCertificadoAporteArchivoRequest;
 use App\Models\LoteArchivo;
 use App\Models\LoteCertificadoAporteRegistro;
+use App\Models\LoteCertificadoAporteSeparacion;
 use App\Models\LoteMensual;
 use App\Services\ProcesamientoMensual\CertificadoAporteExcelImportService;
 use App\Services\ProcesamientoMensual\EstadoLoteMensualService;
@@ -76,6 +77,9 @@ class CertificadoAporteArchivoController extends Controller
             ->selectRaw('COALESCE(SUM(tot_2), 0) AS tot_2')
             ->selectRaw('COALESCE(SUM(comision), 0) AS comision')
             ->first();
+        $registrosSeparados = LoteCertificadoAporteSeparacion::query()
+            ->where('lote_mensual_id', $lote->id)
+            ->count();
 
         $puedeModificar = ! in_array($lote->estado, [
             LoteMensual::ESTADO_PROCESADO,
@@ -94,6 +98,7 @@ class CertificadoAporteArchivoController extends Controller
             'puedeCargar' => $puedeModificar && $archivos->count() < 10,
             'cantidadMinimaPendiente' => max(1, 3 - $archivos->count()),
             'cantidadDisponible' => max(0, 10 - $archivos->count()),
+            'registrosSeparados' => $registrosSeparados,
         ]);
     }
 

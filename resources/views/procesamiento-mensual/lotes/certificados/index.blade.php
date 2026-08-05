@@ -48,6 +48,41 @@
             </a>
         </div>
 
+        @if((int) $resumen->filas > 0)
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div>
+                        <h5 class="mb-1">
+                            <i class="bi bi-diagram-3-fill text-success me-2"></i>
+                            Separación de aportes
+                        </h5>
+                        <div class="text-muted small">
+                            Distribuye cada monto entre aporte obligatorio (AO), voluntario (AV) e individual (AI).
+                            @if($registrosSeparados > 0)
+                                {{ number_format($registrosSeparados) }} registro(s) ya fueron separados.
+                            @endif
+                        </div>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        @if($registrosSeparados > 0)
+                            <a href="{{ route('procesamiento-mensual.lotes.certificados.separacion.index', $lote) }}" class="btn btn-outline-primary">
+                                <i class="bi bi-clipboard-data me-1"></i>Ver separación
+                            </a>
+                        @endif
+                        <button
+                            type="button"
+                            class="btn btn-success"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modalSepararAportes"
+                            @disabled(! $puedeModificar)
+                        >
+                            <i class="bi bi-diagram-3 me-1"></i>Separar aportes
+                        </button>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <div class="card border-0 shadow-sm rounded-4 mb-4">
             <div class="card-header bg-white py-3">
                 <h5 class="mb-0">
@@ -139,10 +174,11 @@
             <div class="col-sm-6 col-xl">
                 <div class="card border-0 shadow-sm rounded-4 h-100">
                     <div class="card-body">
-                        <div class="text-muted small">Monto descuento</div>
+                        <div class="text-muted small">Monto de aportes</div>
                         <div class="fs-5 fw-bold">
                             Bs {{ number_format((float) $resumen->monto_descuento, 2, ',', '.') }}
                         </div>
+                        <div class="small text-muted">MONTO_DESCUENTO menos TASA REGULACION</div>
                     </div>
                 </div>
             </div>
@@ -295,9 +331,9 @@
                             <th>GRADO</th>
                             <th>MENSION</th>
                             <th>NOMBRES</th>
-                            <th class="text-end">MONTO_DESCUENTO</th>
+                            <th class="text-end">MONTO APORTE</th>
                             <th class="text-end">TOT_2</th>
-                            <th class="text-end">COMISION</th>
+                            <th class="text-end">TASA REGULACION</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -414,6 +450,40 @@
         </div>
     @endif
 
+    @if((int) $resumen->filas > 0 && $puedeModificar)
+        <div class="modal fade" id="modalSepararAportes" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title"><i class="bi bi-exclamation-triangle-fill me-2"></i>Confirmar separación de aportes</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>¿Desea separar los {{ number_format((int) $resumen->filas) }} registros consolidados?</p>
+                        <div class="alert alert-info mb-0">
+                            El primer bloque completo de Bs 100 será AO, los siguientes bloques de Bs 100 serán AV y el residuo será AI. La suma siempre conservará el monto original.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <form id="formSepararAportes" method="POST" action="{{ route('procesamiento-mensual.lotes.certificados.separacion.separar', $lote) }}">
+                            @csrf
+                            <button type="submit" class="btn btn-danger"><i class="bi bi-check-circle me-1"></i>Confirmar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <div id="overlaySeparandoAportes" class="d-none position-fixed top-0 start-0 w-100 h-100 align-items-center justify-content-center" style="z-index:2050;background:rgba(15,23,42,.68);">
+        <div class="bg-white rounded-4 shadow-lg px-5 py-4 text-center">
+            <div class="spinner-border text-success mb-3" style="width:3rem;height:3rem;"></div>
+            <h5>Separando aportes...</h5>
+            <p class="text-muted mb-0">Calculando AO, AV y AI para cada asociado.</p>
+        </div>
+    </div>
+
     <div
         id="overlayConsolidandoCertificados"
         class="d-none position-fixed top-0 start-0 w-100 h-100 align-items-center justify-content-center"
@@ -438,6 +508,14 @@
     @push('scripts')
         <script>
             document.addEventListener('DOMContentLoaded', function () {
+                const formularioSeparacion = document.getElementById('formSepararAportes');
+                formularioSeparacion?.addEventListener('submit', function () {
+                    const overlaySeparacion = document.getElementById('overlaySeparandoAportes');
+                    overlaySeparacion.classList.remove('d-none');
+                    overlaySeparacion.classList.add('d-flex');
+                    formularioSeparacion.querySelector('button[type="submit"]').disabled = true;
+                });
+
                 const formulario = document.getElementById('formCargaCertificados');
                 const entrada = document.getElementById('archivosCertificados');
                 const boton = document.getElementById('btnCargarCertificados');

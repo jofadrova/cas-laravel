@@ -47,7 +47,7 @@
                         <li class="nav-item">
                             <a href="{{ route('roles.index') }}"
                                 class="nav-link text-white {{ request()->routeIs('roles.*') ? 'active-menu' : '' }}">
-                                <i class="bi bi-person-badge-fill me-2"></i><span><strong>Roles</strong></span>
+                                <i class="bi bi-person-badge-fill me-2"></i><span>Roles</span>
                             </a>
                         </li>
                     @endcan
@@ -55,7 +55,7 @@
                         <li class="nav-item">
                             <a href="{{ route('permisos.index') }}"
                                 class="nav-link text-white {{ request()->routeIs('permisos.*') ? 'active-menu' : '' }}">
-                                <i class="bi bi-shield-lock-fill me-2"></i><span><strong>Permisos</strong></span>
+                                <i class="bi bi-shield-lock-fill me-2"></i><span>Permisos</span>
                             </a>
                         </li>
                     @endcan
@@ -92,7 +92,6 @@
                 </ul>
             </div>
         </li>
-
         <li class="nav-item mt-2">
             <button class="nav-link sidebar-section-toggle text-white w-100 {{ $prestamosActiva ? 'active-section' : 'collapsed' }}"
                 type="button" data-bs-toggle="collapse" data-bs-target="#sidebarPrestamos"
@@ -144,13 +143,13 @@
                     <li class="nav-item">
                         <a href="{{ route('procesamiento-mensual.lotes.index') }}"
                             class="nav-link text-white {{ request()->routeIs('procesamiento-mensual.lotes.*') ? 'active-menu' : '' }}">
-                            <i class="bi bi-calendar2-check me-2"></i><span><strong>Lotes mensuales</strong></span>
+                            <i class="bi bi-calendar2-check me-2"></i><span>Lotes mensuales</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="{{ route('procesamiento-mensual.envios-mensuales.index') }}"
                             class="nav-link text-white {{ request()->routeIs('procesamiento-mensual.envios-mensuales.*') ? 'active-menu' : '' }}">
-                            <i class="bi bi-send me-2"></i><span><strong>Envíos mensuales</strong></span>
+                            <i class="bi bi-send me-2"></i><span>Envíos mensuales</span>
                         </a>
                     </li>
                 </ul>
@@ -170,7 +169,7 @@
                     <li class="nav-item">
                         <a href="{{ route('contabilidad.cuentas.index') }}"
                             class="nav-link text-white {{ request()->routeIs('contabilidad.cuentas.*') ? 'active-menu' : '' }}">
-                            <i class="bi bi-diagram-3 me-2"></i><span><strong>Nomenclatura de cuentas</strong></span>
+                            <i class="bi bi-diagram-3 me-2"></i><span>Nomenclatura de cuentas</span>
                         </a>
                     </li>
                 </ul>

@@ -8,6 +8,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class LoteFvsRegistro extends Model
 {
     public const ESTADO_IMPORTADO = 'IMPORTADO';
+    public const ESTADO_VALIDO = 'VALIDO';
+    public const ESTADO_NO_ENCONTRADO = 'NO_ENCONTRADO';
+
+    public const ESTADOS_COMPARACION = [
+        self::ESTADO_VALIDO,
+        self::ESTADO_NO_ENCONTRADO,
+    ];
 
     /**
      * El modelo ya utiliza la denominación funcional FVS, pero apunta a la
@@ -44,6 +51,10 @@ class LoteFvsRegistro extends Model
         'comision',
         'estado',
         'observacion',
+        'socio_institucion_id',
+        'id_socio',
+        'comparado_por',
+        'fecha_comparacion',
     ];
 
     protected function casts(): array
@@ -54,6 +65,7 @@ class LoteFvsRegistro extends Model
             'monto_descuento' => 'decimal:6',
             'tot_2' => 'decimal:6',
             'comision' => 'decimal:6',
+            'fecha_comparacion' => 'datetime',
         ];
     }
 
@@ -83,5 +95,18 @@ class LoteFvsRegistro extends Model
     public function archivo(): BelongsTo
     {
         return $this->belongsTo(LoteArchivo::class, 'lote_archivo_id');
+    }
+
+    public function socioInstitucion(): BelongsTo
+    {
+        return $this->belongsTo(
+            SocioInstitucion::class,
+            'socio_institucion_id'
+        );
+    }
+
+    public function socio(): BelongsTo
+    {
+        return $this->belongsTo(Socio::class, 'id_socio');
     }
 }

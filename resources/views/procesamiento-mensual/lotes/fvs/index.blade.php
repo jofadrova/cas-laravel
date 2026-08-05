@@ -48,6 +48,67 @@
             </a>
         </div>
 
+        @if($procesamientoFvs)
+            <div class="alert alert-warning border-warning shadow-sm mb-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <div>
+                        <i class="bi bi-lock-fill me-2"></i>
+                        <strong>FVS FINALIZADO · PENDIENTE PARA CONTABILIDAD</strong>
+                        <div class="small mt-1">
+                            Monto pendiente: Bs {{ number_format((float) $procesamientoFvs->monto_total, 2, ',', '.') }}.
+                            Las cargas y eliminaciones de archivos FVS están bloqueadas.
+                        </div>
+                    </div>
+                    <a href="{{ route('procesamiento-mensual.lotes.fvs.comparacion.index', $lote) }}" class="btn btn-outline-dark btn-sm">
+                        <i class="bi bi-eye me-1"></i>Consultar procesamiento
+                    </a>
+                </div>
+            </div>
+        @endif
+
+        @if((int) $resumen->filas > 0)
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div>
+                        <h5 class="mb-1">
+                            <i class="bi bi-person-check-fill text-success me-2"></i>
+                            Validación de asociados
+                        </h5>
+                        <div class="text-muted small">
+                            Compara CODIGO_PERSONAL del consolidado con socio_institucion.papeleta.
+                            @if($registrosComparados > 0)
+                                {{ number_format($registrosComparados) }} registro(s) ya tienen resultado.
+                            @endif
+                        </div>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        @if($registrosComparados > 0)
+                            <a
+                                href="{{ route('procesamiento-mensual.lotes.fvs.comparacion.index', $lote) }}"
+                                class="btn btn-outline-primary"
+                            >
+                                <i class="bi bi-clipboard-data me-1"></i>
+                                Ver resultados
+                            </a>
+                        @endif
+                        <button
+                            type="button"
+                            class="btn btn-success"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modalCompararFvs"
+                            @disabled(! $puedeModificar)
+                            title="{{ $puedeModificar
+                                ? 'Validar los descuentos FVS contra el padrón de asociados'
+                                : 'El estado del lote no permite volver a comparar' }}"
+                        >
+                            <i class="bi bi-arrow-left-right me-1"></i>
+                            Procesar y Comparar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <div class="card border-0 shadow-sm rounded-4 mb-4">
             <div class="card-header bg-white py-3">
                 <h5 class="mb-0">
@@ -414,6 +475,46 @@
         </div>
     @endif
 
+    @if((int) $resumen->filas > 0 && $puedeModificar)
+        <div class="modal fade" id="modalCompararFvs" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            Confirmar comparación FVS
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            ¿Desea procesar los {{ number_format((int) $resumen->filas) }} registros
+                            consolidados del lote {{ $lote->periodo }}?
+                        </p>
+                        <div class="alert alert-info mb-0">
+                            Se buscará cada CODIGO_PERSONAL en socio_institucion.papeleta y se
+                            reemplazarán los resultados de una comparación anterior.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <form
+                            id="formCompararFvs"
+                            method="POST"
+                            action="{{ route('procesamiento-mensual.lotes.fvs.comparacion.comparar', $lote) }}"
+                        >
+                            @csrf
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-check-circle me-1"></i>
+                                Confirmar
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <div
         id="overlayConsolidandoFvs"
         class="d-none position-fixed top-0 start-0 w-100 h-100 align-items-center justify-content-center"
@@ -435,9 +536,30 @@
         </div>
     </div>
 
+    <div
+        id="overlayComparandoFvs"
+        class="d-none position-fixed top-0 start-0 w-100 h-100 align-items-center justify-content-center"
+        style="z-index: 2050; background: rgba(15, 23, 42, .68);"
+    >
+        <div class="bg-white rounded-4 shadow-lg px-5 py-4 text-center">
+            <div class="spinner-border text-success mb-3" style="width: 3rem; height: 3rem;"></div>
+            <h5 class="mb-1">Procesando y comparando...</h5>
+            <p class="text-muted mb-0">Validando CODIGO_PERSONAL contra el padrón de asociados.</p>
+        </div>
+    </div>
+
     @push('scripts')
         <script>
             document.addEventListener('DOMContentLoaded', function () {
+                const formularioComparacion = document.getElementById('formCompararFvs');
+                const overlayComparacion = document.getElementById('overlayComparandoFvs');
+
+                formularioComparacion?.addEventListener('submit', function () {
+                    formularioComparacion.querySelector('button[type="submit"]').disabled = true;
+                    overlayComparacion.classList.remove('d-none');
+                    overlayComparacion.classList.add('d-flex');
+                });
+
                 const formulario = document.getElementById('formCargaFvs');
                 const entrada = document.getElementById('archivosFvs');
                 const boton = document.getElementById('btnCargarFvs');

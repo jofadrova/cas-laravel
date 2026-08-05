@@ -25,6 +25,7 @@ class FvsOtroArchivoController extends Controller
         LoteMensual $lote,
         FvsExcelImportService $importador
     ): JsonResponse {
+        $this->validarNoFinalizado($lote);
         $datos = $this->leer($request, $lote, $importador);
         $this->validarHash($lote, $datos['hash_sha256']);
         [$nuevos, $duplicados] = $this->separarNuevos($lote, collect($datos['registros']));
@@ -59,6 +60,7 @@ class FvsOtroArchivoController extends Controller
         LoteMensual $lote,
         FvsExcelImportService $importador
     ): RedirectResponse {
+        $this->validarNoFinalizado($lote);
         $request->validate([
             'hash_preview' => ['required', 'string', 'size:64'],
         ], [
@@ -79,6 +81,7 @@ class FvsOtroArchivoController extends Controller
         try {
             DB::transaction(function () use ($request, $lote, $datos, &$ruta): void {
                 LoteMensual::query()->whereKey($lote->id)->lockForUpdate()->firstOrFail();
+                $this->validarNoFinalizado($lote);
 
                 $principales = LoteArchivo::query()
                     ->where('lote_mensual_id', $lote->id)
@@ -162,6 +165,13 @@ class FvsOtroArchivoController extends Controller
 
     public function limpiar(LoteMensual $lote): RedirectResponse
     {
+        if ($this->estaFvsFinalizado($lote)) {
+            return back()->with(
+                'error',
+                'FVS ya fue finalizado; los archivos adicionales no pueden eliminarse.'
+            );
+        }
+
         if (in_array($lote->estado, [
             LoteMensual::ESTADO_PROCESADO,
             LoteMensual::ESTADO_CERRADO,
@@ -248,5 +258,21 @@ class FvsOtroArchivoController extends Controller
         }
 
         return $valor;
+    }
+
+    private function validarNoFinalizado(LoteMensual $lote): void
+    {
+        if ($this->estaFvsFinalizado($lote)) {
+            throw ValidationException::withMessages([
+                'archivo' => 'FVS ya fue finalizado y está pendiente para Contabilidad.',
+            ]);
+        }
+    }
+
+    private function estaFvsFinalizado(LoteMensual $lote): bool
+    {
+        return DB::table('lote_fvs_procesamientos')
+            ->where('lote_mensual_id', $lote->id)
+            ->exists();
     }
 }
