@@ -193,6 +193,10 @@
                                 <span class="badge bg-danger">BAJA</span>
                             @elseif($socio->estado == 'SU')
                                 <span class="badge bg-warning text-dark">SUSPENDIDO</span>
+                            @elseif($socio->estado == 'IN')
+                                <span class="badge bg-info text-dark">INCORPORADO</span>
+                            @elseif($socio->estado == 'SO')
+                                <span class="badge bg-primary">ASOCIADO</span>
                             @else
                                 <span class="badge bg-secondary">{{ $socio->estado }}</span>
                             @endif

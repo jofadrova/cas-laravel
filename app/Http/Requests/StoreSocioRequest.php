@@ -52,7 +52,7 @@ class StoreSocioRequest extends FormRequest
             'ciudad'   => 'required|string|min:4',
 
             'zona'          => 'required|string|min:5',
-            'calle'         => 'required|string|min:4',
+            'calle'         => 'required|string|min:1',
 
             'nro'           => 'nullable|string|max:8',
 
@@ -60,7 +60,7 @@ class StoreSocioRequest extends FormRequest
 
             'correo'        => 'nullable|email|max:100',
 
-            'resolucion'    => 'required|integer',
+            'resolucion'    => 'nullable|integer',
 
             // DOCUMENTACION
            // FOTO
@@ -122,8 +122,6 @@ class StoreSocioRequest extends FormRequest
             'telefono.required'     => 'Debe ingresar un teléfono.',
             'telefono.min'          => 'El teléfono debe tener al menos 8 caracteres.',
             'correo.email'          => 'Debe ingresar un correo electrónico válido.',
-
-            'resolucion.required'   => 'Seleccione una resolución AFCOOP.',
 
             'foto.image'            => 'El archivo debe ser una imagen.',
             'foto.mimes'            => 'La fotografía debe ser JPG o PNG.',

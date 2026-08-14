@@ -62,7 +62,6 @@ Route::middleware('auth')->group(function () {
     // ///////////// recien agregados
     // Route::resource('usuarios', UsuarioController::class);
     Route::resource('usuarios', UsuarioController::class)->middleware('permission:usuarios.ver');
-    Route::put('/usuarios/{usuario}', [UsuarioController::class, 'update'])->name('usuarios.update');
     Route::patch('/usuarios/{usuario}/estado', [UsuarioController::class, 'cambiarEstado'])->name('usuarios.estado');
     Route::patch('/usuarios/{usuario}/password', [UsuarioController::class, 'resetPassword'])->name('usuarios.password');
     // Route::resource('roles',RoleController::class);

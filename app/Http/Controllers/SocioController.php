@@ -197,7 +197,7 @@ class SocioController extends Controller
                 'estado_civil' => $request->estado_civil,
 
                 'foto' => $foto,
-                'estado' => 'AC',
+                'estado' => 'SO',
                 'num_correlativo' => 0,
                 'estado_kardex' => 'AC',
                 'mindef' => 'NO',
@@ -241,7 +241,9 @@ class SocioController extends Controller
                     $request->boolean('fotocopia_ci')
                         ? 'FC'
                         : 'NO',
-                'resolucion' => $request->resolucion,
+                'resolucion' => $request->filled('resolucion')
+                    ? $request->input('resolucion')
+                    : 0,
                 'estado' => 'AC',
             ]);
 
@@ -446,7 +448,7 @@ class SocioController extends Controller
             'diplomados',
             'resoluciones',
             'parentescos'
-            
+
         ));
     }
 
