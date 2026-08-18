@@ -36,7 +36,7 @@
             </div>
             <div class="col-sm-6 col-xl">
                 <div class="card border-0 shadow-sm rounded-4 h-100"><div class="card-body">
-                    <div class="text-muted small">Monto total</div>
+                    <div class="text-muted small">Total descuento separado</div>
                     <div class="fs-5 fw-bold text-primary">Bs {{ number_format((float) $resumen->monto_total, 2, ',', '.') }}</div>
                 </div></div>
             </div>
@@ -82,7 +82,7 @@
             <div class="table-responsive">
                 <table class="table table-sm table-hover align-middle mb-0 text-nowrap">
                     <thead class="table-light">
-                        <tr><th>Archivo/Fila</th><th>Código</th><th>Papeleta</th><th>Nombre</th><th class="text-end">Total</th><th class="text-end">AO</th><th class="text-end">AV</th><th class="text-end">AI</th></tr>
+                        <tr><th>Archivo/Fila</th><th>Código</th><th>Papeleta</th><th>Nombre</th><th class="text-end">Monto descuento</th><th class="text-end">Tasa regulación</th><th class="text-end">Total descuento</th><th class="text-end">AO</th><th class="text-end">AV</th><th class="text-end">AI</th></tr>
                     </thead>
                     <tbody>
                         @forelse($separaciones as $separacion)
@@ -91,13 +91,15 @@
                                 <td>{{ $separacion->registro?->codigo_concepto ?? '-' }}</td>
                                 <td>{{ $separacion->registro?->codigo_personal_normalizado ?? '-' }}</td>
                                 <td>{{ $separacion->registro?->nombres }}</td>
+                                <td class="text-end">{{ number_format((float) $separacion->registro?->monto_descuento, 2, ',', '.') }}</td>
+                                <td class="text-end">{{ number_format((float) $separacion->registro?->tasa_regulacion, 2, ',', '.') }}</td>
                                 <td class="text-end fw-semibold">{{ number_format((float) $separacion->monto_total, 2, ',', '.') }}</td>
                                 <td class="text-end text-success">{{ number_format((float) $separacion->monto_ao, 2, ',', '.') }}</td>
                                 <td class="text-end text-info">{{ number_format((float) $separacion->monto_av, 2, ',', '.') }}</td>
                                 <td class="text-end text-warning">{{ number_format((float) $separacion->monto_ai, 2, ',', '.') }}</td>
                             </tr>
                         @empty
-                            <tr><td colspan="8" class="text-center text-muted py-4">Todavía no se ejecutó la separación de aportes.</td></tr>
+                            <tr><td colspan="10" class="text-center text-muted py-4">Todavía no se ejecutó la separación de aportes.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -115,7 +117,10 @@
                     <h5 class="modal-title"><i class="bi bi-exclamation-triangle-fill me-2"></i>Confirmar nueva separación</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">Se recalcularán AO, AV y AI para todos los registros consolidados.</div>
+                <div class="modal-body">
+                    Se recalcularán AO, AV y AI para todos los registros usando la columna
+                    <strong>TOTAL_DESCUENTO</strong>.
+                </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <form id="formRecalcularAportes" method="POST" action="{{ route('procesamiento-mensual.lotes.certificados.separacion.separar', $lote) }}">

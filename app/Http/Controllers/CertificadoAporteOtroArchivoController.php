@@ -42,6 +42,8 @@ class CertificadoAporteOtroArchivoController extends Controller
             'omitidas_sin_aporte' => $datos['filas_omitidas_sin_importe'],
             'duplicadas' => $duplicados->pluck('codigo_personal')->values(),
             'total_aporte' => round($nuevos->sum('monto_descuento'), 2),
+            'total_tasa_regulacion' => round($nuevos->sum('tasa_regulacion'), 2),
+            'total_descuento' => round($nuevos->sum('total_descuento'), 2),
             'registros' => $nuevos->map(fn (array $registro): array => [
                 'fila' => $registro['fila_origen'],
                 'papeleta' => $registro['codigo_personal'],
@@ -50,6 +52,8 @@ class CertificadoAporteOtroArchivoController extends Controller
                 'nombres' => $registro['nombres'],
                 'destino' => $registro['organismos'],
                 'aporte' => round((float) $registro['monto_descuento'], 2),
+                'tasa_regulacion' => round((float) $registro['tasa_regulacion'], 2),
+                'total_descuento' => round((float) $registro['total_descuento'], 2),
             ])->values(),
         ]);
     }
@@ -123,8 +127,8 @@ class CertificadoAporteOtroArchivoController extends Controller
                     'hash_sha256' => $datos['hash_sha256'],
                     'filas_importadas' => $nuevos->count(),
                     'total_monto_descuento' => round($nuevos->sum('monto_descuento'), 6),
-                    'total_tot_2' => round($nuevos->sum('tot_2'), 6),
-                    'total_comision' => 0,
+                    'total_tot_2' => round($nuevos->sum('total_descuento'), 6),
+                    'total_comision' => round($nuevos->sum('tasa_regulacion'), 6),
                     'estado' => LoteArchivo::ESTADO_CARGADO,
                     'cargado_por' => $request->user()?->id,
                 ]);

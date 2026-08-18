@@ -31,6 +31,7 @@ class CertificadoAporteSeparacionServiceTest extends TestCase
         return [
             'Socio A' => [177.70, 10000, 0, 7770],
             'Socio B' => [605.36, 10000, 50000, 536],
+            'Total descuento con tasa' => [177.20, 10000, 0, 7720],
         ];
     }
 }

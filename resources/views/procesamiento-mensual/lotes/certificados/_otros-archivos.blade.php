@@ -8,14 +8,14 @@
                 </div>
             </div>
             @if($otrosArchivos->isNotEmpty() && $puedeModificar)
-                <form method="POST" action="{{ route('procesamiento-mensual.lotes.certificados.otros.limpiar', $lote) }}"
-                    onsubmit="return confirm('¿Eliminar todos los otros archivos de aportes?')">
-                    @csrf
-                    @method('DELETE')
-                    <button class="btn btn-outline-danger btn-sm" type="submit">
-                        <i class="bi bi-trash3-fill me-1"></i>Limpiar otros archivos
-                    </button>
-                </form>
+                <button
+                    class="btn btn-outline-danger btn-sm"
+                    type="button"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalLimpiarOtrosAportes"
+                >
+                    <i class="bi bi-trash3-fill me-1"></i>Limpiar otros archivos
+                </button>
             @endif
         </div>
     </div>
@@ -42,7 +42,9 @@
                 <tr>
                     <th>Archivo adicional</th>
                     <th class="text-center">Asociados con aporte</th>
-                    <th class="text-end">Total aporte</th>
+                    <th class="text-end">Monto descuento</th>
+                    <th class="text-end">Tasa regulaciÃ³n</th>
+                    <th class="text-end">Total descuento</th>
                     <th class="text-center">Estado</th>
                     <th>Fecha de carga</th>
                 </tr>
@@ -53,16 +55,85 @@
                         <td><i class="bi bi-file-earmark-excel text-success me-1"></i>{{ $archivo->nombre_original }}</td>
                         <td class="text-center">{{ $archivo->filas_importadas }}</td>
                         <td class="text-end">Bs {{ number_format((float) $archivo->total_monto_descuento, 2, ',', '.') }}</td>
+                        <td class="text-end">Bs {{ number_format((float) $archivo->total_tasa_regulacion, 2, ',', '.') }}</td>
+                        <td class="text-end fw-semibold">Bs {{ number_format((float) $archivo->total_descuento_calculado, 2, ',', '.') }}</td>
                         <td class="text-center"><span class="badge bg-success">{{ $archivo->estado }}</span></td>
                         <td>{{ $archivo->created_at?->format('d/m/Y H:i') }}</td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" class="text-center text-muted py-4">No existen otros archivos de aportes.</td></tr>
+                    <tr><td colspan="7" class="text-center text-muted py-4">No existen otros archivos de aportes.</td></tr>
                 @endforelse
             </tbody>
         </table>
     </div>
 </div>
+
+@if($otrosArchivos->isNotEmpty() && $puedeModificar)
+    <div
+        class="modal fade"
+        id="modalLimpiarOtrosAportes"
+        tabindex="-1"
+        aria-labelledby="modalLimpiarOtrosAportesLabel"
+        aria-hidden="true"
+    >
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="modalLimpiarOtrosAportesLabel">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        Confirmar eliminación
+                    </h5>
+                    <button
+                        type="button"
+                        class="btn-close btn-close-white"
+                        data-bs-dismiss="modal"
+                        aria-label="Cerrar"
+                    ></button>
+                </div>
+                <div class="modal-body">
+                    <p>
+                        ¿Desea eliminar los {{ $otrosArchivos->count() }} otros archivos de aportes cargados?
+                    </p>
+                    <div class="alert alert-warning mb-0">
+                        <i class="bi bi-exclamation-circle-fill me-2"></i>
+                        Se eliminarán también todos los registros importados desde esos archivos.
+                        Esta acción no se puede deshacer.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <form
+                        id="formLimpiarOtrosAportes"
+                        method="POST"
+                        action="{{ route('procesamiento-mensual.lotes.certificados.otros.limpiar', $lote) }}"
+                    >
+                        @csrf
+                        @method('DELETE')
+                        <button id="btnConfirmarLimpiarOtrosAportes" type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash3-fill me-1"></i>Sí, eliminar archivos
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const formulario = document.getElementById('formLimpiarOtrosAportes');
+                const boton = document.getElementById('btnConfirmarLimpiarOtrosAportes');
+
+                formulario?.addEventListener('submit', function () {
+                    boton.disabled = true;
+                    boton.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Eliminando...';
+                });
+            });
+        </script>
+    @endpush
+@endif
 
 @if($archivos->count() >= 3 && $puedeModificar)
     <div class="modal fade" id="modalOtroArchivoAporte" tabindex="-1" aria-hidden="true">
@@ -102,15 +173,23 @@
                         </div>
                         <div id="previewOtroAporte" class="d-none mt-4">
                             <div class="row g-3 mb-3">
-                                <div class="col-md-4"><div class="border rounded-3 p-3 h-100">
+                                <div class="col-md"><div class="border rounded-3 p-3 h-100">
                                     <div class="text-muted">Filas a incorporar</div>
                                     <div class="fs-4 fw-bold" id="filasOtroAporte">0</div>
                                 </div></div>
-                                <div class="col-md-4"><div class="border rounded-3 p-3 h-100">
-                                    <div class="text-muted">Total aporte</div>
+                                <div class="col-md"><div class="border rounded-3 p-3 h-100">
+                                    <div class="text-muted">Monto descuento</div>
                                     <div class="fs-4 fw-bold" id="totalOtroAporte">Bs 0,00</div>
                                 </div></div>
-                                <div class="col-md-4"><div class="border rounded-3 p-3 h-100">
+                                <div class="col-md"><div class="border rounded-3 p-3 h-100">
+                                    <div class="text-muted">Tasa regulaciÃ³n</div>
+                                    <div class="fs-4 fw-bold" id="tasaOtroAporte">Bs 0,00</div>
+                                </div></div>
+                                <div class="col-md"><div class="border rounded-3 p-3 h-100">
+                                    <div class="text-muted">Total descuento</div>
+                                    <div class="fs-4 fw-bold" id="descuentoOtroAporte">Bs 0,00</div>
+                                </div></div>
+                                <div class="col-md"><div class="border rounded-3 p-3 h-100">
                                     <div class="text-muted">Filas omitidas sin aporte</div>
                                     <div class="fs-4 fw-bold" id="omitidasOtroAporte">0</div>
                                 </div></div>
@@ -120,7 +199,8 @@
                                 <table class="table table-sm table-hover align-middle mb-0">
                                     <thead class="table-light"><tr>
                                         <th>Fila</th><th>Papeleta</th><th>CI</th><th>Grado</th>
-                                        <th>Nombres</th><th>Destino</th><th class="text-end">Aporte</th>
+                                        <th>Nombres</th><th>Destino</th><th class="text-end">Monto descuento</th>
+                                        <th class="text-end">Tasa regulaciÃ³n</th><th class="text-end">Total descuento</th>
                                     </tr></thead>
                                     <tbody id="tablaOtroAporte"></tbody>
                                 </table>
@@ -195,6 +275,8 @@
                         document.getElementById('hashPreviewAporte').value = datos.hash;
                         document.getElementById('filasOtroAporte').textContent = datos.filas;
                         document.getElementById('totalOtroAporte').textContent = 'Bs ' + moneda.format(datos.total_aporte);
+                        document.getElementById('tasaOtroAporte').textContent = 'Bs ' + moneda.format(datos.total_tasa_regulacion);
+                        document.getElementById('descuentoOtroAporte').textContent = 'Bs ' + moneda.format(datos.total_descuento);
                         document.getElementById('omitidasOtroAporte').textContent = datos.omitidas_sin_aporte;
                         const duplicadas = document.getElementById('duplicadasOtroAporte');
                         duplicadas.classList.toggle('d-none', datos.duplicadas.length === 0);
@@ -209,6 +291,10 @@
                             });
                             const monto = document.createElement('td');
                             monto.className = 'text-end'; monto.textContent = moneda.format(fila.aporte); tr.appendChild(monto);
+                            const tasa = document.createElement('td');
+                            tasa.className = 'text-end'; tasa.textContent = moneda.format(fila.tasa_regulacion); tr.appendChild(tasa);
+                            const total = document.createElement('td');
+                            total.className = 'text-end fw-semibold'; total.textContent = moneda.format(fila.total_descuento); tr.appendChild(total);
                             cuerpo.appendChild(tr);
                         });
                         preview.classList.remove('d-none');

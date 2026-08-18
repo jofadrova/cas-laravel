@@ -42,7 +42,11 @@ class CertificadoAporteExcelImportService
 
     public function leerAdicional(UploadedFile $archivo, LoteMensual $lote): array
     {
-        return app(FvsExcelImportService::class)->leerAdicionalAporte($archivo, $lote);
+        $datos = app(FvsExcelImportService::class)->leerAdicionalAporte($archivo, $lote);
+        $datos['registros'] = app(CertificadoAporteRegulacionService::class)
+            ->aplicar($datos['registros']);
+
+        return $this->agregarTotalesRegulacion($datos);
     }
 
     public function leer(UploadedFile $archivo, LoteMensual $lote): array
@@ -66,7 +70,8 @@ class CertificadoAporteExcelImportService
             $hoja = $spreadsheet->getSheet(0);
             $this->validarEncabezados($hoja);
 
-            $registros = $this->leerRegistros($hoja, $lote);
+            $registros = app(CertificadoAporteRegulacionService::class)
+                ->aplicar($this->leerRegistros($hoja, $lote));
 
             if ($registros === []) {
                 throw new InvalidArgumentException(
@@ -74,7 +79,7 @@ class CertificadoAporteExcelImportService
                 );
             }
 
-            return [
+            return $this->agregarTotalesRegulacion([
                 'hash_sha256' => hash_file('sha256', $archivo->getRealPath()),
                 'nombre_original' => $archivo->getClientOriginalName(),
                 'extension' => strtolower($archivo->getClientOriginalExtension()),
@@ -93,7 +98,7 @@ class CertificadoAporteExcelImportService
                     array_sum(array_column($registros, 'comision')),
                     6
                 ),
-            ];
+            ]);
         } finally {
             $spreadsheet->disconnectWorksheets();
             unset($spreadsheet);
@@ -143,6 +148,20 @@ class CertificadoAporteExcelImportService
         throw new InvalidArgumentException(
             'La estructura del Excel no coincide. '.implode('; ', $diferencias).'.'
         );
+    }
+
+    private function agregarTotalesRegulacion(array $datos): array
+    {
+        $datos['total_tasa_regulacion'] = round(array_sum(array_column(
+            $datos['registros'],
+            'tasa_regulacion'
+        )), 6);
+        $datos['total_descuento'] = round(array_sum(array_column(
+            $datos['registros'],
+            'total_descuento'
+        )), 6);
+
+        return $datos;
     }
 
     private function leerRegistros(
@@ -195,28 +214,16 @@ class CertificadoAporteExcelImportService
                 );
             }
 
-            $montoDescuentoOriginal = $this->decimal($valores[21]);
+            $montoDescuento = $this->decimal($valores[21]);
             $tot2 = $this->decimal($valores[22]);
-            $tasaRegulacion = $this->decimal($valores[23]);
+            $comision = $this->decimal($valores[23]);
 
-            if ($montoDescuentoOriginal === null
+            if ($montoDescuento === null
                 || $tot2 === null
-                || $tasaRegulacion === null) {
+                || $comision === null) {
                 throw new InvalidArgumentException(
                     "La fila {$fila} contiene un importe no válido en "
                     .'MONTO_DESCUENTO, TOT_2 o COMISION.'
-                );
-            }
-
-            $montoDescuento = $this->calcularMontoAporte(
-                $montoDescuentoOriginal,
-                $tasaRegulacion
-            );
-
-            if ($montoDescuento < 0) {
-                throw new InvalidArgumentException(
-                    "La fila {$fila} genera un aporte negativo: la TASA REGULACION "
-                    .'no puede ser mayor que MONTO_DESCUENTO.'
                 );
             }
 
@@ -246,20 +253,13 @@ class CertificadoAporteExcelImportService
                 'nombres' => $this->nuloSiVacio($valores[20]),
                 'monto_descuento' => $montoDescuento,
                 'tot_2' => $tot2,
-                'comision' => $tasaRegulacion,
+                'comision' => $comision,
                 'estado' => 'IMPORTADO',
                 'observacion' => null,
             ];
         }
 
         return $registros;
-    }
-
-    public function calcularMontoAporte(
-        float $montoDescuento,
-        float $tasaRegulacion
-    ): float {
-        return round($montoDescuento - $tasaRegulacion, 6);
     }
 
     private function textoCelda(Cell $celda): string

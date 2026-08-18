@@ -174,20 +174,19 @@
             <div class="col-sm-6 col-xl">
                 <div class="card border-0 shadow-sm rounded-4 h-100">
                     <div class="card-body">
-                        <div class="text-muted small">Monto de aportes</div>
+                        <div class="text-muted small">Monto descuento</div>
                         <div class="fs-5 fw-bold">
                             Bs {{ number_format((float) $resumen->monto_descuento, 2, ',', '.') }}
                         </div>
-                        <div class="small text-muted">MONTO_DESCUENTO menos TASA REGULACION</div>
                     </div>
                 </div>
             </div>
             <div class="col-sm-6 col-xl">
                 <div class="card border-0 shadow-sm rounded-4 h-100">
                     <div class="card-body">
-                        <div class="text-muted small">Total neto</div>
+                        <div class="text-muted small">Tasa regulación</div>
                         <div class="fs-5 fw-bold">
-                            Bs {{ number_format((float) $resumen->tot_2, 2, ',', '.') }}
+                            Bs {{ number_format((float) $resumen->tasa_regulacion, 2, ',', '.') }}
                         </div>
                     </div>
                 </div>
@@ -195,9 +194,9 @@
             <div class="col-sm-6 col-xl">
                 <div class="card border-0 shadow-sm rounded-4 h-100">
                     <div class="card-body">
-                        <div class="text-muted small">Comisión</div>
+                        <div class="text-muted small">Total descuento</div>
                         <div class="fs-5 fw-bold">
-                            Bs {{ number_format((float) $resumen->comision, 2, ',', '.') }}
+                            Bs {{ number_format((float) $resumen->total_descuento, 2, ',', '.') }}
                         </div>
                     </div>
                 </div>
@@ -231,8 +230,8 @@
                             <th>Archivo</th>
                             <th class="text-center">Filas</th>
                             <th class="text-end">Monto descuento</th>
-                            <th class="text-end">Total neto</th>
-                            <th class="text-end">Comisión</th>
+                            <th class="text-end">Tasa regulación</th>
+                            <th class="text-end">Total descuento</th>
                             <th class="text-center">Estado</th>
                             <th>Fecha de carga</th>
                         </tr>
@@ -249,10 +248,10 @@
                                     {{ number_format((float) $archivo->total_monto_descuento, 2, ',', '.') }}
                                 </td>
                                 <td class="text-end">
-                                    {{ number_format((float) $archivo->total_tot_2, 2, ',', '.') }}
+                                    {{ number_format((float) $archivo->total_tasa_regulacion, 2, ',', '.') }}
                                 </td>
                                 <td class="text-end">
-                                    {{ number_format((float) $archivo->total_comision, 2, ',', '.') }}
+                                    {{ number_format((float) $archivo->total_descuento_calculado, 2, ',', '.') }}
                                 </td>
                                 <td class="text-center">
                                     <span class="badge bg-success">{{ $archivo->estado }}</span>
@@ -331,9 +330,9 @@
                             <th>GRADO</th>
                             <th>MENSION</th>
                             <th>NOMBRES</th>
-                            <th class="text-end">MONTO APORTE</th>
-                            <th class="text-end">TOT_2</th>
-                            <th class="text-end">TASA REGULACION</th>
+                            <th class="text-end">MONTO_DESCUENTO</th>
+                            <th class="text-end">TASA_REGULACION</th>
+                            <th class="text-end">TOTAL DESCUENTO</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -365,10 +364,10 @@
                                     {{ number_format((float) $registro->monto_descuento, 2, ',', '.') }}
                                 </td>
                                 <td class="text-end">
-                                    {{ number_format((float) $registro->tot_2, 2, ',', '.') }}
+                                    {{ number_format((float) $registro->tasa_regulacion, 2, ',', '.') }}
                                 </td>
-                                <td class="text-end">
-                                    {{ number_format((float) $registro->comision, 2, ',', '.') }}
+                                <td class="text-end fw-semibold">
+                                    {{ number_format((float) $registro->total_descuento, 2, ',', '.') }}
                                 </td>
                             </tr>
                         @empty
@@ -461,7 +460,9 @@
                     <div class="modal-body">
                         <p>¿Desea separar los {{ number_format((int) $resumen->filas) }} registros consolidados?</p>
                         <div class="alert alert-info mb-0">
-                            El primer bloque completo de Bs 100 será AO, los siguientes bloques de Bs 100 serán AV y el residuo será AI. La suma siempre conservará el monto original.
+                            La separación usará TOTAL_DESCUENTO. El primer bloque completo de Bs 100 será AO,
+                            los siguientes bloques de Bs 100 serán AV y el residuo será AI.
+                            La suma AO + AV + AI conservará el TOTAL_DESCUENTO.
                         </div>
                     </div>
                     <div class="modal-footer">

@@ -30,6 +30,19 @@ class CertificadoAporteArchivoController extends Controller
             ->where('tipo', LoteArchivo::TIPO_CERTIFICADOS)
             ->orderBy('id')
             ->get();
+        $totalesPorArchivo = LoteCertificadoAporteRegistro::query()
+            ->where('lote_mensual_id', $lote->id)
+            ->selectRaw('lote_archivo_id')
+            ->selectRaw('COALESCE(SUM(tasa_regulacion), 0) AS tasa_regulacion')
+            ->selectRaw('COALESCE(SUM(total_descuento), 0) AS total_descuento')
+            ->groupBy('lote_archivo_id')
+            ->get()
+            ->keyBy('lote_archivo_id');
+        $todosLosArchivos->each(function (LoteArchivo $archivo) use ($totalesPorArchivo): void {
+            $totales = $totalesPorArchivo->get($archivo->id);
+            $archivo->setAttribute('total_tasa_regulacion', $totales?->tasa_regulacion ?? 0);
+            $archivo->setAttribute('total_descuento_calculado', $totales?->total_descuento ?? 0);
+        });
         $archivos = $todosLosArchivos
             ->reject(fn (LoteArchivo $archivo): bool => str_contains(
                 (string) $archivo->ruta,
@@ -76,6 +89,8 @@ class CertificadoAporteArchivoController extends Controller
             ->selectRaw('COALESCE(SUM(monto_descuento), 0) AS monto_descuento')
             ->selectRaw('COALESCE(SUM(tot_2), 0) AS tot_2')
             ->selectRaw('COALESCE(SUM(comision), 0) AS comision')
+            ->selectRaw('COALESCE(SUM(tasa_regulacion), 0) AS tasa_regulacion')
+            ->selectRaw('COALESCE(SUM(total_descuento), 0) AS total_descuento')
             ->first();
         $registrosSeparados = LoteCertificadoAporteSeparacion::query()
             ->where('lote_mensual_id', $lote->id)
@@ -207,8 +222,8 @@ class CertificadoAporteArchivoController extends Controller
                         'hash_sha256' => $datos['hash_sha256'],
                         'filas_importadas' => $datos['filas_importadas'],
                         'total_monto_descuento' => $datos['total_monto_descuento'],
-                        'total_tot_2' => $datos['total_tot_2'],
-                        'total_comision' => $datos['total_comision'],
+                        'total_tot_2' => $datos['total_descuento'],
+                        'total_comision' => $datos['total_tasa_regulacion'],
                         'estado' => LoteArchivo::ESTADO_CARGADO,
                         'cargado_por' => $request->user()?->id,
                     ]);

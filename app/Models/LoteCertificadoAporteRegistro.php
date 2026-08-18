@@ -39,6 +39,8 @@ class LoteCertificadoAporteRegistro extends Model
         'monto_descuento',
         'tot_2',
         'comision',
+        'tasa_regulacion',
+        'total_descuento',
         'estado',
         'observacion',
     ];
@@ -51,6 +53,8 @@ class LoteCertificadoAporteRegistro extends Model
             'monto_descuento' => 'decimal:6',
             'tot_2' => 'decimal:6',
             'comision' => 'decimal:6',
+            'tasa_regulacion' => 'decimal:6',
+            'total_descuento' => 'decimal:6',
         ];
     }
 

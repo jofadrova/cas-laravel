@@ -10,13 +10,14 @@ use LogicException;
 class CertificadoAporteSeparacionService
 {
     private const BLOQUE_CENTAVOS = 10000;
+    private const REGLA = 'LEGACY_TOTAL_DESCUENTO';
 
     public function ejecutar(LoteMensual $lote, ?int $usuarioId): array
     {
         $registros = LoteCertificadoAporteRegistro::query()
             ->where('lote_mensual_id', $lote->id)
             ->orderBy('id')
-            ->get(['id', 'monto_descuento']);
+            ->get(['id', 'total_descuento']);
 
         if ($registros->isEmpty()) {
             throw new LogicException(
@@ -29,7 +30,7 @@ class CertificadoAporteSeparacionService
         $totales = ['total' => 0, 'ao' => 0, 'av' => 0, 'ai' => 0];
 
         foreach ($registros as $registro) {
-            $separacion = $this->separarMonto((float) $registro->monto_descuento);
+            $separacion = $this->separarMonto((float) $registro->total_descuento);
             foreach ($totales as $clave => $valor) {
                 $totales[$clave] += $separacion[$clave];
             }
@@ -41,7 +42,7 @@ class CertificadoAporteSeparacionService
                 'monto_ao' => $this->desdeCentavos($separacion['ao']),
                 'monto_av' => $this->desdeCentavos($separacion['av']),
                 'monto_ai' => $this->desdeCentavos($separacion['ai']),
-                'regla' => 'BLOQUES_100',
+                'regla' => self::REGLA,
                 'separado_por' => $usuarioId,
                 'fecha_separacion' => $ahora,
                 'created_at' => $ahora,

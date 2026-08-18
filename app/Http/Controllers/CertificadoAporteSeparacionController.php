@@ -21,7 +21,7 @@ class CertificadoAporteSeparacionController extends Controller
 
         $separaciones = (clone $base)
             ->with([
-                'registro:id,lote_archivo_id,fila_origen,codigo_concepto,codigo_personal,carnet,nombres,monto_descuento',
+                'registro:id,lote_archivo_id,fila_origen,codigo_concepto,codigo_personal,carnet,nombres,monto_descuento,tasa_regulacion,total_descuento',
                 'registro.archivo:id,nombre_original',
             ])
             ->when($buscar !== '', fn ($query) => $query->whereHas(
