@@ -48,6 +48,24 @@
             </a>
         </div>
 
+        @if($procesamientoAportes)
+            <div class="alert alert-warning border-warning shadow-sm mb-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <div>
+                        <i class="bi bi-lock-fill me-2"></i>
+                        <strong>CERTIFICADOS DE APORTES CONSOLIDADOS · PENDIENTE PARA CONTABILIDAD</strong>
+                        <div class="small mt-1">
+                            Total pendiente: Bs {{ number_format((float) $procesamientoAportes->total_descuento, 2, ',', '.') }}.
+                            Las cargas, eliminaciones y nuevas separaciones están bloqueadas.
+                        </div>
+                    </div>
+                    <a href="{{ route('procesamiento-mensual.lotes.certificados.separacion.index', $lote) }}" class="btn btn-outline-dark btn-sm">
+                        <i class="bi bi-eye me-1"></i>Consultar consolidación
+                    </a>
+                </div>
+            </div>
+        @endif
+
         @if((int) $resumen->filas > 0)
             <div class="card border-0 shadow-sm rounded-4 mb-4">
                 <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3">

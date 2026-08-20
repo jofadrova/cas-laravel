@@ -6,8 +6,10 @@ use App\Models\LoteCertificadoAporteRegistro;
 use App\Models\LoteCertificadoAporteSeparacion;
 use App\Models\LoteMensual;
 use App\Services\ProcesamientoMensual\CertificadoAporteSeparacionService;
+use App\Services\ProcesamientoMensual\CertificadoAporteConsolidacionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use LogicException;
 
@@ -45,11 +47,16 @@ class CertificadoAporteSeparacionController extends Controller
         $totalRegistros = LoteCertificadoAporteRegistro::query()
             ->where('lote_mensual_id', $lote->id)
             ->count();
+        $procesamientoAportes = DB::table('lote_certificado_aporte_procesamientos')
+            ->where('lote_mensual_id', $lote->id)
+            ->first();
         $puedeSeparar = $totalRegistros > 0 && !in_array($lote->estado, [
             LoteMensual::ESTADO_PROCESADO,
             LoteMensual::ESTADO_CERRADO,
             LoteMensual::ESTADO_ANULADO,
-        ], true);
+        ], true) && $procesamientoAportes === null;
+        $puedeConsolidar = $puedeSeparar
+            && (int) $resumen->registros === $totalRegistros;
 
         return view('procesamiento-mensual.lotes.certificados.separacion', compact(
             'lote',
@@ -57,6 +64,8 @@ class CertificadoAporteSeparacionController extends Controller
             'resumen',
             'totalRegistros',
             'puedeSeparar',
+            'puedeConsolidar',
+            'procesamientoAportes',
             'buscar'
         ));
     }
@@ -65,6 +74,15 @@ class CertificadoAporteSeparacionController extends Controller
         LoteMensual $lote,
         CertificadoAporteSeparacionService $separador
     ): RedirectResponse {
+        if (DB::table('lote_certificado_aporte_procesamientos')
+            ->where('lote_mensual_id', $lote->id)
+            ->exists()) {
+            return back()->with(
+                'error',
+                'Los Certificados de Aportes están consolidados y bloqueados mientras esperan su asiento contable.'
+            );
+        }
+
         if (in_array($lote->estado, [
             LoteMensual::ESTADO_PROCESADO,
             LoteMensual::ESTADO_CERRADO,
@@ -87,6 +105,26 @@ class CertificadoAporteSeparacionController extends Controller
             ->with(
                 'success',
                 "Se separaron {$resultado['registros']} aporte(s) sin alterar el monto total."
+            );
+    }
+
+    public function consolidar(
+        LoteMensual $lote,
+        CertificadoAporteConsolidacionService $consolidador
+    ): RedirectResponse {
+        try {
+            $procesamiento = $consolidador->ejecutar($lote, auth()->id());
+        } catch (LogicException $exception) {
+            return back()->with('error', $exception->getMessage());
+        }
+
+        return redirect()
+            ->route('procesamiento-mensual.lotes.certificados.separacion.index', $lote)
+            ->with(
+                'success',
+                'Certificados de Aportes consolidados. El total de Bs '
+                .number_format((float) $procesamiento->total_descuento, 2, ',', '.')
+                .' quedó PENDIENTE PARA CONTABILIDAD.'
             );
     }
 }

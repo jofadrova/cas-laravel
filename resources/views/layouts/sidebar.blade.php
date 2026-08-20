@@ -143,7 +143,7 @@
                     <li class="nav-item">
                         <a href="{{ route('procesamiento-mensual.lotes.index') }}"
                             class="nav-link text-white {{ request()->routeIs('procesamiento-mensual.lotes.*') ? 'active-menu' : '' }}">
-                            <i class="bi bi-calendar2-check me-2"></i><span>Lotes mensuales</span>
+                            <i class="bi bi-calendar2-check me-2"></i><span>Recepción Mensual</span>
                         </a>
                     </li>
                     <li class="nav-item">

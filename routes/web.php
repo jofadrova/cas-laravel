@@ -210,6 +210,25 @@ Route::middleware('auth')->group(function () {
                 [EnvioMensualController::class, 'index']
             )->name('envios-mensuales.index');
 
+            Route::get('envios-mensuales/crear', [EnvioMensualController::class, 'create'])
+                ->name('envios-mensuales.create');
+            Route::post('envios-mensuales', [EnvioMensualController::class, 'store'])
+                ->name('envios-mensuales.store');
+            Route::post(
+                'envios-mensuales/{envioMensual}/prestamos/generar',
+                [EnvioMensualController::class, 'generarPrestamos']
+            )->name('envios-mensuales.prestamos.generar');
+            Route::get(
+                'envios-mensuales/{envioMensual}/prestamos/descargar',
+                [EnvioMensualController::class, 'descargarPrestamos']
+            )->name('envios-mensuales.prestamos.descargar');
+            Route::get('envios-mensuales/{envioMensual}', [EnvioMensualController::class, 'show'])
+                ->name('envios-mensuales.show');
+            Route::post(
+                'envios-mensuales/{envioMensual}/marcar-enviado',
+                [EnvioMensualController::class, 'marcarEnviado']
+            )->name('envios-mensuales.marcar-enviado');
+
             Route::get(
                 'lotes/{lote}/archivos',
                 [LoteArchivoController::class, 'index']
@@ -339,6 +358,11 @@ Route::middleware('auth')->group(function () {
                 'lotes/{lote}/certificados/separacion',
                 [CertificadoAporteSeparacionController::class, 'separar']
             )->name('lotes.certificados.separacion.separar');
+
+            Route::post(
+                'lotes/{lote}/certificados/separacion/consolidar',
+                [CertificadoAporteSeparacionController::class, 'consolidar']
+            )->name('lotes.certificados.separacion.consolidar');
 
             Route::post(
                 'lotes/{lote}/certificados/otros/previsualizar',

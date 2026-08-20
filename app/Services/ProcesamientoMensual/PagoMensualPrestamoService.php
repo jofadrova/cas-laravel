@@ -159,6 +159,8 @@ class PagoMensualPrestamoService
                     'estado_lote_anterior' => $loteBloqueado->estado,
                     'cantidad_pagos' => 0,
                     'monto_total' => 0,
+                    'estado_contable' => EstadoLoteMensualService::ESTADO_CONTABLE_PENDIENTE,
+                    'asiento_contable_id' => null,
                     'procesado_por' => $usuarioId,
                     'fecha_procesamiento' => $ahora,
                     'created_at' => $ahora,
@@ -262,9 +264,8 @@ class PagoMensualPrestamoService
             }
 
             /*
-             * Finalizar los pagos bloquea solamente el grupo PRESTAMOS.
-             * El estado global del lote se sincroniza por separado y solo
-             * llegará a PROCESADO cuando los tres grupos estén completos.
+             * El último de los tres módulos en finalizar cambia el lote a
+             * PROCESADO, independientemente del orden de ejecución.
              */
             $this->estadoLote->sincronizar($loteBloqueado);
 

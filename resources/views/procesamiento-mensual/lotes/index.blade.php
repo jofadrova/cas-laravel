@@ -61,7 +61,7 @@
                                 </a>
                                 <a href="{{ route('procesamiento-mensual.lotes.create') }}" class="btn btn-success ms-auto">
                                     <i class="bi bi-plus-circle me-1"></i>
-                                    Nuevo lote
+                                    Registrar recepción
                                 </a>
                             </div>
                         </div>
@@ -74,7 +74,7 @@
             <div class="card-header bg-white py-3">
                 <h5 class="mb-0">
                     <i class="bi bi-calendar2-check text-success me-2"></i>
-                    Procesamiento de lotes mensuales
+                    Lotes recibidos para procesamiento
                 </h5>
             </div>
 

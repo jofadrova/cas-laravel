@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\DB;
 
 class EstadoLoteMensualService
 {
+    public const ESTADO_CONTABLE_PENDIENTE = 'PENDIENTE';
+
     private const TIPO_PRESTAMOS = 'PRESTAMOS';
 
     // Valor físico existente en lote_archivos.tipo; funcionalmente es FVS.
@@ -26,18 +28,28 @@ class EstadoLoteMensualService
      * BORRADOR: falta al menos un grupo.
      * CARGADO: los tres grupos alcanzaron su cantidad mínima.
      *
-     * PROCESADO se reservará para cuando los tres grupos cuenten con su
-     * procesamiento de negocio terminado. El pago mensual de Préstamos se
-     * controla independientemente en lote_prestamo_procesamientos.
+     * PROCESADO se asigna cuando Préstamos tiene pagos y los tres grupos
+     * quedaron pendientes para Contabilidad, sin importar el orden de cierre.
      */
     public function sincronizar(LoteMensual $lote): bool
     {
+        if ($lote->estado === LoteMensual::ESTADO_PROCESADO) {
+            return true;
+        }
+
         if (in_array($lote->estado, [
-            LoteMensual::ESTADO_PROCESADO,
             LoteMensual::ESTADO_CERRADO,
             LoteMensual::ESTADO_ANULADO,
         ], true)) {
             return false;
+        }
+
+        if ($this->procesamientoCompleto($lote->id)) {
+            $lote->forceFill([
+                'estado' => LoteMensual::ESTADO_PROCESADO,
+            ])->save();
+
+            return true;
         }
 
         $prestamosCompletos = DB::table('lote_archivos')
@@ -71,5 +83,24 @@ class EstadoLoteMensualService
         }
 
         return $cargaCompleta;
+    }
+
+    public function procesamientoCompleto(int $loteId): bool
+    {
+        $prestamosPendientes = DB::table('lote_prestamo_procesamientos')
+            ->where('lote_mensual_id', $loteId)
+            ->where('cantidad_pagos', '>', 0)
+            ->where('estado_contable', self::ESTADO_CONTABLE_PENDIENTE)
+            ->exists();
+        $fvsPendiente = DB::table('lote_fvs_procesamientos')
+            ->where('lote_mensual_id', $loteId)
+            ->where('estado_contable', self::ESTADO_CONTABLE_PENDIENTE)
+            ->exists();
+        $certificadosPendientes = DB::table('lote_certificado_aporte_procesamientos')
+            ->where('lote_mensual_id', $loteId)
+            ->where('estado_contable', self::ESTADO_CONTABLE_PENDIENTE)
+            ->exists();
+
+        return $prestamosPendientes && $fvsPendiente && $certificadosPendientes;
     }
 }

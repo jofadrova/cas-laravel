@@ -95,8 +95,11 @@ class CertificadoAporteArchivoController extends Controller
         $registrosSeparados = LoteCertificadoAporteSeparacion::query()
             ->where('lote_mensual_id', $lote->id)
             ->count();
+        $procesamientoAportes = DB::table('lote_certificado_aporte_procesamientos')
+            ->where('lote_mensual_id', $lote->id)
+            ->first();
 
-        $puedeModificar = ! in_array($lote->estado, [
+        $puedeModificar = $procesamientoAportes === null && ! in_array($lote->estado, [
             LoteMensual::ESTADO_PROCESADO,
             LoteMensual::ESTADO_CERRADO,
             LoteMensual::ESTADO_ANULADO,
@@ -114,6 +117,7 @@ class CertificadoAporteArchivoController extends Controller
             'cantidadMinimaPendiente' => max(1, 3 - $archivos->count()),
             'cantidadDisponible' => max(0, 10 - $archivos->count()),
             'registrosSeparados' => $registrosSeparados,
+            'procesamientoAportes' => $procesamientoAportes,
         ]);
     }
 
@@ -123,6 +127,13 @@ class CertificadoAporteArchivoController extends Controller
         CertificadoAporteExcelImportService $importador,
         EstadoLoteMensualService $estadoLote
     ): RedirectResponse {
+        if ($this->estaConsolidado($lote)) {
+            return back()->with(
+                'error',
+                'Los Certificados de Aportes están consolidados y bloqueados mientras esperan su asiento contable.'
+            );
+        }
+
         /** @var array<int, UploadedFile> $archivos */
         $archivos = $request->file('archivos', []);
         $lecturas = [];
@@ -175,6 +186,12 @@ class CertificadoAporteArchivoController extends Controller
                 &$rutasGuardadas
             ): void {
                 LoteMensual::query()->lockForUpdate()->findOrFail($lote->id);
+
+                if ($this->estaConsolidado($lote)) {
+                    throw ValidationException::withMessages([
+                        'archivos' => 'Los Certificados de Aportes ya fueron consolidados.',
+                    ]);
+                }
 
                 $cantidadActual = LoteArchivo::query()
                     ->where('lote_mensual_id', $lote->id)
@@ -281,6 +298,15 @@ class CertificadoAporteArchivoController extends Controller
         LoteMensual $lote,
         EstadoLoteMensualService $estadoLote
     ): RedirectResponse {
+        if ($this->estaConsolidado($lote)) {
+            return redirect()
+                ->route('procesamiento-mensual.lotes.certificados.index', $lote)
+                ->with(
+                    'error',
+                    'Los Certificados de Aportes están consolidados y bloqueados mientras esperan su asiento contable.'
+                );
+        }
+
         if (in_array($lote->estado, [
             LoteMensual::ESTADO_PROCESADO,
             LoteMensual::ESTADO_CERRADO,
@@ -314,6 +340,14 @@ class CertificadoAporteArchivoController extends Controller
         $rutas = $archivos->pluck('ruta')->filter()->values()->all();
 
         DB::transaction(function () use ($lote, $idsArchivos): void {
+            LoteMensual::query()->whereKey($lote->id)->lockForUpdate()->firstOrFail();
+
+            if ($this->estaConsolidado($lote)) {
+                throw ValidationException::withMessages([
+                    'archivos' => 'Los Certificados de Aportes ya fueron consolidados.',
+                ]);
+            }
+
             LoteCertificadoAporteRegistro::query()
                 ->where('lote_mensual_id', $lote->id)
                 ->whereIn('lote_archivo_id', $idsArchivos)
@@ -340,5 +374,12 @@ class CertificadoAporteArchivoController extends Controller
                 'La importación de Certificados de Aportes fue limpiada. '
                 .'Ya puede cargar un nuevo grupo.'
             );
+    }
+
+    private function estaConsolidado(LoteMensual $lote): bool
+    {
+        return DB::table('lote_certificado_aporte_procesamientos')
+            ->where('lote_mensual_id', $lote->id)
+            ->exists();
     }
 }

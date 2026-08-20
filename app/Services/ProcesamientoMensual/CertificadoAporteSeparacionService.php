@@ -14,6 +14,14 @@ class CertificadoAporteSeparacionService
 
     public function ejecutar(LoteMensual $lote, ?int $usuarioId): array
     {
+        if (DB::table('lote_certificado_aporte_procesamientos')
+            ->where('lote_mensual_id', $lote->id)
+            ->exists()) {
+            throw new LogicException(
+                'Los Certificados de Aportes ya fueron consolidados y están pendientes para Contabilidad.'
+            );
+        }
+
         $registros = LoteCertificadoAporteRegistro::query()
             ->where('lote_mensual_id', $lote->id)
             ->orderBy('id')
@@ -59,6 +67,14 @@ class CertificadoAporteSeparacionService
                 ->whereKey($lote->id)
                 ->lockForUpdate()
                 ->firstOrFail();
+
+            if (DB::table('lote_certificado_aporte_procesamientos')
+                ->where('lote_mensual_id', $lote->id)
+                ->exists()) {
+                throw new LogicException(
+                    'Los Certificados de Aportes ya fueron consolidados y están pendientes para Contabilidad.'
+                );
+            }
 
             foreach (array_chunk($filas, 500) as $bloque) {
                 DB::table('lote_certificado_aporte_separaciones')->upsert(

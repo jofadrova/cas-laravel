@@ -57,6 +57,14 @@
                     <div class="card-body">
                         <div class="row g-4">
                             <div class="col-md-4">
+                                <div class="text-muted small">Lote enviado de origen</div>
+                                @if($lote->envioMensual)
+                                    <a class="fw-semibold" href="{{ route('procesamiento-mensual.envios-mensuales.show', $lote->envioMensual) }}">{{ $lote->envioMensual->codigo }}</a>
+                                @else
+                                    <div class="fw-semibold text-muted">Histórico sin vínculo</div>
+                                @endif
+                            </div>
+                            <div class="col-md-4">
                                 <div class="text-muted small">Mes</div>
                                 <div class="fw-semibold">{{ $lote->nombre_mes }}</div>
                             </div>
@@ -74,16 +82,6 @@
                                 <div class="text-muted small">Fecha de recepción</div>
                                 <div class="fw-semibold">
                                     {{ $lote->fecha_recepcion?->format('d/m/Y') ?? 'Sin registrar' }}
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="text-muted small">Tipo de cambio</div>
-                                <div class="fw-semibold">
-                                    @if($lote->tipo_cambio)
-                                        $us 1 = Bs {{ number_format((float) $lote->tipo_cambio, 5, ',', '.') }}
-                                    @else
-                                        Sin registrar
-                                    @endif
                                 </div>
                             </div>
                             <div class="col-md-4">

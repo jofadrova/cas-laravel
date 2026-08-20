@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\EnvioMensual;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -15,34 +16,19 @@ class StoreLoteMensualRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'mes' => [
+            'envio_mensual_id' => [
                 'required',
                 'integer',
-                'between:1,12',
-                Rule::unique('lotes_mensuales', 'mes')
-                    ->where(
-                        fn ($query) => $query->where(
-                            'gestion',
-                            $this->integer('gestion')
-                        )
-                    ),
-            ],
-            'gestion' => [
-                'required',
-                'integer',
-                'digits:4',
-                'min:2000',
-                'max:' . (now()->year + 1),
-            ],
-            'tipo_cambio' => [
-                'required',
-                'numeric',
-                'gt:0',
-                'decimal:0,5',
-                'max:99999.99999',
+                Rule::exists('envios_mensuales', 'id')->where(
+                    fn ($query) => $query->where(
+                        'estado',
+                        EnvioMensual::ESTADO_ENVIADO
+                    )
+                ),
+                Rule::unique('lotes_mensuales', 'envio_mensual_id'),
             ],
             'fecha_recepcion' => [
-                'nullable',
+                'required',
                 'date',
             ],
             'observaciones' => [
@@ -56,20 +42,10 @@ class StoreLoteMensualRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'mes.required' => 'Debe seleccionar el mes del lote.',
-            'mes.integer' => 'El mes seleccionado no es válido.',
-            'mes.between' => 'El mes debe estar comprendido entre enero y diciembre.',
-            'mes.unique' => 'Ya existe un lote para el mes y la gestión seleccionados.',
-            'gestion.required' => 'Debe ingresar la gestión del lote.',
-            'gestion.integer' => 'La gestión debe ser un número entero.',
-            'gestion.digits' => 'La gestión debe tener cuatro dígitos.',
-            'gestion.min' => 'La gestión ingresada no es válida.',
-            'gestion.max' => 'La gestión no puede ser posterior al próximo año.',
-            'tipo_cambio.required' => 'Debe ingresar el tipo de cambio del lote.',
-            'tipo_cambio.numeric' => 'El tipo de cambio debe ser un valor numérico.',
-            'tipo_cambio.gt' => 'El tipo de cambio debe ser mayor que cero.',
-            'tipo_cambio.decimal' => 'El tipo de cambio puede tener hasta cinco decimales.',
-            'tipo_cambio.max' => 'El tipo de cambio ingresado excede el valor permitido.',
+            'envio_mensual_id.required' => 'Debe seleccionar el lote enviado que está recibiendo.',
+            'envio_mensual_id.exists' => 'El lote seleccionado no existe o aún no fue enviado.',
+            'envio_mensual_id.unique' => 'El lote enviado ya tiene una recepción registrada.',
+            'fecha_recepcion.required' => 'Debe registrar la fecha de recepción.',
             'fecha_recepcion.date' => 'La fecha de recepción no es válida.',
             'observaciones.max' => 'Las observaciones no deben superar los 2000 caracteres.',
         ];
@@ -78,9 +54,7 @@ class StoreLoteMensualRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'mes' => 'mes',
-            'gestion' => 'gestión',
-            'tipo_cambio' => 'tipo de cambio',
+            'envio_mensual_id' => 'lote enviado',
             'fecha_recepcion' => 'fecha de recepción',
             'observaciones' => 'observaciones',
         ];

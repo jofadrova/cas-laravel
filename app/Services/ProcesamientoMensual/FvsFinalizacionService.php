@@ -11,6 +11,10 @@ class FvsFinalizacionService
 {
     public const ESTADO_CONTABLE_PENDIENTE = 'PENDIENTE';
 
+    public function __construct(
+        private readonly EstadoLoteMensualService $estadoLote
+    ) {}
+
     public function ejecutar(LoteMensual $lote, ?int $usuarioId): object
     {
         return DB::transaction(function () use ($lote, $usuarioId): object {
@@ -76,6 +80,8 @@ class FvsFinalizacionService
                 'created_at' => $ahora,
                 'updated_at' => $ahora,
             ]);
+
+            $this->estadoLote->sincronizar($loteBloqueado);
 
             return DB::table('lote_fvs_procesamientos')->find($id);
         });

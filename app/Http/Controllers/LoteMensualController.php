@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreLoteMensualRequest;
 use App\Http\Requests\UpdateLoteMensualRequest;
+use App\Models\EnvioMensual;
 use App\Models\LoteMensual;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class LoteMensualController extends Controller
@@ -49,16 +52,43 @@ class LoteMensualController extends Controller
     {
         return view('procesamiento-mensual.lotes.create', [
             'meses' => LoteMensual::MESES,
+            'enviosDisponibles' => EnvioMensual::query()
+                ->where('estado', EnvioMensual::ESTADO_ENVIADO)
+                ->whereDoesntHave('loteMensual')
+                ->orderByDesc('gestion')
+                ->orderByDesc('mes')
+                ->get(),
         ]);
     }
 
     public function store(StoreLoteMensualRequest $request): RedirectResponse
     {
-        $datos = $request->validated();
-        $datos['estado'] = LoteMensual::ESTADO_BORRADOR;
-        $datos['creado_por'] = $request->user()->id;
+        $lote = DB::transaction(function () use ($request): LoteMensual {
+            $envio = EnvioMensual::query()
+                ->lockForUpdate()
+                ->findOrFail($request->integer('envio_mensual_id'));
 
-        $lote = LoteMensual::create($datos);
+            if ($envio->estado !== EnvioMensual::ESTADO_ENVIADO
+                || $envio->loteMensual()->exists()) {
+                throw ValidationException::withMessages([
+                    'envio_mensual_id' => 'El lote ya fue recibido o no se encuentra enviado.',
+                ]);
+            }
+
+            $lote = LoteMensual::create([
+                'envio_mensual_id' => $envio->id,
+                'mes' => $envio->mes,
+                'gestion' => $envio->gestion,
+                'fecha_recepcion' => $request->validated('fecha_recepcion'),
+                'observaciones' => $request->validated('observaciones'),
+                'estado' => LoteMensual::ESTADO_BORRADOR,
+                'creado_por' => $request->user()->id,
+            ]);
+
+            $envio->update(['estado' => EnvioMensual::ESTADO_RECIBIDO]);
+
+            return $lote;
+        });
 
         return redirect()
             ->route('procesamiento-mensual.lotes.show', $lote)

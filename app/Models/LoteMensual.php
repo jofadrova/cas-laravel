@@ -44,9 +44,9 @@ class LoteMensual extends Model
     protected $table = 'lotes_mensuales';
 
     protected $fillable = [
+        'envio_mensual_id',
         'mes',
         'gestion',
-        'tipo_cambio',
         'fecha_recepcion',
         'estado',
         'observaciones',
@@ -60,7 +60,6 @@ class LoteMensual extends Model
         return [
             'mes' => 'integer',
             'gestion' => 'integer',
-            'tipo_cambio' => 'decimal:5',
             'fecha_recepcion' => 'date',
             'fecha_cierre' => 'datetime',
         ];
@@ -101,6 +100,11 @@ class LoteMensual extends Model
     public function cerrador(): BelongsTo
     {
         return $this->belongsTo(User::class, 'cerrado_por');
+    }
+
+    public function envioMensual(): BelongsTo
+    {
+        return $this->belongsTo(EnvioMensual::class);
     }
 
     public function scopeDelPeriodo(

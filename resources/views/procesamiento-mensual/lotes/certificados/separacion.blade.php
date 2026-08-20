@@ -21,11 +21,57 @@
                 <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalRecalcularAportes" @disabled(! $puedeSeparar)>
                     <i class="bi bi-arrow-repeat me-1"></i>Volver a separar
                 </button>
+                @if($procesamientoAportes)
+                    <button type="button" class="btn btn-warning" disabled>
+                        <i class="bi bi-hourglass-split me-1"></i>PENDIENTE PARA CONTABILIDAD
+                    </button>
+                @else
+                    <button
+                        type="button"
+                        class="btn btn-primary"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalConsolidarAportes"
+                        @disabled(! $puedeConsolidar)
+                        title="{{ $puedeConsolidar
+                            ? 'Consolidar los totales y dejarlos pendientes para Contabilidad'
+                            : 'Debe completar la separación antes de consolidar' }}"
+                    >
+                        <i class="bi bi-journal-check me-1"></i>Consolidar
+                    </button>
+                @endif
                 <a href="{{ route('procesamiento-mensual.lotes.certificados.index', $lote) }}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left me-1"></i>Volver a Certificados
                 </a>
             </div>
         </div>
+
+        @if($procesamientoAportes)
+            <div class="alert alert-warning border-warning shadow-sm">
+                <div class="row g-3 align-items-center">
+                    <div class="col-lg">
+                        <div class="fw-bold">
+                            <i class="bi bi-lock-fill me-2"></i>Certificados de Aportes consolidados
+                        </div>
+                        <div class="small mt-1">
+                            Los archivos, la separación y los resultados están bloqueados para consulta.
+                            El módulo contable todavía no generó el asiento.
+                        </div>
+                    </div>
+                    <div class="col-sm-4 col-lg-2">
+                        <div class="text-muted small">Total pendiente</div>
+                        <div class="fw-bold">Bs {{ number_format((float) $procesamientoAportes->total_descuento, 2, ',', '.') }}</div>
+                    </div>
+                    <div class="col-sm-4 col-lg-2">
+                        <div class="text-muted small">Estado contable</div>
+                        <span class="badge bg-warning text-dark">{{ $procesamientoAportes->estado_contable }}</span>
+                    </div>
+                    <div class="col-sm-4 col-lg-2">
+                        <div class="text-muted small">Consolidado</div>
+                        <div class="fw-semibold">{{ \Carbon\Carbon::parse($procesamientoAportes->fecha_consolidacion)->format('d/m/Y H:i') }}</div>
+                    </div>
+                </div>
+            </div>
+        @endif
 
         <div class="row g-3 mb-4">
             <div class="col-sm-6 col-xl">
@@ -132,6 +178,46 @@
         </div>
     @endif
 
+    @if($puedeConsolidar)
+        <div class="modal fade" id="modalConsolidarAportes" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>Confirmar consolidación
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>¿Desea consolidar los Certificados de Aportes del lote {{ $lote->periodo }}?</p>
+                        <div class="border rounded-3 bg-light p-3 mb-3">
+                            <div class="d-flex justify-content-between"><span>Registros</span><strong>{{ number_format((int) $resumen->registros) }}</strong></div>
+                            <div class="d-flex justify-content-between"><span>Aporte obligatorio (AO)</span><strong>Bs {{ number_format((float) $resumen->monto_ao, 2, ',', '.') }}</strong></div>
+                            <div class="d-flex justify-content-between"><span>Aporte voluntario (AV)</span><strong>Bs {{ number_format((float) $resumen->monto_av, 2, ',', '.') }}</strong></div>
+                            <div class="d-flex justify-content-between"><span>Aporte individual (AI)</span><strong>Bs {{ number_format((float) $resumen->monto_ai, 2, ',', '.') }}</strong></div>
+                            <hr class="my-2">
+                            <div class="d-flex justify-content-between"><span>Total para Contabilidad</span><strong>Bs {{ number_format((float) $resumen->monto_total, 2, ',', '.') }}</strong></div>
+                        </div>
+                        <div class="alert alert-warning mb-0">
+                            Esta acción bloqueará las cargas, eliminaciones y nuevas separaciones.
+                            Todavía no se generará un asiento contable; los totales quedarán con estado
+                            <strong>PENDIENTE PARA CONTABILIDAD</strong>.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <form id="formConsolidarAportes" method="POST" action="{{ route('procesamiento-mensual.lotes.certificados.separacion.consolidar', $lote) }}">
+                            @csrf
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-lock-fill me-1"></i>Confirmar consolidación
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <div id="overlaySeparacionAportes" class="d-none position-fixed top-0 start-0 w-100 h-100 align-items-center justify-content-center" style="z-index:2050;background:rgba(15,23,42,.68);">
         <div class="bg-white rounded-4 shadow-lg px-5 py-4 text-center">
             <div class="spinner-border text-success mb-3" style="width:3rem;height:3rem;"></div>
@@ -144,6 +230,14 @@
             document.getElementById('formRecalcularAportes')?.addEventListener('submit', function () {
                 const overlay = document.getElementById('overlaySeparacionAportes');
                 overlay.classList.remove('d-none'); overlay.classList.add('d-flex');
+                this.querySelector('button[type="submit"]').disabled = true;
+            });
+            document.getElementById('formConsolidarAportes')?.addEventListener('submit', function () {
+                const overlay = document.getElementById('overlaySeparacionAportes');
+                overlay.querySelector('h5').textContent = 'Consolidando aportes...';
+                overlay.querySelector('p').textContent = 'Registrando los totales pendientes para Contabilidad.';
+                overlay.classList.remove('d-none');
+                overlay.classList.add('d-flex');
                 this.querySelector('button[type="submit"]').disabled = true;
             });
         </script>
