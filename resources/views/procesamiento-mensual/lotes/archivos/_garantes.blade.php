@@ -19,47 +19,36 @@
                         <span class="badge bg-primary ms-1">{{ number_format($registrosGarantes->count()) }}</span>
                     </button>
                 @endif
-                @if($archivosGarantes->isNotEmpty() && $puedeCargarGarantes)
-                    <button type="button" class="btn btn-outline-danger"
-                        data-bs-toggle="modal" data-bs-target="#modalLimpiarGarantes">
-                        <i class="bi bi-trash3-fill me-1"></i> Limpiar garantes
-                    </button>
-                @endif
             </div>
         </div>
     </div>
     <div class="card-body">
-        @if($puedeCargarGarantes)
-            <form id="formCargaGarantes" method="POST"
-                action="{{ route('procesamiento-mensual.lotes.archivos.prestamos.conciliacion.garantes.store', $lote) }}"
-                enctype="multipart/form-data">
-                @csrf
-                <div class="row g-3 align-items-end">
-                    <div class="col-xl-9">
-                        <label for="archivos_garantes" class="form-label fw-semibold">
-                            Archivo Excel de descuentos a garantes
-                        </label>
-                        <input type="file" id="archivos_garantes" name="archivos_garantes[]"
-                            class="form-control @error('archivos_garantes') is-invalid @enderror"
-                            accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
-                            multiple required>
-                        <div class="form-text">
-                            Periodo <strong>{{ $lote->periodo }}</strong>. Puede seleccionar hasta 5 archivos.
-                            Una nueva carga reemplaza la importación anterior y actualiza el seguimiento.
-                        </div>
+        @if($lote->envioMensual?->archivoGarantes)
+            <div class="alert alert-success d-flex flex-wrap justify-content-between align-items-center gap-3 mb-0">
+                <div>
+                    <div class="fw-semibold">
+                        <i class="bi bi-link-45deg me-1"></i>
+                        Garantes vinculados al envío {{ $lote->envioMensual->codigo }}
                     </div>
-                    <div class="col-xl-3">
-                        <button type="submit" id="btnCargarGarantes" class="btn btn-success w-100">
-                            <i class="bi bi-cloud-arrow-up-fill me-1"></i> Subir archivos de garantes
-                        </button>
+                    <div>{{ $lote->envioMensual->archivoGarantes->nombre_original }}</div>
+                    <div class="small">
+                        {{ number_format($lote->envioMensual->archivoGarantes->cantidad_registros) }} registros ·
+                        Bs {{ number_format((float) $lote->envioMensual->archivoGarantes->monto_total, 2, '.', ',') }}
+                    </div>
+                    <div class="small mt-1">
+                        No debe volver a subir este archivo. Sus datos se incorporaron automáticamente
+                        al registrar la recepción y, al continuar, se verificarán contra los pagos recibidos.
                     </div>
                 </div>
-            </form>
+                <a class="btn btn-outline-success btn-sm" href="{{ route('procesamiento-mensual.envios-mensuales.garantes.descargar', $lote->envioMensual) }}">
+                    <i class="bi bi-download me-1"></i>Descargar Excel de garantes
+                </a>
+            </div>
         @else
-            <div class="alert alert-warning mb-0">
-                <i class="bi bi-lock-fill me-2"></i>
-                La carga de garantes está bloqueada porque el lote se encuentra
-                <strong>{{ $lote->estado }}</strong>.
+            <div class="alert alert-danger mb-0">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                El envío relacionado no tiene disponible el Excel obligatorio de garantes.
+                No se podrá procesar Préstamos hasta corregir el envío.
             </div>
         @endif
     </div>
@@ -142,61 +131,3 @@
         </div>
     </div>
 @endif
-
-@if($archivosGarantes->isNotEmpty() && $puedeCargarGarantes)
-    <div class="modal fade" id="modalLimpiarGarantes" tabindex="-1"
-        aria-labelledby="modalLimpiarGarantesTitulo" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title" id="modalLimpiarGarantesTitulo">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i> Limpiar descuentos a garantes
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                </div>
-                <div class="modal-body">
-                    Se eliminarán los archivos de garantes, sus registros y sus comparaciones. Esta acción no se puede deshacer.
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <form method="POST" action="{{ route('procesamiento-mensual.lotes.archivos.prestamos.conciliacion.garantes.limpiar', $lote) }}">
-                        @csrf @method('DELETE')
-                        <button type="submit" class="btn btn-danger"><i class="bi bi-trash3-fill me-1"></i> Sí, limpiar garantes</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-@endif
-
-<div id="overlayCargandoGarantes"
-    class="d-none position-fixed top-0 start-0 w-100 h-100 align-items-center justify-content-center"
-    style="z-index: 2000; background: rgba(15, 23, 42, .68);" role="status" aria-live="polite">
-    <div class="bg-white rounded-4 shadow-lg px-5 py-4 text-center">
-        <div class="spinner-border text-success mb-3" style="width: 3rem; height: 3rem;" aria-hidden="true"></div>
-        <h5 class="mb-1">Cargando y comparando garantes...</h5>
-        <p class="text-muted mb-0">Espere mientras se importa el Excel y se actualiza el seguimiento.</p>
-    </div>
-</div>
-
-@push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const formulario = document.getElementById('formCargaGarantes');
-            const boton = document.getElementById('btnCargarGarantes');
-            const overlay = document.getElementById('overlayCargandoGarantes');
-            if (formulario && boton && overlay) {
-                formulario.addEventListener('submit', function () {
-                    boton.disabled = true;
-                    overlay.classList.remove('d-none');
-                    overlay.classList.add('d-flex');
-                });
-                window.addEventListener('pageshow', function () {
-                    boton.disabled = false;
-                    overlay.classList.add('d-none');
-                    overlay.classList.remove('d-flex');
-                });
-            }
-        });
-    </script>
-@endpush

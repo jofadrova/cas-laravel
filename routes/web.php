@@ -9,7 +9,6 @@ use App\Http\Controllers\CertificadoAporteOtroArchivoController;
 use App\Http\Controllers\FvsArchivoController;
 use App\Http\Controllers\FvsComparacionController;
 use App\Http\Controllers\FvsOtroArchivoController;
-use App\Http\Controllers\GaranteArchivoController;
 use App\Http\Controllers\LoteArchivoController;
 use App\Http\Controllers\LoteMensualController;
 use App\Http\Controllers\PagoController;
@@ -222,6 +221,10 @@ Route::middleware('auth')->group(function () {
                 'envios-mensuales/{envioMensual}/prestamos/descargar',
                 [EnvioMensualController::class, 'descargarPrestamos']
             )->name('envios-mensuales.prestamos.descargar');
+            Route::get(
+                'envios-mensuales/{envioMensual}/garantes/descargar',
+                [EnvioMensualController::class, 'descargarGarantes']
+            )->name('envios-mensuales.garantes.descargar');
             Route::get('envios-mensuales/{envioMensual}', [EnvioMensualController::class, 'show'])
                 ->name('envios-mensuales.show');
             Route::post(
@@ -278,16 +281,6 @@ Route::middleware('auth')->group(function () {
                 'lotes/{lote}/archivos/prestamos/otros',
                 [PrestamoOtroArchivoController::class, 'limpiar']
             )->name('lotes.archivos.prestamos.otros.limpiar');
-
-            Route::post(
-                'lotes/{lote}/archivos/prestamos/conciliacion/garantes',
-                [GaranteArchivoController::class, 'store']
-            )->name('lotes.archivos.prestamos.conciliacion.garantes.store');
-
-            Route::delete(
-                'lotes/{lote}/archivos/prestamos/conciliacion/garantes',
-                [GaranteArchivoController::class, 'limpiar']
-            )->name('lotes.archivos.prestamos.conciliacion.garantes.limpiar');
 
             Route::get(
                 'lotes/{lote}/fvs',

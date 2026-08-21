@@ -7,6 +7,7 @@ use App\Models\LoteGaranteRegistro;
 use App\Models\LoteMensual;
 use App\Models\LotePrestamoConciliacion;
 use App\Models\LotePrestamoRegistro;
+use App\Services\ProcesamientoMensual\GaranteEnvioSyncService;
 use App\Services\ProcesamientoMensual\PagoMensualPrestamoService;
 use App\Services\ProcesamientoMensual\PrestamoConciliacionService;
 use Illuminate\Http\RedirectResponse;
@@ -176,12 +177,6 @@ SQL,
                 'monto_total',
                 'fecha_procesamiento',
             ]);
-        $puedeCargarGarantes = $procesamientoPago === null
-            && ! in_array($lote->estado, [
-                LoteMensual::ESTADO_PROCESADO,
-                LoteMensual::ESTADO_CERRADO,
-                LoteMensual::ESTADO_ANULADO,
-            ], true);
         $puedeRealizarPago = $procesamientoPago === null
             && ! in_array($lote->estado, [
                 LoteMensual::ESTADO_PROCESADO,
@@ -264,7 +259,6 @@ SQL,
                 'registrosGarantes' => $registrosGarantes,
                 'resumenGarantes' => $resumenGarantes,
                 'resumenGlobal' => $resumenGlobal,
-                'puedeCargarGarantes' => $puedeCargarGarantes,
                 'procesamientoPago' => $procesamientoPago,
                 'puedeRealizarPago' => $puedeRealizarPago,
                 'resumenInconsistenciasPago' => $resumenInconsistenciasPago,
@@ -276,7 +270,8 @@ SQL,
 
     public function comparar(
         LoteMensual $lote,
-        PrestamoConciliacionService $conciliador
+        PrestamoConciliacionService $conciliador,
+        GaranteEnvioSyncService $sincronizadorGarantes
     ): RedirectResponse {
         $prestamosProcesados = DB::table('lote_prestamo_procesamientos')
             ->where('lote_mensual_id', $lote->id)
@@ -312,7 +307,20 @@ SQL,
         }
 
         try {
-            $conciliador->ejecutar($lote, auth()->id());
+            $cantidadGarantes = 0;
+
+            DB::transaction(function () use (
+                $lote,
+                $conciliador,
+                $sincronizadorGarantes,
+                &$cantidadGarantes
+            ): void {
+                $cantidadGarantes = $sincronizadorGarantes->sincronizar(
+                    $lote,
+                    auth()->id()
+                );
+                $conciliador->ejecutar($lote, auth()->id());
+            });
         } catch (LogicException $exception) {
             return redirect()
                 ->route(
@@ -330,7 +338,8 @@ SQL,
             ->with(
                 'success',
                 'La comparación terminó correctamente. Se clasificaron '
-                .'las cuotas propias y los descuentos a garantes.'
+                .'las cuotas propias y '.number_format($cantidadGarantes)
+                .' descuentos a garantes tomados automáticamente del envío.'
             );
     }
 

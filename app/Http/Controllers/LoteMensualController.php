@@ -6,11 +6,13 @@ use App\Http\Requests\StoreLoteMensualRequest;
 use App\Http\Requests\UpdateLoteMensualRequest;
 use App\Models\EnvioMensual;
 use App\Models\LoteMensual;
+use App\Services\ProcesamientoMensual\GaranteEnvioSyncService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use LogicException;
 
 class LoteMensualController extends Controller
 {
@@ -61,9 +63,15 @@ class LoteMensualController extends Controller
         ]);
     }
 
-    public function store(StoreLoteMensualRequest $request): RedirectResponse
+    public function store(
+        StoreLoteMensualRequest $request,
+        GaranteEnvioSyncService $sincronizadorGarantes
+    ): RedirectResponse
     {
-        $lote = DB::transaction(function () use ($request): LoteMensual {
+        $lote = DB::transaction(function () use (
+            $request,
+            $sincronizadorGarantes
+        ): LoteMensual {
             $envio = EnvioMensual::query()
                 ->lockForUpdate()
                 ->findOrFail($request->integer('envio_mensual_id'));
@@ -72,6 +80,13 @@ class LoteMensualController extends Controller
                 || $envio->loteMensual()->exists()) {
                 throw ValidationException::withMessages([
                     'envio_mensual_id' => 'El lote ya fue recibido o no se encuentra enviado.',
+                ]);
+            }
+
+            if (! $envio->archivoPrestamos()->exists()
+                || ! $envio->archivoGarantes()->exists()) {
+                throw ValidationException::withMessages([
+                    'envio_mensual_id' => 'El envío no tiene el TXT y el Excel de garantes requeridos.',
                 ]);
             }
 
@@ -85,6 +100,17 @@ class LoteMensualController extends Controller
                 'creado_por' => $request->user()->id,
             ]);
 
+            try {
+                $sincronizadorGarantes->sincronizar(
+                    $lote,
+                    $request->user()->id
+                );
+            } catch (LogicException $exception) {
+                throw ValidationException::withMessages([
+                    'envio_mensual_id' => $exception->getMessage(),
+                ]);
+            }
+
             $envio->update(['estado' => EnvioMensual::ESTADO_RECIBIDO]);
 
             return $lote;
@@ -97,7 +123,7 @@ class LoteMensualController extends Controller
 
     public function show(LoteMensual $lote): View
     {
-        $lote->load(['creador', 'cerrador']);
+        $lote->load(['creador', 'cerrador', 'envioMensual.archivoGarantes']);
 
         return view('procesamiento-mensual.lotes.show', compact('lote'));
     }

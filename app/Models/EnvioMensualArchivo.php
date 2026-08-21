@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class EnvioMensualArchivo extends Model
 {
     public const TIPO_PRESTAMOS = 'PRESTAMOS';
+    public const TIPO_GARANTES_ORIGEN = 'GARANTES_ORIGEN';
 
     protected $table = 'envio_mensual_archivos';
 

@@ -30,9 +30,10 @@ class EnvioPrestamosTxtService
     ];
 
     /**
-     * @return array{contenido:string,nombre:string,cantidad:int,monto_total:string,hash_sha256:string}
+     * @param array{lineas:array<int,string>,cantidad:int,monto_total:string} $garantes
+     * @return array{contenido:string,nombre:string,cantidad:int,monto_total:string,hash_sha256:string,cantidad_prestamos:int,monto_prestamos:string,cantidad_garantes:int,monto_garantes:string}
      */
-    public function generar(EnvioMensual $envio): array
+    public function generar(EnvioMensual $envio, array $garantes): array
     {
         $registros = $this->consulta($envio)->get();
 
@@ -69,19 +70,45 @@ class EnvioPrestamosTxtService
             ]);
         }
 
-        // El archivo oficial usa CRLF, no contiene BOM ni salto final.
+        $cantidadPrestamos = count($lineas);
+        $montoPrestamosCentavos = $montoTotalCentavos;
+
+        foreach ($garantes['lineas'] as $lineaGarante) {
+            $lineas[] = $lineaGarante;
+        }
+
+        $montoGarantesCentavos = (int) round(
+            (float) $garantes['monto_total'] * 100
+        );
+        $montoTotalCentavos += $montoGarantesCentavos;
+
+        // Préstamos primero y garantes al final. CRLF, sin BOM ni salto final.
         $contenido = implode("\r\n", $lineas);
 
         return [
             'contenido' => $contenido,
             'nombre' => sprintf(
-                'DESCUENTOS_CAS_RL_%s_%d_PRESTAMOS_FINAL.txt',
+                'DESCUENTOS_CAS_RL_%s_%d_PRESTAMOS.txt',
                 self::MESES[$envio->mes],
                 $envio->gestion
             ),
             'cantidad' => count($lineas),
             'monto_total' => number_format($montoTotalCentavos / 100, 2, '.', ''),
             'hash_sha256' => hash('sha256', $contenido),
+            'cantidad_prestamos' => $cantidadPrestamos,
+            'monto_prestamos' => number_format(
+                $montoPrestamosCentavos / 100,
+                2,
+                '.',
+                ''
+            ),
+            'cantidad_garantes' => $garantes['cantidad'],
+            'monto_garantes' => number_format(
+                $montoGarantesCentavos / 100,
+                2,
+                '.',
+                ''
+            ),
         ];
     }
 

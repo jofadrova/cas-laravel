@@ -61,6 +61,12 @@ class EnvioMensual extends Model
             ->where('tipo', EnvioMensualArchivo::TIPO_PRESTAMOS);
     }
 
+    public function archivoGarantes(): HasOne
+    {
+        return $this->hasOne(EnvioMensualArchivo::class)
+            ->where('tipo', EnvioMensualArchivo::TIPO_GARANTES_ORIGEN);
+    }
+
     public function creador(): BelongsTo
     {
         return $this->belongsTo(User::class, 'creado_por');

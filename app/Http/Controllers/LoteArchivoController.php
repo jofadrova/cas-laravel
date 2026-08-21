@@ -13,6 +13,8 @@ class LoteArchivoController extends Controller
 {
     public function index(LoteMensual $lote): View
     {
+        $lote->load(['envioMensual.archivoGarantes']);
+
         $archivos = LoteArchivo::query()
             ->where('lote_mensual_id', $lote->id)
             ->where('tipo', LoteArchivo::TIPO_PRESTAMOS)
@@ -89,7 +91,6 @@ class LoteArchivoController extends Controller
             'resumen' => $resumen,
             'puedeCargar' => $puedeCargar,
             'prestamosProcesados' => $prestamosProcesados,
-            'puedeCargarGarantes' => $puedeCargar && $archivosPrincipales->isNotEmpty(),
         ]);
     }
 }
